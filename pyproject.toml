@@ -1,0 +1,16 @@
+[project]
+name = "code-complexity-metrics"
+version = "0.1.0"
+description = "Implementation and Comparison of Code Complexity Metrics to Assess Developer Productivity"
+authors = [
+    { name="Christian Ispas", email="chrispas03@yahoo.dk" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = ["code_complexity_metrics"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
