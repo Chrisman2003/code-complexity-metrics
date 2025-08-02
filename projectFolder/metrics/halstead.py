@@ -8,15 +8,23 @@ def basic_halstead_metrics(code: str):
     N1: Total number of operators
     N2: Total number of operands
     '''
-    operator_pattern = r'\b(?:if|else|elif|for|while|try|except|return|and|or|not)\b'
+    operator_pattern = r'\b(?:if|else|elif|for|while|try|except|return|and|or|not)\b|==|!=|<=|>=|[-+*/%=<>&|^~!]=?|[(){}\[\],.:]'   
+    # () = function call
+    # [] = list or indexing
+    # , = argument separation
+    # : = start of code block
+    # . = attribute/method access
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
     operators = re.findall(operator_pattern, code)
     operands = re.findall(operand_pattern, code)
     
     keywords = set([
-        'if', 'else', 'elif', 'for', 'while', 'return', 'try', 'except', 'finally', 'with',
-        'def', 'class', 'break', 'continue', 'pass', 'import', 'from', 'as', 'lambda', 'yield',
-        'in', 'is', 'not', 'and', 'or', 'print', 'True', 'False', 'None'
+        'if', 'else', 'elif', 'for', 'while', 'return', 'try', 'except', 'finally', 'with', # Evaluation operators    
+        'def', 'class', 'break', 'continue', 'pass', 'import', 'from', 'as', 'lambda', 'yield', # Function and class definitions
+        'in', 'is', 'not', 'and', 'or', 'print', 'True', 'False', 'None', # Boolean and None
+        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', # Bitwise operators
+        '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', # Assignment operators
+        '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '->', '=>', '::', '...', # Punctuation and special characters
     ])    
     
     operands = [op for op in operands if op not in keywords]

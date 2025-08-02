@@ -1,4 +1,4 @@
-def naive_compute_cyclomatic(code: str) -> int:
+def basic_compute_cyclomatic(code: str) -> int:
     control_keywords = ['if', 'for', 'while', 'elif', 'case', 'catch', 'except', 'finally', 'with']
     logical_operators = ['&&', '||', 'and', 'or']    
     count = 0 
