@@ -10,5 +10,5 @@ def naive_compute_cyclomatic(code: str) -> int:
         for op in logical_operators:
             count += stripped.count(op)  # handle multiple per line
     return count + 1  # +1 for default path
-    
-    
+
+
