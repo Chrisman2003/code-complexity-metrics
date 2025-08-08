@@ -7,6 +7,9 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.8"
+dependencies = [
+    "pyopencl"
+]
 
 [project.scripts]
 code-metrics = "projectFolder.__main__:main"
