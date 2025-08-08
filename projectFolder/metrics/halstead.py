@@ -8,23 +8,24 @@ def basic_halstead_metrics(code: str):
     N1: Total number of operators
     N2: Total number of operands
     '''
-    operator_pattern = r'\b(?:if|else|elif|for|while|try|except|return|and|or|not)\b|==|!=|<=|>=|[-+*/%=<>&|^~!]=?|[(){}\[\],.:]'   
-    # () = function call
-    # [] = list or indexing
-    # , = argument separation
-    # : = start of code block
-    # . = attribute/method access
+    # C++ keywords and operators
+    operator_pattern = (
+        r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|try|catch|throw|new|delete|sizeof|typeid|dynamic_cast|static_cast|reinterpret_cast|const_cast|and|or|not|xor|bitand|bitor|compl)\b'
+        r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
+    )
+    # () = function call, [] = array, {} = block, , = argument separation, ; = statement end, : = initializer list, :: = scope resolution, . = member access, -> = pointer member access
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
     operators = re.findall(operator_pattern, code)
     operands = re.findall(operand_pattern, code)
     
     keywords = set([
-        'if', 'else', 'elif', 'for', 'while', 'return', 'try', 'except', 'finally', 'with', # Evaluation operators    
-        'def', 'class', 'break', 'continue', 'pass', 'import', 'from', 'as', 'lambda', 'yield', # Function and class definitions
-        'in', 'is', 'not', 'and', 'or', 'print', 'True', 'False', 'None', # Boolean and None
-        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', # Bitwise operators
-        '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', # Assignment operators
-        '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '->', '=>', '::', '...', # Punctuation and special characters
+        # C++ keywords
+        'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto', 'try', 'catch', 'throw',
+        'new', 'delete', 'sizeof', 'typeid', 'dynamic_cast', 'static_cast', 'reinterpret_cast', 'const_cast',
+        'and', 'or', 'not', 'xor', 'bitand', 'bitor', 'compl', 'true', 'false', 'nullptr',
+        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'bool', 'class', 'struct', 'union', 'enum', 'namespace', 'public', 'private', 'protected', 'virtual', 'template', 'typename', 'using', 'static', 'const', 'volatile', 'mutable', 'explicit', 'inline', 'friend', 'operator', 'this', 'extern', 'register', 'auto', 'thread_local', 'static_assert', 'constexpr', 'decltype', 'export', 'import', 'module', 'requires', 'concept', 'co_await', 'co_return', 'co_yield', 'asm', 'default', 'override', 'final', 'noexcept', 'nullptr_t', 'type', 'wchar_t', 'char16_t', 'char32_t',
+        # C++ operators and punctuation
+        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--', '->', '->*', '.', '::', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '...', '?'
     ])    
     
     operands = [op for op in operands if op not in keywords]
