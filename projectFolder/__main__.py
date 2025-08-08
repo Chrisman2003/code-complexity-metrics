@@ -1,17 +1,28 @@
 import argparse
 import os 
+import time
 from projectFolder.metrics import sloc, halstead, cyclomatic
 from projectFolder.gpu import halstead_opencl
+
+# Outsourced Time analyzing Function
+def timed(func, *args, **kwargs):
+    start = time.perf_counter()
+    result = func(*args, **kwargs)
+    end = time.perf_counter()
+    return result, end - start
 
 def analyze_code(file_path: str):
     with open(file_path, 'r', encoding="utf-8", errors="ignore") as file:
         code = file.read()        
-    sloc_count = sloc.compute_sloc(code)
-    halstead_metrics = halstead.basic_halstead_metrics(code)
-    cyclomatic_complexity = cyclomatic.basic_compute_cyclomatic(code)
+    sloc_count, sloc_time = timed(sloc.compute_sloc, code)
+    halstead_metrics, halstead_time = timed(halstead.basic_halstead_metrics, code)
+    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.basic_compute_cyclomatic, code)
         
     print(f"File: {file_path}")
-    print(f"SLOC: {sloc_count}")
+    print(f"SLOC: {sloc_count} \n[SLOC runtime: {sloc_time:.4f}s]")
+    
+    print(f"\nCyclomatic Complexity: {cyclomatic_complexity} \n[Cyclomatic runtime: {cyclomatic_time:.4f}s]")
+    
     print("\nHalstead Metrics:")
     for k, v in halstead_metrics.items():
         print(f"  {k}: {v}")
@@ -21,8 +32,8 @@ def analyze_code(file_path: str):
     print(f"  Difficulty: {halstead.difficulty(halstead_metrics):.2f}")
     print(f"  Effort: {halstead.effort(halstead_metrics):.2f}")
     print(f"  Time: {halstead.time(halstead_metrics):.2f}s")
-
-    print(f"\nCyclomatic Complexity: {cyclomatic_complexity}")
+    print(f"[Halstead runtime: {halstead_time:.4f}s]")
+    print("-" * 40)
     
 def analyze_code_cpu(file_path: str):
     with open(file_path, 'r', encoding="utf-8", errors="ignore") as file:
