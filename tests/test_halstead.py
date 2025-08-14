@@ -52,7 +52,32 @@ def test_halstead_complex_cuda():
     assert round(effort(metrics),2) == 115717.11
     assert round(time(metrics),2) == 6428.73
 
+def test_halstead_complex_kokkos():
+    code = load_code("complex_kokkos.cpp")
+    metrics = halstead_metrics_kokkos(code)
+    # Update the expected values below to match the actual Halstead metrics for complex.cpp
+    assert metrics['n1'] == 26
+    assert metrics['n2'] == 46
+    assert metrics['N1'] == 153
+    assert metrics['N2'] == 90
+    assert vocabulary(metrics) ==72
+    assert size(metrics) == 243
+    assert round(volume(metrics),2) == 1499.29
+    assert round(difficulty(metrics),2) == 25.43
+    assert round(effort(metrics),2) == 38134.16
+    assert round(time(metrics),2) == 2118.56
 
-
-
-
+def test_halstead_complex_opencl():
+    code = load_code("complex_opencl.cpp")
+    metrics = halstead_metrics_opencl(code)
+    # Update the expected values below to match the actual Halstead metrics for complex.cpp
+    assert metrics['n1'] == 39
+    assert metrics['n2'] == 119
+    assert metrics['N1'] == 333
+    assert metrics['N2'] == 280
+    assert vocabulary(metrics) == 158
+    assert size(metrics) == 613
+    assert round(volume(metrics),2) == 4477.22
+    assert round(difficulty(metrics),2) == 45.88
+    assert round(effort(metrics),2) == 205425.28
+    assert round(time(metrics),2) == 11412.52
