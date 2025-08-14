@@ -1,5 +1,5 @@
 import os
-from projectFolder.metrics.halstead import basic_halstead_metrics, vocabulary, size, volume, difficulty, effort, time
+from projectFolder.metrics.halstead import*
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
@@ -8,8 +8,8 @@ def load_code(filename):
         return f.read()
 
 def test_halstead_simple_cpp():
-    code = load_code("simple.cpp")
-    metrics = basic_halstead_metrics(code)
+    code = load_code("OLD_simple.cpp")
+    metrics = halstead_metrics_cpp(code)
     # Update the expected values below to match the actual Halstead metrics for simple.cpp
     assert metrics['n1'] == 14
     assert metrics['n2'] == 18
@@ -24,7 +24,7 @@ def test_halstead_simple_cpp():
     
 def test_halstead_complex_cpp():
     code = load_code("complex.cpp")
-    metrics = basic_halstead_metrics(code)
+    metrics = halstead_metrics_cpp(code)
     # Update the expected values below to match the actual Halstead metrics for complex.cpp
     assert metrics['n1'] == 30
     assert metrics['n2'] == 54
@@ -38,24 +38,3 @@ def test_halstead_complex_cpp():
     assert round(effort(metrics),2) == 55884.84
     assert round(time(metrics),2) == 3104.71
     
-
-#def test_if_statement():
-#    code = """
-#if x > 0:
-#    y = x
-#else:
-#    y = -x
-#"""
-#    metrics = basic_halstead_metrics(code)
-#    assert metrics['n1'] == 6
-#    assert metrics['n2'] == 3      # x, y, 0
-#    assert metrics['N1'] == 8      # all 6 above + '=' again
-#    assert metrics['N2'] == 6      # x, 0, y, x, y, x
-#    v = volume(metrics)
-#    d = difficulty(metrics)
-#    e = effort(metrics)
-#    t = time(metrics)
-#    assert v >= 0
-#    assert d >= 0
-#    assert e >= 0
-#    assert t >= 0
