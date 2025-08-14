@@ -1,5 +1,6 @@
 import re
 import math
+from .KEYWORDS import cpp_keywords, cuda_keywords, kokkos_keywords, opencl_keywords
 
 def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, keyword_set: set):
     """
@@ -20,94 +21,40 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     }
     
 def halstead_metrics_cpp(code: str):
-    """
-    Halstead metrics for C++ code.
-    """
     operator_pattern = (
         r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|try|catch|throw|new|delete|sizeof|typeid|dynamic_cast|static_cast|reinterpret_cast|const_cast|and|or|not|xor|bitand|bitor|compl)\b'
         r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
     )
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
-
-    keyword_set = set([
-        # C++ keywords and operators (same as above)
-        'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto', 'try', 'catch', 'throw',
-        'new', 'delete', 'sizeof', 'typeid', 'dynamic_cast', 'static_cast', 'reinterpret_cast', 'const_cast',
-        'and', 'or', 'not', 'xor', 'bitand', 'bitor', 'compl', 'true', 'false', 'nullptr',
-        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'bool', 'class', 'struct', 'union', 'enum', 'namespace', 'public', 'private', 'protected', 'virtual', 'template', 'typename', 'using', 'static', 'const', 'volatile', 'mutable', 'explicit', 'inline', 'friend', 'operator', 'this', 'extern', 'register', 'auto', 'thread_local', 'static_assert', 'constexpr', 'decltype', 'export', 'import', 'module', 'requires', 'concept', 'co_await', 'co_return', 'co_yield', 'asm', 'default', 'override', 'final', 'noexcept', 'nullptr_t', 'type', 'wchar_t', 'char16_t', 'char32_t',
-        # C++ operators and punctuation
-        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--', '->', '->*', '.', '::', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '...', '?'
-    ])
+    keyword_set = cpp_keywords
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, keyword_set)
 
 def halstead_metrics_cuda(code: str):
-    """
-    Halstead metrics for CUDA code.
-    """
     operator_pattern = (
         r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|try|catch|throw|new|delete|sizeof|typeid|dynamic_cast|static_cast|reinterpret_cast|const_cast|and|or|not|xor|bitand|bitor|compl|__global__|__device__|__host__|__shared__|__constant__|__managed__|__restrict__|__threadfence_block|__threadfence|__syncthreads|atomicAdd|atomicSub|atomicExch|atomicMin|atomicMax|atomicInc|atomicDec|atomicCAS|atomicAnd|atomicOr|atomicXor)\b'
         r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
     )
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
-    
-    keyword_set = set([
-        # C++ keywords and operators
-        'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto', 'try', 'catch', 'throw',
-        'new', 'delete', 'sizeof', 'typeid', 'dynamic_cast', 'static_cast', 'reinterpret_cast', 'const_cast',
-        'and', 'or', 'not', 'xor', 'bitand', 'bitor', 'compl', 'true', 'false', 'nullptr',
-        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'bool', 'class', 'struct', 'union', 'enum', 'namespace', 'public', 'private', 'protected', 'virtual', 'template', 'typename', 'using', 'static', 'const', 'volatile', 'mutable', 'explicit', 'inline', 'friend', 'operator', 'this', 'extern', 'register', 'auto', 'thread_local', 'static_assert', 'constexpr', 'decltype', 'export', 'import', 'module', 'requires', 'concept', 'co_await', 'co_return', 'co_yield', 'asm', 'default', 'override', 'final', 'noexcept', 'nullptr_t', 'type', 'wchar_t', 'char16_t', 'char32_t',
-        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--', '->', '->*', '.', '::', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '...', '?',
-        # CUDA specific keywords
-        '__global__', '__device__', '__host__', '__shared__', '__constant__', '__managed__', '__restrict__',
-        '__threadfence_block', '__threadfence', '__syncthreads',
-        'atomicAdd', 'atomicSub', 'atomicExch', 'atomicMin', 'atomicMax', 'atomicInc', 'atomicDec', 'atomicCAS', 'atomicAnd', 'atomicOr', 'atomicXor'
-    ])
+    keyword_set = cuda_keywords | cpp_keywords # Merged with C++ keywords
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, keyword_set)
 
 def halstead_metrics_kokkos(code: str):
-    """
-    Halstead metrics for Kokkos code.
-    """
     operator_pattern = (
         r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|try|catch|throw|new|delete|sizeof|typeid|dynamic_cast|static_cast|reinterpret_cast|const_cast|and|or|not|xor|bitand|bitor|compl|Kokkos|KOKKOS_FUNCTION|KOKKOS_INLINE_FUNCTION|KOKKOS_LAMBDA|Kokkos::parallel_for|Kokkos::parallel_reduce|Kokkos::parallel_scan|Kokkos::View|Kokkos::TeamPolicy|Kokkos::RangePolicy|Kokkos::MDRangePolicy)\b'
         r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
     )
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
-    keyword_set = set([
-        # C++ keywords and operators
-        'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto', 'try', 'catch', 'throw',
-        'new', 'delete', 'sizeof', 'typeid', 'dynamic_cast', 'static_cast', 'reinterpret_cast', 'const_cast',
-        'and', 'or', 'not', 'xor', 'bitand', 'bitor', 'compl', 'true', 'false', 'nullptr',
-        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'bool', 'class', 'struct', 'union', 'enum', 'namespace', 'public', 'private', 'protected', 'virtual', 'template', 'typename', 'using', 'static', 'const', 'volatile', 'mutable', 'explicit', 'inline', 'friend', 'operator', 'this', 'extern', 'register', 'auto', 'thread_local', 'static_assert', 'constexpr', 'decltype', 'export', 'import', 'module', 'requires', 'concept', 'co_await', 'co_return', 'co_yield', 'asm', 'default', 'override', 'final', 'noexcept', 'nullptr_t', 'type', 'wchar_t', 'char16_t', 'char32_t',
-        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--', '->', '->*', '.', '::', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '...', '?',
-        # Kokkos specific keywords
-        'Kokkos', 'KOKKOS_FUNCTION', 'KOKKOS_INLINE_FUNCTION', 'KOKKOS_LAMBDA',
-        'Kokkos::parallel_for', 'Kokkos::parallel_reduce', 'Kokkos::parallel_scan',
-        'Kokkos::View', 'Kokkos::TeamPolicy', 'Kokkos::RangePolicy', 'Kokkos::MDRangePolicy'
-    ])
+    keyword_set = kokkos_keywords | cpp_keywords # Merged with C++ keywords
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, keyword_set)
 
 def halstead_metrics_opencl(code: str):
-    """
-    Halstead metrics for OpenCL code.
-    """
     operator_pattern = (
         r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|kernel|__kernel|__global|__local|__constant|__private|get_global_id|get_local_id|get_group_id|get_global_size|get_local_size|get_num_groups|barrier|mem_fence|read_mem_fence|write_mem_fence|CLK_LOCAL_MEM_FENCE|CLK_GLOBAL_MEM_FENCE)\b'
         r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
     )
     operand_pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b|\b\d+\b'
-    keyword_set = set([
-        # C keywords and operators
-        'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto',
-        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'bool', 'struct', 'union', 'enum', 'typedef', 'const', 'volatile', 'static', 'extern', 'register', 'auto', 'inline', 'sizeof',
-        '-', '+', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>', '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--', '->', '.', '::', '(', ')', '{', '}', '[', ']', ',', '.', ':', ';', '#', '@', '...', '?',
-        # OpenCL specific keywords
-        'kernel', '__kernel', '__global', '__local', '__constant', '__private',
-        'get_global_id', 'get_local_id', 'get_group_id', 'get_global_size', 'get_local_size', 'get_num_groups',
-        'barrier', 'mem_fence', 'read_mem_fence', 'write_mem_fence', 'CLK_LOCAL_MEM_FENCE', 'CLK_GLOBAL_MEM_FENCE'
-    ])
+    keyword_set = opencl_keywords | cpp_keywords # Merged with C++ keywords
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, keyword_set)
-
 
 '''
 Formulas for Halstead Metrics:
