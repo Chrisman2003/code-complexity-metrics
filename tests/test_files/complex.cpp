@@ -52,3 +52,18 @@ int main() {
 
     return 0;
 }
+
+/*
+Explanation:
+1. The program defines a function isPrime(n) to check if a number is prime.
+2. sumVector(v) calculates the sum of all elements in a vector.
+3. In main(), a vector of numbers is initialized.
+4. Each number is tested:
+   - If it is prime and less than 10, a message is printed.
+   - If it is not prime or equal to 17, a different message is printed.
+   - Otherwise, a fallback message is printed.
+5. The total sum of numbers is computed in the loop.
+6. The sumVector function also calculates the sum for comparison.
+7. The ratio of the loop total to the function sum is printed.
+8. The program demonstrates loops, conditionals, vector usage, type casting, and functions.
+*/

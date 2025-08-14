@@ -8,12 +8,12 @@ def load_code(filename):
         return f.read()
 
 def test_cyclomatic_example_py():
-    code = load_code("example.py")
+    code = load_code("OLD_example.py")
     # Update the expected value below to match the actual cyclomatic complexity for example.py
     assert basic_compute_cyclomatic(code) >= 1 
 
 def test_cyclomatic_simple_cpp():
-    code = load_code("simple.cpp")
+    code = load_code("OLD_simple.cpp")
     # Update the expected value below to match the actual cyclomatic complexity for simple.cpp
     assert basic_compute_cyclomatic(code) >= 1 
 

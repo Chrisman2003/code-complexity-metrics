@@ -50,3 +50,14 @@ int main() {
 
     return 0;
 }
+
+/*
+Explanation:
+This program demonstrates a simple OpenCL example that performs element-wise addition of two vectors.
+1. Two host vectors h_a and h_b are initialized on the CPU.
+2. OpenCL platform, device, context, and command queue are created.
+3. Device buffers d_a, d_b, and d_c are allocated, and host data is copied to device memory.
+4. A simple kernel "add_vector" is compiled and executed on the GPU, adding corresponding elements of a and b into c.
+5. The result vector h_c is read back to the CPU and the first element is printed.
+6. All OpenCL resources are released at the end.
+*/

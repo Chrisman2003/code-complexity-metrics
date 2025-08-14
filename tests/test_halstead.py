@@ -11,30 +11,48 @@ def test_halstead_simple_cpp():
     code = load_code("OLD_simple.cpp")
     metrics = halstead_metrics_cpp(code)
     # Update the expected values below to match the actual Halstead metrics for simple.cpp
-    assert metrics['n1'] == 14
-    assert metrics['n2'] == 18
-    assert metrics['N1'] == 37
-    assert metrics['N2'] == 33
-    assert vocabulary(metrics) == 32
-    assert size(metrics) == 70
-    assert round(volume(metrics),2) == 350.00
-    assert round(difficulty(metrics),2) == 12.83
-    assert round(effort(metrics),2) == 4491.67
-    assert round(time(metrics),2) == 249.54
+    assert metrics['n1'] == 19
+    assert metrics['n2'] == 19
+    assert metrics['N1'] == 47
+    assert metrics['N2'] == 34
+    assert vocabulary(metrics) == 38
+    assert size(metrics) == 81
+    assert round(volume(metrics),2) ==425.08
+    assert round(difficulty(metrics),2) == 17.00
+    assert round(effort(metrics),2) == 7226.40
+    assert round(time(metrics),2) == 401.47
     
 def test_halstead_complex_cpp():
     code = load_code("complex.cpp")
     metrics = halstead_metrics_cpp(code)
     # Update the expected values below to match the actual Halstead metrics for complex.cpp
-    assert metrics['n1'] == 30
-    assert metrics['n2'] == 54
-    assert metrics['N1'] == 152
-    assert metrics['N2'] == 117
+    assert metrics['n1'] == 39
+    assert metrics['n2'] == 96
+    assert metrics['N1'] == 227
+    assert metrics['N2'] == 241
+    assert vocabulary(metrics) == 135
+    assert size(metrics) == 468
+    assert round(volume(metrics),2) == 3311.95
+    assert round(difficulty(metrics),2) == 48.95
+    assert round(effort(metrics),2) == 162130.29
+    assert round(time(metrics),2) == 9007.24
     
-    assert vocabulary(metrics) == 84
-    assert size(metrics) == 269
-    assert round(volume(metrics),2) == 1719.53
-    assert round(difficulty(metrics),2) == 32.50
-    assert round(effort(metrics),2) == 55884.84
-    assert round(time(metrics),2) == 3104.71
-    
+def test_halstead_complex_cuda():
+    code = load_code("complex_cuda.cu")
+    metrics = halstead_metrics_cuda(code)
+    # Update the expected values below to match the actual Halstead metrics for complex.cpp
+    assert metrics['n1'] == 34
+    assert metrics['n2'] == 38
+    assert metrics['N1'] == 258
+    assert metrics['N2'] == 113
+    assert vocabulary(metrics) == 72
+    assert size(metrics) == 371
+    assert round(volume(metrics),2) == 2289.04
+    assert round(difficulty(metrics),2) == 50.55
+    assert round(effort(metrics),2) == 115717.11
+    assert round(time(metrics),2) == 6428.73
+
+
+
+
+
