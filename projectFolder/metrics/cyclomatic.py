@@ -1,32 +1,53 @@
 import networkx as nx
-from tree_sitter import get_language, get_parser
+import subprocess
+import re
+import tempfile
 
 # Mccabe Cyclomatic Complexity Calculation for C++ Code
 # Formula Spefication: V(G)=E−N+2P
 
 # Real Mccabe Cyclomatic Complexity Calculation
 def compute_cyclomatic(code: str) -> int:
-    # build control flow graph
-    # count edges (E), nodes (N) and connected components (P)
-    # 1) Parse to Abstract Syntax Tree (AST)
-    parser = get_parser(get_language("cpp"))
-    tree = parser.parse(bytes(code, "utf8"))
-    root_node = tree.root_node
+    with tempfile.NamedTemporaryFile(suffix=".cpp", mode="w", delete=False) as tmp:
+        tmp.write(code)
+        tmp_path = tmp.name
+
+    process = subprocess.run(
+        ["clang++","-std=c++17","-fsyntax-only","-Xclang", "-analyze","-Xclang", "-analyzer-checker=debug.DumpCFG", tmp_path],
+        capture_output=True,
+        text=True
+    )
     
-    # 2) Build Control Flow Graph (CFG) from AST
+    output = process.stdout + "\n" + process.stderr
+    # The stdout may actually be empty because the analyzer prints the CFG to stderr, not stdout. In your code you only read stdout.
+    print("Clang CFG Dump:\n", output)  # Debug: see what Clang outputs
     cfg = nx.DiGraph()
-    def add_edges(node):
-        for child in node.children:
-            cfg.add_edge(node.start_byte, child.start_byte)
-            add_edges(child)
-    add_edges(root_node)
-    
-    # 3) Count edges (E), nodes (N) and connected components (P)
+    # Parse nodes and successors from Clang CFG dump
+    node_pattern = re.compile(r'\[B(\d+)\]') # Matches Blocknodes with corresponding IDs
+    succ_pattern = re.compile(r'Succs \((\d+)\): (.+)') # Matches no. successors as well as corresponding Node IDs
+    current_node = None
+    for line in output.splitlines():
+        node_match = node_pattern.search(line)
+        succ_match = succ_pattern.search(line)
+        
+        if node_match:
+            current_node = int(node_match.group(1))
+            cfg.add_node(current_node)
+        
+        if succ_match and current_node is not None:
+        # Remove 'B' prefix and convert to int
+            successors = [int(s[1:]) for s in succ_match.group(2).split()]
+            for succ in successors:
+                cfg.add_edge(current_node, succ)
+                
+    # Count edges (E), nodes (N) and connected components (P)
     edges = cfg.number_of_edges()
     nodes = cfg.number_of_nodes()
     components = nx.number_connected_components(cfg.to_undirected())
-    # 4) Calculate Cyclomatic Complexity
+    # Calculate Cyclomatic Complexity
     cyclomatic_complexity = edges - nodes + 2 * components
+    print(f"Cyclomatic Complexity: {cyclomatic_complexity} (E={edges}, N={nodes}, P={components})")
+    # Return the cyclomatic complexity value
     return cyclomatic_complexity
 
 # Simplified Heuristic

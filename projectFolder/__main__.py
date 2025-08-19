@@ -18,7 +18,7 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     # Compute metrics with timings
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     halstead_metrics, halstead_time = timed(halstead_func, code)
-    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.basic_compute_cyclomatic, code)
+    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code)
 
     print(f"\nFile: {file_path}")
     print(f"SLOC: {sloc_count} \n[SLOC runtime: {sloc_time:.4f}s]")
