@@ -124,3 +124,4 @@ cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp
 cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions
 opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memory_flags | opencl_types | opencl_side_effect_functions
 kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions
+merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands

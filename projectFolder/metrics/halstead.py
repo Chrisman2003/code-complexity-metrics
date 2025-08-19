@@ -19,7 +19,7 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         'N1': N1,
         'N2': N2
     }
-        
+
 #operator_pattern = (
 #    r'\b(?:if|else|switch|case|for|while|do|break|continue|return|goto|try|catch|throw|new|delete|sizeof|typeid|dynamic_cast|static_cast|reinterpret_cast|const_cast|and|or|not|xor|bitand|bitor|compl)\b'
 #    r'|==|!=|<=|>=|->|->\*|<<=|>>=|<<|>>|&&|\|\||\+\+|--|::|\.|->|[-+*/%=&|^~!]=?|[(){}\[\],;:]'
@@ -75,6 +75,13 @@ def halstead_metrics_kokkos(code: str):
 
 def halstead_metrics_opencl(code: str):
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opencl_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
+
+def halstead_metrics_merged(code: str):
+    """
+    Merged Halstead metrics calculation for all languages.
+    """
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, cuda_non_operands | opencl_non_operands | kokkos_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
 
 '''

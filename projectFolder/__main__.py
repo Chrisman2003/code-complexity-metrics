@@ -20,10 +20,10 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     halstead_metrics, halstead_time = timed(halstead_func, code)
     cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.basic_compute_cyclomatic, code)
 
-    print(f"File: {file_path}")
+    print(f"\nFile: {file_path}")
     print(f"SLOC: {sloc_count} \n[SLOC runtime: {sloc_time:.4f}s]")
 
-    print(f"\nCyclomatic Complexity: {cyclomatic_complexity} \n[Cyclomatic runtime: {cyclomatic_time:.4f}s]")
+    print(f"Cyclomatic Complexity: {cyclomatic_complexity} \n[Cyclomatic runtime: {cyclomatic_time:.4f}s]")
 
     print("\nHalstead Metrics:")
     for k, v in halstead_metrics.items():
@@ -52,17 +52,25 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     
     print("-" * 40)
 
+# Analyze all files in a directory
+def analyze_directory(directory_path: str, halstead_func, gpu_baseline_func=None):
+    for root, _, files in os.walk(directory_path):
+        for file_name in files:
+            if file_name.endswith((".cpp", ".cxx", ".cc", ".cu", ".cl", ".hpp", ".h")):
+                file_path = os.path.join(root, file_name)
+                analyze_code(file_path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+
 def main():
-    parser = argparse.ArgumentParser(description="Analyze code complexity metrics.")
-    parser.add_argument("file", help="Path to the code file to analyze")
-    parser.add_argument("--lang", choices=["cuda", "opencl", "kokkos", "cpp"], default="cpp",
+    parser = argparse.ArgumentParser(description="Analyze code complexity metrics for a file or directory.")
+    parser.add_argument("path", help="Path to the code file or directory to analyze")
+    parser.add_argument("--lang", choices=["cuda", "opencl", "kokkos", "cpp", "merged"], default="cpp",
                         help="Language extension for Halstead metrics")
     parser.add_argument("--gpu-delta", action="store_true",
                         help="Compute added complexity of GPU constructs vs C++ baseline")
     args = parser.parse_args()
 
-    if not os.path.isfile(args.file):
-        print(f"Error: {args.file} is not a valid file.")
+    if not os.path.exists(args.path):
+        print(f"Error: {args.path} does not exist.")
         return
 
     # Select Halstead function based on language
@@ -72,15 +80,22 @@ def main():
         halstead_func = halstead.halstead_metrics_opencl
     elif args.lang == "kokkos":
         halstead_func = halstead.halstead_metrics_kokkos
+    elif args.lang == "merged":
+        halstead_func = halstead.halstead_metrics_merged
+    # Default to C++ if no specific language is provided
     else:
         halstead_func = halstead.halstead_metrics_cpp
 
     # Determine baseline for GPU delta
-    gpu_baseline_func = None
-    if args.gpu_delta and args.lang != "cpp":
-        gpu_baseline_func = halstead.halstead_metrics_cpp
+    gpu_baseline_func = halstead.halstead_metrics_cpp if (args.gpu_delta and args.lang != "cpp") else None
 
-    analyze_code(args.file, halstead_func, gpu_baseline_func=gpu_baseline_func)
+    # Check if path is file or directory
+    if os.path.isfile(args.path):
+        analyze_code(args.path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+    elif os.path.isdir(args.path):
+        analyze_directory(args.path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+    else:
+        print(f"Error: {args.path} is neither a file nor a directory.")
 
 if __name__ == "__main__":
     main()
