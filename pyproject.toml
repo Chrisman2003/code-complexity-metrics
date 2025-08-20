@@ -27,7 +27,6 @@ dependencies = [
     "ptyprocess==0.7.0",
     "pure_eval==0.2.3",
     "Pygments==2.19.2",
-    "pyopencl==2025.2.6",
     "pytest==8.4.1",
     "pytools==2025.2.2",
     "siphash24==1.7",
