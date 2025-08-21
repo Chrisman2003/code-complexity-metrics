@@ -83,7 +83,7 @@ def compute_cyclomatic(code: str) -> int:
     )
 
     output = process.stdout + "\n" + process.stderr
-    print(output)  # Debug: inspect Clang output
+    #print(output)  # Debug: inspect Clang output
 
     # Parse nodes and successors from Clang CFG
     function_cfgs = []  # Store each function's CFG
