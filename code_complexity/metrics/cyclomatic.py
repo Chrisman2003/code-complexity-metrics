@@ -176,7 +176,6 @@ def compute_cyclomatic(code: str) -> int:
     return total_complexity
     # Summing per iteration is algebraically equivalent to computing the cyclomatic complexity of the entire codebase
     # Along with the isolated mini CFGs for each function
-    return total_complexity
 
 
 def basic_compute_cyclomatic(code: str) -> int:

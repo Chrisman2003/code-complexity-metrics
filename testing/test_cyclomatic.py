@@ -1,8 +1,8 @@
 import os
-from projectFolder.metrics.cyclomatic import basic_compute_cyclomatic
+from code_complexity.metrics.cyclomatic import basic_compute_cyclomatic
 
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
-# Testing Code Complexity = Structures + 1 (Default Path)
+TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
+TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR) # Testing Code Complexity = Structures + 1 (Default Path)
 def load_code(filename):
     with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
         return f.read()

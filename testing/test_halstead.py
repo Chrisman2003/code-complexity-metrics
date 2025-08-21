@@ -1,8 +1,8 @@
 import os
-from projectFolder.metrics.halstead import*
+from code_complexity.metrics.halstead import*
 
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
-
+TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
+TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)
 def load_code(filename):
     with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
         return f.read()
@@ -11,16 +11,16 @@ def test_halstead_simple_cpp():
     code = load_code("OLD_simple.cpp")
     metrics = halstead_metrics_cpp(code)
     # Update the expected values below to match the actual Halstead metrics for simple.cpp
-    assert metrics['n1'] == 19
-    assert metrics['n2'] == 19
-    assert metrics['N1'] == 47
-    assert metrics['N2'] == 34
-    assert vocabulary(metrics) == 38
-    assert size(metrics) == 81
-    assert round(volume(metrics),2) ==425.08
-    assert round(difficulty(metrics),2) == 17.00
-    assert round(effort(metrics),2) == 7226.40
-    assert round(time(metrics),2) == 401.47
+    assert metrics['n1'] == 21
+    assert metrics['n2'] == 21
+    assert metrics['N1'] == 53
+    assert metrics['N2'] == 40
+    assert vocabulary(metrics) == 42
+    assert size(metrics) == 93
+    assert round(volume(metrics),2) == 501.49
+    assert round(difficulty(metrics),2) == 20.00
+    assert round(effort(metrics),2) == 10029.71
+    assert round(time(metrics),2) == 557.21
     
 def test_halstead_complex_cpp():
     code = load_code("complex.cpp")

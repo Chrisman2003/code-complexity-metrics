@@ -1,4 +1,4 @@
-from projectFolder.metrics.halstead import *
+from code_complexity.metrics.halstead import *
 '''How much additional “syntactic complexity” is introduced just by GPU constructs.'''
 
 def enrich_metrics(base_metrics: dict) -> dict:

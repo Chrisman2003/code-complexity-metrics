@@ -37,12 +37,12 @@ dependencies = [
 ]
 
 [project.scripts]
-code-metrics = "projectFolder.__main__:main"
+code-metrics = "code_complexity.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["projectFolder*"]
+include = ["code_complexity*"]
 
 [build-system]
 requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+build-backend = "setuptools.build_mhiseta"
