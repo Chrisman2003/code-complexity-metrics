@@ -2,6 +2,7 @@ import networkx as nx
 import subprocess
 import re
 import tempfile
+import os
 
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
@@ -11,26 +12,42 @@ import tempfile
 # as well as a simpler heuristic method based on control-flow keywords.
 # -----------------------------------------------------------------------------
 
-def get_gcc_include_paths() -> list[str]:
+def get_clang_include_flags() -> list[str]:
     """
-    -> Queries the system's g++ compiler for its standard include paths using the command:
-    g++ -E -x c++ - -v < /dev/null
-     - `-E`          : run only the preprocessor
-     - `-x c++`      : treat input as C++ code
-     - `-`           : read input from stdin
-     - `-v`          : verbose output (prints include paths)
-     - `< /dev/null` : provide empty input so the command exits immediately 
-    -> Parses the verbose output to extract the platform-specific system include directories.
-    -> This ensures that downstream Clang analysis (in compute_cyclomatic) can locate all standard headers on any machine/architecture.
-   """
+    Construct Clang-compatible -isystem include flags by:
+    1. Adding Clang's own builtin headers via `clang++ -print-resource-dir`.
+    2. Extracting GCC's standard library include paths using:
+         g++ -E -x c++ - -v < /dev/null
+    3. Adding /usr/include and /usr/local/include as fallbacks.
+    
+    Returns:
+        List of strings with properly formatted `-isystem <path>` flags.
+    """
+    # Step 1: Clang resource includes
+    # NOTE:
+    #   This is critical — Clang ships its own private "resource headers"
+    #   (in `<clang>/lib/clang/<version>/include/`) that define builtins
+    #   like stddef.h, stdint.h, and also OpenCL-specific headers such as
+    #   opencl-c.h. These are not part of GCC’s libstdc++ paths or the
+    #   system’s /usr/include tree. Without adding this directory, Clang
+    #   will fail to find essential headers when analyzing code that uses
+    #   OpenCL or compiler intrinsics.
+    clang_resource_dir = subprocess.run(
+        ["clang++", "-print-resource-dir"],
+        capture_output=True,
+        text=True,
+        check=True
+    ).stdout.strip()
+    include_flags = ["-isystem", os.path.join(clang_resource_dir, "include")]
+
+    # Step 2: GCC system include dirs
     process = subprocess.run(
         ["g++", "-E", "-x", "c++", "-", "-v"],
         input="",
         text=True,
         capture_output=True
     )
-
-    includes = []
+    
     in_block = False
     for line in process.stderr.splitlines():
         if "#include <...> search starts here:" in line:
@@ -39,40 +56,46 @@ def get_gcc_include_paths() -> list[str]:
         if "End of search list." in line:
             break
         if in_block:
-            includes.append(line.strip())
-    return includes
+            path = line.strip()
+            include_flags.extend(["-isystem", path])
+            
+    # Step 3: Common system includes
+    for path in ("/usr/include", "/usr/local/include"):
+        if os.path.exists(path):
+            include_flags.extend(["-isystem", path])        
+            
+    return include_flags
+
 
 
 def compute_cyclomatic(code: str) -> int:
     """
-    Compute the exact McCabe cyclomatic complexity of C++ code using Clang CFG.
-    
+    Compute the McCabe cyclomatic complexity of C++ code using Clang CFG.
+
     Args:
-        code: A string containing the C++ source code.
-    
+        code: C++ source code as a string.
+
     Returns:
-        int: Cyclomatic complexity of the code.
-    
-    Notes:
-        - Uses Clang's static analyzer to build the Control Flow Graph (CFG).
-        - Converts GCC system include paths to Clang `-isystem` flags for portability.
-        - Parses CFG from Clang output to compute E, N, P values.
+        Total cyclomatic complexity across all functions.
     """
-    # Write code to a temporary file
+    # Write code to temporary file
     with tempfile.NamedTemporaryFile(suffix=".cpp", mode="w", delete=False) as tmp:
         tmp.write(code)
         tmp_path = tmp.name
 
-    # Get platform-dependent GCC include paths
-    include_paths = get_gcc_include_paths()
-    include_flags = [flag for path in include_paths for flag in ("-isystem", path)]
+    # Get include flags from new merged logic
+    include_flags = get_clang_include_flags()
 
-    # Run Clang static analyzer with CFG dump
+    # Build command just like working CLI
     process = subprocess.run(
         [
             "clang++",
             "-std=c++17",
+            "-march=native", # Enable all instruction sets supported by the local machine
             "-fsyntax-only",
+            "-O0",          # Disable optimization for clearer CFG
+            "-g",           # Optional: include debug info
+            "-nostdinc",    # Don't use standard system include paths
             "-Xclang", "-analyze",
             "-Xclang", "-analyzer-checker=debug.DumpCFG", # Dumping Control Flow Graph
             *include_flags,
@@ -83,11 +106,10 @@ def compute_cyclomatic(code: str) -> int:
     )
 
     output = process.stdout + "\n" + process.stderr
-    #print(output)  # Debug: inspect Clang output
+    print(output)  # Debug: inspect Clang output
 
     # Parse nodes and successors from Clang CFG
-    function_cfgs = []  # Store each function's CFG
-    cfg = nx.DiGraph()
+    # function_cfgs = []  # Store each function's CFG
     # (\d+) → captures the node number (like 9)
     # (?: \([A-Z]+\))? → non-capturing group matching optional space + 
     # parentheses with all caps (ENTRY, EXIT, etc.)
@@ -106,10 +128,9 @@ def compute_cyclomatic(code: str) -> int:
     "foo": cfg1,
     "bar": cfg2
     }
-
     '''
-    
     function_cfgs = {}
+    cfg = nx.DiGraph()
     current_function = None
     current_node = None
     '''
@@ -142,7 +163,7 @@ def compute_cyclomatic(code: str) -> int:
             continue
         if current_function is None:
             continue
-        # If it’s None, that means the current line of Clang output is not inside
+        # If it's None, that means the current line of Clang output is not inside
         # any function. So you continue and skip processing that line, 
         # preventing it from being incorrectly added to a function’s CFG.
         ''' The continue keyword in Python is used inside a loop. 
@@ -202,3 +223,4 @@ def basic_compute_cyclomatic(code: str) -> int:
             count += stripped.count(op)
 
     return count + 1  # +1 for the default path
+
