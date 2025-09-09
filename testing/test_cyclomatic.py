@@ -24,7 +24,7 @@ def test_cyclomatic_example_py():
 
     The expected complexity is at least 1.
     """
-    code = load_code("OLD_example.py")
+    code = load_code("non_cpp/OLD_example.py")
     assert basic_compute_cyclomatic(code) >= 1
 
 
@@ -33,7 +33,7 @@ def test_cyclomatic_simple_cpp():
 
     The expected complexity is at least 1.
     """
-    code = load_code("OLD_simple.cpp")
+    code = load_code("simple/OLD_simple.cpp")
     assert basic_compute_cyclomatic(code) >= 1
 
 
@@ -42,5 +42,5 @@ def test_cyclomatic_complex_cpp():
 
     The expected complexity is at least 1.
     """
-    code = load_code("complex.cpp")
+    code = load_code("complex/complex.cpp")
     assert basic_compute_cyclomatic(code) >= 1

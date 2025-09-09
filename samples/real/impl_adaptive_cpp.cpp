@@ -1,4 +1,4 @@
-#include "../samples/common.h"
+#include "common.h"
 
 #include <CL/sycl.hpp>
 

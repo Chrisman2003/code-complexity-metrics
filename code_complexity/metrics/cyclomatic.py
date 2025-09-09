@@ -39,7 +39,7 @@ def get_clang_include_flags() -> list[str]:
 
     # Step 2: Add GCC system include directories.
     # Extract from verbose output of `g++` preprocessing.
-    # This ensures that downstream Clang analysis (in compute_cyclomatic) can locate all 
+    # This ensures that downstream Clang analysis (in compute_cyclomatic) can locate all
     # standard headers on any machine/architecture
     process = subprocess.run(
         ["g++", "-E", "-x", "c++", "-", "-v"],
@@ -60,6 +60,8 @@ def get_clang_include_flags() -> list[str]:
             include_flags.extend(["-isystem", path])
 
     # Step 3: Add fallback system includes if present.
+    # <iostream> lives here on some systems
+    # /usr/lib
     for path in ("/usr/include", "/usr/local/include"):
         if os.path.exists(path):
             include_flags.extend(["-isystem", path])
@@ -67,7 +69,7 @@ def get_clang_include_flags() -> list[str]:
     return include_flags
 
 
-def compute_cyclomatic(code: str) -> int:
+def compute_cyclomatic(code: str, filename: str) -> int:
     """Compute cyclomatic complexity of C++ code using Clang CFG.
 
     Uses Clang's static analyzer to dump the control-flow graph (CFG) of each
@@ -86,98 +88,154 @@ def compute_cyclomatic(code: str) -> int:
     Returns:
         int: Total cyclomatic complexity across all functions.
     """
+    suffix = ".cu" if filename.endswith(".cu") else ".cpp"
 
-    # Write code to a temporary file for Clang analysis.
-    with tempfile.NamedTemporaryFile(suffix=".cpp", mode="w", delete=False) as tmp:
-        tmp.write(code)
-        tmp_path = tmp.name
+    # Ensure the temp file is created where the original file lives so quoted includes ("...") resolve.
+    original_path = os.path.abspath(filename)
+    original_dir = os.path.dirname(original_path) if os.path.exists(original_path) else os.getcwd()
 
-    # Collect all include flags.
-    include_flags = get_clang_include_flags()
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False, encoding="utf-8", dir=original_dir) as tmp:
+            tmp_path = tmp.name
+            if suffix == ".cu":
+                # Wrap the entire code so that any definition of these macros is neutralized
+                wrapped_code = (
+                    "#ifdef __noinline__\n#undef __noinline__\n#endif\n"
+                    "#ifdef __forceinline__\n#undef __forceinline__\n#endif\n"
+                    + code  # Original user code comes after
+                )
+                tmp.write(wrapped_code)
+            else:
+                tmp.write(code)
 
-    # Run Clang static analyzer to dump CFG.
-    process = subprocess.run(
-        [
-            "clang++",
-            "-std=c++17",
-            "-march=native",  # Enable all CPU instruction sets available locally.
-            "-fsyntax-only",
-            "-O0",            # Disable optimizations for a clearer CFG.
-            "-g",             # Include debug info.
-            "-nostdinc",      # Do not use default system includes.
-            "-Xclang", "-analyze",
-            "-Xclang", "-analyzer-checker=debug.DumpCFG",
-            *include_flags,
-            tmp_path,
-        ],
-        capture_output=True,
-        text=True,
-    )
+        include_flags = get_clang_include_flags()
+        # Add the source directory and its parent (samples/project root) to Clang -I so local headers are found.
+        project_sample_dir = os.path.abspath(os.path.join(original_dir, ".."))  # e.g. repo/samples
+        # Deduplicate and extend include flags
+        extra_includes = []
+        for p in (original_dir, project_sample_dir):
+            if os.path.exists(p):
+                extra_includes.extend(["-I", p])
+        include_flags = [*include_flags, *extra_includes]
 
-    output = process.stdout + "\n" + process.stderr
-    print(output)  # Debugging: inspect Clang CFG dump.
+        # Run Clang static analyzer to dump CFG.
+        # Set clang_args depending on file extension (CUDA or C++)
+        clang_args = []
+        if tmp_path.endswith(".cu"):
+            clang_args = [
+                "clang++",
+                "-x", "cuda",                             # parse as CUDA source
+                "--cuda-path=/usr/local/cuda",            # point to the CUDA SDK you installed
+                "--no-cuda-version-check",                # avoid strict version compatibility checks
+                "--cuda-gpu-arch=sm_70",                  # set appropriate GPU arch (see note below)
+                "-std=c++17",
+                "-DFLOAT_BITS=64",
+                "-fopenmp",
+                "-march=native",
+                "-fsyntax-only",                          # syntax-only (we only need CFG)
+                "-O0",
+                "-g",
+                "-Xclang", "-analyze",
+                "-Xclang", "-analyzer-checker=debug.DumpCFG",
+                "-I", "/usr/local/cuda/include",          # make sure CUDA include dir is visible
+                *include_flags,                           # system include flags from your helper
+                tmp_path,
+            ]
+        else:
+            clang_args = [
+                "clang++",       # Invoke Clang C++ compiler.
+                "-std=c++17",    # Use C++17 standard.
+                "-DFLOAT_BITS=64",
+                "-fopenmp",      # Support OpenMP pragmas.
+                "-march=native", # Enable all CPU instruction sets available locally.
+                "-fsyntax-only", # Only check syntax, do not compile.
+                "-O0",           # Disable optimizations for a clearer CFG.
+                "-g",            # Include debug info.
+                "-nostdinc",     # Do not use default system includes.
+                "-Xclang", "-analyze",
+                "-Xclang", "-analyzer-checker=debug.DumpCFG",
+                *include_flags,
+                tmp_path,
+            ]
 
-    # Regex patterns to capture nodes, successors, and function signatures.
-    node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
-    succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
-    func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
-
-    function_cfgs: dict[str, nx.DiGraph] = {}
-    cfg = nx.DiGraph()
-    current_function = None
-    current_node = None
-
-    '''
-    The Core idea: is to chain function building -> node building -> successor building
-    At Any point one has a state, where the program is in a function with an isolated CFG,
-    and the current node is the last node added to that CFG.
-    Only a function invocation resets the current node.
-    Likewise only a node_match to hat node edges are being added.
-    This allows us to build CFGs for each function independently,
-    and then compute cyclomatic complexity for each function separately.
-    '''
-    # Parse the analyzer output line by line.
-    for line in output.splitlines():
-        func_match = func_start_pattern.match(line)
-        node_match = node_pattern.search(line)
-        succ_match = succ_pattern.search(line)
-
-        if func_match:
-            # Start a new function CFG.
-            current_function = func_match.group(2)
-            cfg = nx.DiGraph()
-            function_cfgs[current_function] = cfg
-            current_node = None
-            continue
-
-        if current_function is None:
-            # Skip lines outside of function CFGs.
-            continue
-
-        if node_match:
-            # Found a new CFG node.
-            current_node = int(node_match.group(1))
-            cfg.add_node(current_node)
-
-        if succ_match and current_node is not None:
-            # Add edges from the current node to its successors.
-            successors = [int(s[1:]) for s in succ_match.group(2).split()]
-            for succ in successors:
-                cfg.add_edge(current_node, succ)
-
-    # Compute total cyclomatic complexity.
-    total_complexity = 0
-    for func_name, func_cfg in function_cfgs.items():
-        edges = func_cfg.number_of_edges()
-        nodes = func_cfg.number_of_nodes()
-        cyclomatic_complexity = edges - nodes + 2 * 1  # P = 1 per function.
-        print(
-            f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}"
+        process = subprocess.run(
+            clang_args,
+            capture_output=True,
+            text=True,
         )
-        total_complexity += cyclomatic_complexity
 
-    return total_complexity
+        output = process.stdout + "\n" + process.stderr
+        print(output)  # Debugging: inspect Clang CFG dump.
 
+        # Regex patterns to capture nodes, successors, and function signatures.
+        node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
+        succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
+        func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
+
+        function_cfgs: dict[str, nx.DiGraph] = {}
+        cfg = nx.DiGraph()
+        current_function = None
+        current_node = None
+
+        '''
+        The Core idea: is to chain function building -> node building -> successor building
+        At Any point one has a state, where the program is in a function with an isolated CFG,
+        and the current node is the last node added to that CFG.
+        Only a function invocation resets the current node.
+        Likewise only a node_match to hat node edges are being added.
+        This allows us to build CFGs for each function independently,
+        and then compute cyclomatic complexity for each function separately.
+        '''
+        # Parse the analyzer output line by line.
+        for line in output.splitlines():
+            func_match = func_start_pattern.match(line)
+            node_match = node_pattern.search(line)
+            succ_match = succ_pattern.search(line)
+
+            if func_match:
+                # Start a new function CFG.
+                current_function = func_match.group(2)
+                cfg = nx.DiGraph()
+                function_cfgs[current_function] = cfg
+                current_node = None
+                continue
+
+            if current_function is None:
+                # Skip lines outside of function CFGs.
+                continue
+
+            if node_match:
+                # Found a new CFG node.
+                current_node = int(node_match.group(1))
+                cfg.add_node(current_node)
+
+            if succ_match and current_node is not None:
+                # Add edges from the current node to its successors.
+                successors = [int(s[1:]) for s in succ_match.group(2).split()]
+                for succ in successors:
+                    cfg.add_edge(current_node, succ)
+
+        # Compute total cyclomatic complexity.
+        total_complexity = 0
+        for func_name, func_cfg in function_cfgs.items():
+            edges = func_cfg.number_of_edges()
+            nodes = func_cfg.number_of_nodes()
+            cyclomatic_complexity = edges - nodes + 2 * 1  # P = 1 per function.
+            print(
+                f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}"
+            )
+            total_complexity += cyclomatic_complexity
+
+        return total_complexity
+
+    finally:
+        # Ensure temporary file is removed even on error.
+        if tmp_path:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
 
 def basic_compute_cyclomatic(code: str) -> int:
     """Compute heuristic cyclomatic complexity of C++ code.
@@ -219,10 +277,10 @@ def basic_compute_cyclomatic(code: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
     Counts occurrences of control flow keywords and logical operators.
-    
+
     Args:
         code: A string containing the C++ source code.
-    
+
     Returns:
         int: Heuristic cyclomatic complexity value.
     """
@@ -239,4 +297,3 @@ def basic_compute_cyclomatic(code: str) -> int:
             count += stripped.count(op)
 
     return count + 1  # +1 for the default path
-

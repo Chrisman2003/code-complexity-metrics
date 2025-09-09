@@ -21,7 +21,7 @@ def load_code(filename):
 
 def test_halstead_simple_cpp():
     """Tests Halstead metrics on a simple C++ file."""
-    code = load_code("OLD_simple.cpp")
+    code = load_code("simple/OLD_simple.cpp")
     metrics = halstead_metrics_cpp(code)
     
     # Expected Halstead metrics for simple.cpp
@@ -39,7 +39,7 @@ def test_halstead_simple_cpp():
 
 def test_halstead_complex_cpp():
     """Tests Halstead metrics on a more complex C++ file."""
-    code = load_code("complex.cpp")
+    code = load_code("complex/complex.cpp")
     metrics = halstead_metrics_cpp(code)
     
     # Expected Halstead metrics for complex.cpp
@@ -57,7 +57,7 @@ def test_halstead_complex_cpp():
 
 def test_halstead_complex_cuda():
     """Tests Halstead metrics on a complex CUDA file."""
-    code = load_code("complex_cuda.cu")
+    code = load_code("complex/complex_cuda.cu")
     metrics = halstead_metrics_cuda(code)
     
     # Expected Halstead metrics for complex_cuda.cu
@@ -75,7 +75,7 @@ def test_halstead_complex_cuda():
 
 def test_halstead_complex_kokkos():
     """Tests Halstead metrics on a complex Kokkos C++ file."""
-    code = load_code("complex_kokkos.cpp")
+    code = load_code("complex/complex_kokkos.cpp")
     metrics = halstead_metrics_kokkos(code)
     
     # Expected Halstead metrics for complex_kokkos.cpp
@@ -93,7 +93,7 @@ def test_halstead_complex_kokkos():
 
 def test_halstead_complex_opencl():
     """Tests Halstead metrics on a complex OpenCL C++ file."""
-    code = load_code("complex_opencl.cpp")
+    code = load_code("complex/complex_opencl.cpp")
     metrics = halstead_metrics_opencl(code)
     
     # Expected Halstead metrics for complex_opencl.cpp

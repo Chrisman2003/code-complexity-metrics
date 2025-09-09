@@ -58,7 +58,7 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     halstead_metrics, halstead_time = timed(halstead_func, code)
-    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code)
+    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code, file_path)
 
     # Log results
     logger.info("Analyzing file: %s", file_path)
