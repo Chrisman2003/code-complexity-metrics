@@ -131,6 +131,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 "--cuda-gpu-arch=sm_70",                  # set appropriate GPU arch (see note below)
                 "-std=c++17",
                 "-DFLOAT_BITS=64",
+                "-D__forceinline__=__attribute__((always_inline))", 
                 "-fopenmp",
                 "-march=native",
                 "-fsyntax-only",                          # syntax-only (we only need CFG)

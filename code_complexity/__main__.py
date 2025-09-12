@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 import logging
-from code_complexity.metrics import sloc, halstead, cyclomatic
+from code_complexity.metrics import sloc, halstead, cyclomatic, cognitive  # ✅ Import cognitive module
 
 # -------------------------------
 # Logging setup
@@ -45,8 +45,8 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
         gpu_baseline_func (callable, optional): Function to compute baseline GPU metrics. Defaults to None.
 
     Logs:
-        INFO level metrics for SLOC, Cyclomatic complexity, Halstead metrics, and GPU deltas if applicable.
-        ERROR if the file cannot be read.
+        INFO level metrics for SLOC, Cyclomatic complexity, Halstead metrics,
+        Cognitive Complexity, and GPU deltas if applicable.
     """
     try:
         with open(file_path, 'r', encoding="utf-8", errors="ignore") as file:
@@ -59,11 +59,13 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     halstead_metrics, halstead_time = timed(halstead_func, code)
     cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code, file_path)
+    cognitive_complexity, cognitive_time = timed(cognitive.compute_cognitive_complexity, code)  # ✅ NEW
 
     # Log results
     logger.info("Analyzing file: %s", file_path)
     logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
     logger.info("Cyclomatic Complexity: %d  [runtime: %.4fs]", cyclomatic_complexity, cyclomatic_time)
+    logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time)  # ✅ NEW
 
     logger.info("Halstead Metrics:")
     for k, v in halstead_metrics.items():
