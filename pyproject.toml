@@ -33,8 +33,8 @@ dependencies = [
     "stack-data==0.6.3",
     "traitlets==5.14.3",
     "typing_extensions==4.14.1",
-    "wcwidth==0.2.13"
-    
+    "wcwidth==0.2.13",
+    "clang>=16.0.0",  # Add Python clang bindings
 ]
 
 [project.scripts]
