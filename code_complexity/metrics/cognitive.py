@@ -33,11 +33,18 @@ FUNCTION_KINDS = {
     CursorKind.LAMBDA_EXPR,  # if you want to score lambdas
 }
 
+
 def _count_logical_ops_in_expr(node):
-    """Cognitive Complexity counts extra complexity for every logical operator (&&, ||) in a condition —
-       because they make the reader mentally evaluate multiple paths.
-       Count '&&' and '||' occurrences inside an expression subtree.
-       libclang exposes operators as tokens; hence collect tokens for the subtree and count matches.
+    """Count logical operators '&&' and '||' in an AST expression subtree.
+
+    This is used to add cognitive complexity for expressions with multiple
+    logical paths.
+
+    Args:
+        node (clang.cindex.Cursor): AST node representing an expression.
+
+    Returns:
+        int: Number of logical operators in the subtree.
     """
     count = 0
     try:
@@ -49,76 +56,75 @@ def _count_logical_ops_in_expr(node):
             count += 1
     return count
 
-def compute_cognitive_for_function(func_cursor: str) -> int:
-    """Compute Cognitive Complexity score for C++ source code, using an AST parser
-    
-    (e.g., clang.cindex) to correctly handle macros, lambdas, and templates.
+
+def compute_cognitive_for_function(func_cursor):
+    """Compute Cognitive Complexity for a single function AST.
+
+    Traverses the function body and calculates cognitive complexity based
+    on nesting, flow-breaking statements, and logical operators.
 
     Args:
-        code (str): The entire C++ source file contents as a string.
+        func_cursor (clang.cindex.Cursor): Cursor pointing to the function or method declaration.
 
     Returns:
-        int: Cognitive Complexity score for the given code.
+        int: Cognitive complexity score for the function.
     """
-    # Placeholder implementation
     score = 0
     nesting = 0
-    
-    
+
     def visit(node):
+        """Recursive AST traversal helper to compute complexity.
+
+        Args:
+            node (clang.cindex.Cursor): AST node being visited.
+        """
         nonlocal score, nesting
 
-        # Defensive: skip nodes from other files (if you parse a TU with multiple files)
-        # if node.location.file and node.location.file.name != func_cursor.location.file.name:
-        #     return
-
-        # If the node is an "immediate" flow-breaker that *also* increases nesting:
+        # Immediate flow-breakers that increase nesting
         if node.kind in FLOW_KINDS:
-            # Add base increment + nesting penalty
             score += 1 + nesting
-
-            # Special-case: conditional operator (?:) may have children directly representing branches.
-            # Now increase nesting while visiting children so nested constructs get extra weight.
             nesting += 1
             for c in node.get_children():
                 visit(c)
             nesting -= 1
             return
 
-        # Jumps (break/continue/goto) count as linear-flow breaks but do not open a nested context
+        # Jumps (break/continue/goto) break linear flow but do not open nesting
         if node.kind in JUMP_KINDS:
             score += 1 + nesting
-            # no nesting push/pop; continue traversal in case of annotations
             for c in node.get_children():
                 visit(c)
             return
 
-        # Count logical operators inside expressions (e.g., in if(condition) or binary ops)
-        # Approach: detect BinaryOperator or condition expressions and count '&&'/'||' tokens
+        # Count logical operators inside expressions
         if node.kind == CursorKind.BINARY_OPERATOR or node.kind == CursorKind.CONDITIONAL_OPERATOR:
-            # count logical operators in token stream for this subtree
             ops = _count_logical_ops_in_expr(node)
             if ops:
                 score += ops * (1 + nesting)
 
-        # Function calls are walked (for call-graph later)
         # Default traversal (no nesting change)
         for c in node.get_children():
             visit(c)
 
-    # find function body child: usually a CompoundStmt under the function cursor
+    # Traverse function body (usually a CompoundStmt)
     for child in func_cursor.get_children():
-        # We'll traverse the body (CompoundStmt) which contains statements
         if child.kind.is_statement() or child.kind == CursorKind.COMPOUND_STMT:
             visit(child)
-            break  # usually one body
+            break
 
     return score
-    
-def compute_cognitive_complexity_file(filename: str) -> int:
-    """
-    Parse a C++ file and compute per-function cognitive complexity.
-    Returns: dict: {function_displayname: score}
+
+
+def compute_cognitive_complexity_file(filename):
+    """Compute Cognitive Complexity for all functions in a C++ file.
+
+    Parses the file using clang AST and calculates complexity per function.
+
+    Args:
+        filename (str): Path to the C++ source file.
+
+    Returns:
+        int: Total cognitive complexity across all functions in the file.
     """
     index = cindex.Index.create()
     args = ["-std=c++17"]
@@ -126,11 +132,10 @@ def compute_cognitive_complexity_file(filename: str) -> int:
 
     results = {}
     total_score = 0
-    # walk top-level cursors to find functions/methods
+
+    # Walk top-level cursors to find function/method definitions
     for cursor in tu.cursor.walk_preorder():
         if cursor.kind in FUNCTION_KINDS:
-            # skip declarations without body (extern or prototypes)
-            # check for compound statement child
             has_body = any(c.kind == CursorKind.COMPOUND_STMT for c in cursor.get_children())
             if not has_body:
                 continue
@@ -140,7 +145,7 @@ def compute_cognitive_complexity_file(filename: str) -> int:
             total_score += score
 
     return total_score
-    
+
 
 def basic_compute_cognitive(code: str) -> int:
     """Compute a basic Cognitive Complexity score using regex-based analysis.
