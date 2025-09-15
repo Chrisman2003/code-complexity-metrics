@@ -2,29 +2,6 @@ import re
 from clang import cindex
 from clang.cindex import CursorKind
 import collections
-import subprocess
-import os
-from clang import cindex
-
-def find_libclang():
-    try:
-        libdir = subprocess.check_output(["llvm-config", "--libdir"], text=True).strip()
-        # Possible names of the libclang shared library
-        candidates = ["libclang.so", "libclang.dylib", "libclang.dll"]
-        for lib in candidates:
-            path = os.path.join(libdir, lib)
-            if os.path.exists(path):
-                return path
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        pass
-    return None
-
-libclang_path = find_libclang()
-if libclang_path:
-    cindex.Config.set_library_file(libclang_path)
-    print("Using libclang:", libclang_path)
-else:
-    print("Could not find libclang")
 
 # Flow-breaking AST kinds (common ones)
 FLOW_KINDS = {
@@ -166,24 +143,15 @@ def compute_cognitive_complexity_file(filename: str) -> int:
     
 
 def basic_compute_cognitive(code: str) -> int:
-    """Compute a first-version Cognitive Complexity score for C++ source code.
-
-    This function implements the three main rules of Cognitive Complexity
-    described by G. Ann Campbell (SonarSource):
-
-    1. Ignore structures that make code more readable (e.g., method declarations).
-    2. Increment for each break in the linear flow of the code.
-    3. Increment for nesting levels of flow-breaking structures.
-
-    This implementation uses a simple regex-based approach with brace counting
-    to track nesting. For production-grade analysis, use an AST parser (e.g.,
-    clang.cindex) to correctly handle macros, lambdas, and templates.
+    """Compute a basic Cognitive Complexity score using regex-based analysis.
+    This simpler function approximates cognitive complexity without using an AST.
+    It counts flow-breaking constructs and nesting based on braces.
 
     Args:
-        code (str): The entire C++ source file contents as a string.
+        code (str): C++ source code as a string.
 
     Returns:
-        int: Cognitive Complexity score for the given code.
+        int: Cognitive Complexity score for the source code.
     """
     # Flow-breaking constructs (as defined in Cognitive Complexity rules)
     control_keywords = [
