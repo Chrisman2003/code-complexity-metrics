@@ -44,19 +44,19 @@ The tool analyzes a source code file or directory in four main steps:
 ---
 
 ## Future Plans
-Improved cyclomatic and cognitive complexity analysis for GPU constructs
-More detailed Halstead metrics distinguishing different operand types
-Comprehensive pytest suite for accuracy verification
+- Improved cyclomatic and cognitive complexity analysis for GPU constructs
+- More detailed Halstead metrics distinguishing different operand types
+- Comprehensive pytest suite for accuracy verification
 
 ## Installation
-Make sure Python 3.8+ is installed.
-Future Cyclomatic and Cognitive Complexity will require the following 
-SUDO apt dependencies: 
-sudo apt install kokkos libkokkos-dev
-sudo apt install libomp-dev
-sudo apt install nvidia-cuda-toolkit
-sudo apt install clang-15 llvm-15
-SDK kit for cuda
+- Make sure Python 3.8+ is installed.
+- Future Cyclomatic and Cognitive Complexity will require the following 
+- SUDO apt dependencies: 
+- sudo apt install kokkos libkokkos-dev
+- sudo apt install libomp-dev
+- sudo apt install nvidia-cuda-toolkit
+- sudo apt install clang-15 llvm-15
+- SDK kit for cuda
 
 
 
