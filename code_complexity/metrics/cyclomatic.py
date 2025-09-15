@@ -84,6 +84,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
 
     Args:
         code (str): A string containing C++ source code.
+        filename (str): The filename (used to determine if CUDA).
 
     Returns:
         int: Total cyclomatic complexity across all functions.
@@ -238,53 +239,31 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             except OSError:
                 pass
 
-def basic_compute_cyclomatic(code: str) -> int:
-    """Compute heuristic cyclomatic complexity of C++ code.
-
-    This function estimates cyclomatic complexity without building a CFG.
-    It counts occurrences of control-flow keywords (e.g., if, for, while) and
-    logical operators (e.g., &&, ||) as branching points.
-
-    Args:
-        code (str): A string containing C++ source code.
-
-    Returns:
-        int: Heuristic cyclomatic complexity value.
-    """
-
-    control_keywords = [
-        "if", "for", "while", "case", "catch", "switch", "else", "do", "goto",
-    ]
-    logical_operators = ["&&", "||", "?", "and", "or"]
-
-    count = 0
-    for line in code.splitlines():
-        stripped = line.strip()
-
-        # Count branching keywords at the start of a line.
-        for keyword in control_keywords:
-            if stripped.startswith(keyword):
-                count += 1
-
-        # Count logical operators anywhere in the line.
-        for op in logical_operators:
-            count += stripped.count(op)
-
-    # Add one for the default execution path.
-    return count + 1
-
-
-def basic_compute_cyclomatic(code: str) -> int:
+def basic_compute_cyclomatic(code: str | None = None, filename: str | None = None) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
-    Counts occurrences of control flow keywords and logical operators.
+
+    Accepts either the source text via `code` or a path via `filename`.
+    If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
 
     Args:
-        code: A string containing the C++ source code.
+        code: Source code as a string (optional if filename provided).
+        filename: Path to source file to load (optional).
 
     Returns:
         int: Heuristic cyclomatic complexity value.
     """
+    if filename:
+        try:
+            with open(filename, "r", encoding="utf-8", errors="ignore") as fh:
+                code = fh.read()
+        except Exception:
+            # If file cannot be read, fall back to empty source so result is 1
+            code = ""
+
+    if code is None:
+        code = ""
+
     control_keywords = ['if', 'for', 'while', 'case', 'catch', 'switch', 'else', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0

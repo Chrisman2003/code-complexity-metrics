@@ -58,14 +58,14 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     halstead_metrics, halstead_time = timed(halstead_func, code)
-    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code, file_path)
-    cognitive_complexity, cognitive_time = timed(cognitive.compute_cognitive_complexity, code)  # ✅ NEW
+    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.basic_compute_cyclomatic, code, file_path)
+    cognitive_complexity, cognitive_time = timed(cognitive.basic_compute_cognitive, code) 
 
     # Log results
     logger.info("Analyzing file: %s", file_path)
     logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
     logger.info("Cyclomatic Complexity: %d  [runtime: %.4fs]", cyclomatic_complexity, cyclomatic_time)
-    logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time)  # ✅ NEW
+    logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time) 
 
     logger.info("Halstead Metrics:")
     for k, v in halstead_metrics.items():
