@@ -20,12 +20,12 @@ def compute_nesting_depth(code: str) -> int:
         stripped = line.strip()
         if not stripped:
             continue
-
         i = 0
         while i < len(stripped):
             char = stripped[i]
-
             # Handle string literals
+            # Checks if we’re entering/exiting a string ("..." or '...').
+            # { and } inside strings should not count toward nesting
             if not in_block_comment and char in ('"', "'"):
                 if not in_string:
                     in_string = char
@@ -45,7 +45,7 @@ def compute_nesting_depth(code: str) -> int:
                     else:
                         break  # rest of line is still in comment
                 elif stripped.startswith('/*', i):
-                    in_block_comment = True
+                    in_block_comment = True # entering block comment
                     i += 2
                     continue
 
@@ -53,9 +53,13 @@ def compute_nesting_depth(code: str) -> int:
                 if stripped.startswith('//', i):
                     break
 
-                # Count nesting depth
+                # Count nesting depth based on { and } with respect to control flow structures
                 if char == '{':
                     current_depth += 1
                     max_depth = max(max_depth, current_depth)
                 elif char == '}':
                     current_depth = max(0, current_depth - 1)
+
+            i += 1
+
+    return max_depth

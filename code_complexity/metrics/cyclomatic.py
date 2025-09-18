@@ -34,7 +34,7 @@ def get_clang_include_flags() -> list[str]:
         capture_output=True,
         text=True,
         check=True,
-    ).stdout.strip()
+    ).stdout.strip() # clang_resource_dir holds actual string result of clang++ -print-resource-dir.
     include_flags = ["-isystem", os.path.join(clang_resource_dir, "include")]
 
     # Step 2: Add GCC system include directories.
@@ -42,7 +42,12 @@ def get_clang_include_flags() -> list[str]:
     # This ensures that downstream Clang analysis (in compute_cyclomatic) can locate all
     # standard headers on any machine/architecture
     process = subprocess.run(
-        ["g++", "-E", "-x", "c++", "-", "-v"],
+        ["g++", # Invoke GCC C++ compiler
+         "-E",  # preprocess only
+         "-x",  # specify language
+         "c++", # treat input as C++
+         "-",   # read from stdin
+         "-v"], # verbose
         input="",
         text=True,
         capture_output=True,
@@ -74,7 +79,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
 
     Uses Clang's static analyzer to dump the control-flow graph (CFG) of each
     function. Cyclomatic complexity is then computed as:
-
+    
         V(G) = E - N + 2P
 
     where:
@@ -130,11 +135,14 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 "--cuda-path=/usr/local/cuda",            # point to the CUDA SDK you installed
                 "--no-cuda-version-check",                # avoid strict version compatibility checks
                 "--cuda-gpu-arch=sm_70",                  # set appropriate GPU arch (see note below)
-                "-std=c++17",
-                "-DFLOAT_BITS=64",
-                "-D__forceinline__=__attribute__((always_inline))", 
+                "-std=c++17",                             # Use C++17 standard for host code 
+                "-DFLOAT_BITS=64",                        # ensure consistent floating-point behavior
+                # "-D__forceinline__=inline", 
+                # "-D__noinline__=__attribute__((noinline))",
                 "-fopenmp",
-                "-march=native",
+                "-march=native",                          # Enable all CPU instruction sets available locally
+                #"-fno-inline-functions",
+                #"-fno-inline-functions-called-once",
                 "-fsyntax-only",                          # syntax-only (we only need CFG)
                 "-O0",
                 "-g",
@@ -160,7 +168,6 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 *include_flags,
                 tmp_path,
             ]
-
         process = subprocess.run(
             clang_args,
             capture_output=True,
@@ -217,7 +224,6 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 successors = [int(s[1:]) for s in succ_match.group(2).split()]
                 for succ in successors:
                     cfg.add_edge(current_node, succ)
-
         # Compute total cyclomatic complexity.
         total_complexity = 0
         for func_name, func_cfg in function_cfgs.items():
@@ -228,7 +234,6 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}"
             )
             total_complexity += cyclomatic_complexity
-
         return total_complexity
 
     finally:

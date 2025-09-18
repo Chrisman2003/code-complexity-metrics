@@ -1,8 +1,12 @@
 #include <cstdio>
 #include <cmath>
 
+#define __noinline__ __attribute__((noinline))
+#define __forceinline__ __attribute__((always_inline))
+'''
 #define __noinline__ custom_noinline
 #define __forceinline__ custom_forceinline
+'''
 #define LOG(x) printf("LOG: %d\n", x)
 
 __global__ void kernel_inline(int *arr, int n) {

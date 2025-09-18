@@ -5,7 +5,6 @@
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 
-
 #if FLOAT_BITS == 32
 using VectorType = float3;
 using VectorType4 = float4;
