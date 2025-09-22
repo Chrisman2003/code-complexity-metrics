@@ -70,27 +70,15 @@ def get_clang_include_flags() -> list[str]:
     return include_flags
 
 def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
-    """Build control-flow graphs (CFGs) for each function from Clang's CFG dump.
-
-    Parses the output of `clang++ -Xclang -analyze -Xclang -analyzer-checker=debug.DumpCFG`
-    to construct a mapping from function names to their corresponding
-    `networkx.DiGraph` representations of the control-flow graph.
-
-    Args:
-        output (str): The raw textual output from Clang's CFG dump.
-
-    Returns:
-        dict[str, nx.DiGraph]: A dictionary where keys are function names and values
-        are directed graphs (`nx.DiGraph`) representing the function's control-flow.
-    """
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
     func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
-    
+
     function_cfgs = {}
     current_function = None
     current_node = None
     cfg = nx.DiGraph()
+
     for line in output.splitlines():
         func_match = func_start_pattern.match(line)
         node_match = node_pattern.search(line)
@@ -118,7 +106,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
 
 def compute_cyclomatic(code: str, filename: str) -> int:
     """Compute cyclomatic complexity of C++ code using Clang CFG.
-    
+
     Uses Clang's static analyzer to dump the control-flow graph (CFG) of each
     function. Cyclomatic complexity is then computed as:
     
@@ -135,8 +123,9 @@ def compute_cyclomatic(code: str, filename: str) -> int:
 
     Returns:
         int: Total cyclomatic complexity across all functions.
-    """    
+    """
     suffix = ".cu" if filename.endswith(".cu") else ".cpp"
+    
     # Ensure the temp file is created where the original file lives so quoted includes ("...") resolve.
     original_path = os.path.abspath(filename)
     original_dir = os.path.dirname(original_path) if os.path.exists(original_path) else os.getcwd()
@@ -145,7 +134,16 @@ def compute_cyclomatic(code: str, filename: str) -> int:
     try:
         with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False, encoding="utf-8", dir=original_dir) as tmp:
             tmp_path = tmp.name
-            tmp.write(code)
+            if suffix == ".cu":
+                # Wrap the entire code so that any definition of these macros is neutralized
+                wrapped_code = (
+                    "#ifdef __noinline__\n#undef __noinline__\n#endif\n"
+                    "#ifdef __forceinline__\n#undef __forceinline__\n#endif\n" + 
+                    code  # Original user code comes after
+                )
+                tmp.write(wrapped_code)
+            else:
+                tmp.write(code)
         include_flags = get_clang_include_flags()
         # Add the source directory and its parent (samples/project root) to Clang -I so local headers are found.
         project_sample_dir = os.path.abspath(os.path.join(original_dir, ".."))  # e.g. repo/samples
@@ -155,22 +153,51 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             if os.path.exists(p):
                 extra_includes.extend(["-I", p])
         include_flags = [*include_flags, *extra_includes]
+
         # Run Clang static analyzer to dump CFG.
         # Set clang_args depending on file extension (CUDA or C++)
-        clang_args = [
-            "clang++",       # Invoke Clang C++ compiler.
-            "-std=c++17",    # Use C++17 standard.
-            "-fopenmp",      # Support OpenMP pragmas.
-            "-march=native", # Enable all CPU instruction sets available locally.
-            "-fsyntax-only", # Only check syntax, do not compile.
-            "-O0",           # Disable optimizations for a clearer CFG.
-            "-g",            # Include debug info.
-            "-nostdinc",     # Do not use default system includes.
-            "-Xclang", "-analyze",
-            "-Xclang", "-analyzer-checker=debug.DumpCFG",
-            *include_flags,
-            tmp_path,
-        ]
+        clang_args = []
+        if tmp_path.endswith(".cu"):
+            clang_args = [
+                "clang++",
+                "-x", "cuda",                             # parse as CUDA source
+                "--cuda-path=/usr/local/cuda",            # point to the CUDA SDK you installed
+                "--no-cuda-version-check",                # avoid strict version compatibility checks
+                "--cuda-gpu-arch=sm_70",                  # set appropriate GPU arch (see note below)
+                "-std=c++17",                             # Use C++17 standard for host code 
+                "-DFLOAT_BITS=64",                        # ensure consistent floating-point behavior
+                #"-D__forceinline__=inline", 
+                #"-D__noinline__=__attribute__((noinline))",
+                #"-D__forceinline__=__attribute__((always_inline))"
+                "-fopenmp",
+                "-march=native",                          # Enable all CPU instruction sets available locally
+                #"-fno-inline-functions",
+                #"-fno-inline-functions-called-once",
+                "-fsyntax-only",                          # syntax-only (we only need CFG)
+                "-O0",
+                "-g",
+                "-Xclang", "-analyze",
+                "-Xclang", "-analyzer-checker=debug.DumpCFG",
+                "-I", "/usr/local/cuda/include",          # make sure CUDA include dir is visible
+                *include_flags,                           # system include flags from your helper
+                tmp_path,
+            ]
+        else:
+            clang_args = [
+                "clang++",       # Invoke Clang C++ compiler.
+                "-std=c++17",    # Use C++17 standard.
+                "-DFLOAT_BITS=64",
+                "-fopenmp",      # Support OpenMP pragmas.
+                "-march=native", # Enable all CPU instruction sets available locally.
+                "-fsyntax-only", # Only check syntax, do not compile.
+                "-O0",           # Disable optimizations for a clearer CFG.
+                "-g",            # Include debug info.
+                "-nostdinc",     # Do not use default system includes.
+                "-Xclang", "-analyze",
+                "-Xclang", "-analyzer-checker=debug.DumpCFG",
+                *include_flags,
+                tmp_path,
+            ]
         process = subprocess.run(
             clang_args,
             capture_output=True,
@@ -178,7 +205,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         )
 
         output = process.stdout + "\n" + process.stderr
-        # print(output)  # Debugging: inspect Clang CFG dump.
+        #print(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -208,10 +235,10 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             except OSError:
                 pass
 
-def basic_compute_cyclomatic(code: str, filename: str) -> int:
+def basic_compute_cyclomatic(code: str | None = None, filename: str | None = None) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
-    
+
     Accepts either the source text via `code` or a path via `filename`.
     If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
 
@@ -232,8 +259,8 @@ def basic_compute_cyclomatic(code: str, filename: str) -> int:
 
     if code is None:
         code = ""
-    # Switch itself doesn't add to cyclomatic complexity, only case labels do.
-    control_keywords = ['if', 'for', 'while', 'case', 'catch', 'else', 'do', 'goto']
+
+    control_keywords = ['if', 'for', 'while', 'case', 'catch', 'switch', 'else', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
 

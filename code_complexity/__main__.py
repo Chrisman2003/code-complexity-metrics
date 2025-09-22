@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 import logging
-from code_complexity.metrics import sloc, halstead, cyclomatic, cognitive, nesting_depth
+from code_complexity.metrics import cyclomatic_parallel, sloc, halstead, cyclomatic, cognitive, nesting_depth
 
 # -------------------------------
 # Logging setup
@@ -36,7 +36,7 @@ def timed(func, *args, **kwargs):
 # -------------------------------
 # Analyze a single code file
 # -------------------------------
-def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
+def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
     """Analyze complexity metrics of a single source code file.
 
     Args:
@@ -58,8 +58,7 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
-    #cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.basic_compute_cyclomatic, code, file_path)
-    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic.compute_cyclomatic, code, file_path)
+    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
     cognitive_complexity, cognitive_time = timed(cognitive.basic_compute_cognitive, code) 
     halstead_metrics, halstead_time = timed(halstead_func, code)
 
@@ -99,7 +98,7 @@ def analyze_code(file_path: str, halstead_func, gpu_baseline_func=None):
 # -------------------------------
 # Analyze all files in a directory
 # -------------------------------
-def analyze_directory(directory_path: str, halstead_func, gpu_baseline_func=None):
+def analyze_directory(directory_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
     """Recursively analyze all source code files in a directory.
 
     Args:
@@ -111,7 +110,7 @@ def analyze_directory(directory_path: str, halstead_func, gpu_baseline_func=None
         for file_name in files:
             if file_name.endswith((".cpp", ".cxx", ".cc", ".cu", ".cl", ".hpp", ".h")):
                 file_path = os.path.join(root, file_name)
-                analyze_code(file_path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+                analyze_code(file_path, halstead_func, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
 
 # -------------------------------
 # Main CLI
@@ -132,8 +131,9 @@ def main():
                         help="Compute added complexity of GPU constructs vs C++ baseline")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Enable debug logging")
+    parser.add_argument("--cyclomatic", choices=["advanced"], default="basic",
+                        help="Cyclomatic complexity calculation method")
     args = parser.parse_args()
-
     # Enable debug logging if verbose
     if args.verbose:
         logger.setLevel(logging.DEBUG)
@@ -151,15 +151,21 @@ def main():
         "merged": halstead.halstead_metrics_merged,
         "cpp": halstead.halstead_metrics_cpp
     }[args.lang]
+    # Select Cyclomatic function based on method
+    cyclomatic_func = {
+        "advanced": cyclomatic.compute_cyclomatic,
+        "basic": cyclomatic.basic_compute_cyclomatic
+    }[args.cyclomatic]
+        
 
     # Determine baseline for GPU delta
     gpu_baseline_func = halstead.halstead_metrics_cpp if (args.gpu_delta and args.lang != "cpp") else None
 
     # Analyze file or directory
     if os.path.isfile(args.path):
-        analyze_code(args.path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+        analyze_code(args.path, halstead_func, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
     elif os.path.isdir(args.path):
-        analyze_directory(args.path, halstead_func, gpu_baseline_func=gpu_baseline_func)
+        analyze_directory(args.path, halstead_func, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
     else:
         logger.error("Path is neither a file nor a directory: %s", args.path)
 

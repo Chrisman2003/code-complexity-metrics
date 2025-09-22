@@ -1,7 +1,9 @@
+#define __noinline__ __attribute__((noinline))
+#define __forceinline__ __attribute__((always_inline))
+#include <cuda_fp16.h>
 #include "common.h"
 #include <cuda_runtime.h>
 #include <vector_types.h>
-
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 
@@ -29,6 +31,8 @@ inline __device__ VectorType4 make4(VectorType xyz, FloatType w) {
 #else
 #error "Invliad float bits size"
 #endif
+#define __noinline__ __attribute__((noinline))
+#define __forceinline__ __attribute__((always_inline))
 
 void checkCudaError(cudaError_t error, const char *msg) {
     if (error != cudaSuccess) {
