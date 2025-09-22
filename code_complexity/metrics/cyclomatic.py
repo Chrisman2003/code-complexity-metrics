@@ -3,6 +3,8 @@ import subprocess
 import re
 import tempfile
 import os
+import clang.cindex
+import sys
 
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
@@ -178,7 +180,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         )
 
         output = process.stdout + "\n" + process.stderr
-        # print(output)  # Debugging: inspect Clang CFG dump.
+        #print(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -208,6 +210,33 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             except OSError:
                 pass
 
+def remove_cpp_comments(code: str) -> str:
+    # Remove all block comments first
+    code_no_block = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
+    # Remove single line comments
+    code_no_comments = re.sub(r'//.*', '', code_no_block)
+    return code_no_comments
+
+def remove_comments_with_clang(code: str, filename: str = "tmp.cpp") -> str:
+    """Remove comments using Clang's tokenization."""
+    # Configure libclang first
+    if sys.platform.startswith("linux"):
+        libclang_path = "/usr/lib/llvm-18/lib/libclang.so"
+    elif sys.platform.startswith("darwin"):
+        libclang_path = "/usr/local/opt/llvm/lib/libclang.dylib"
+    elif sys.platform.startswith("win32"):
+        libclang_path = r"C:\Program Files\LLVM\bin\libclang.dll"
+    else:
+        raise RuntimeError(f"Unsupported platform: {sys.platform}")
+    clang.cindex.Config.set_library_file(libclang_path)
+    # Then the rest of your function
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(code)
+    index = clang.cindex.Index.create()
+    tu = index.parse(filename, args=["-std=c++17"])
+    tokens = tu.get_tokens(extent=tu.cursor.extent)
+    return "".join(t.spelling for t in tokens if t.kind != clang.cindex.TokenKind.COMMENT)
+
 def basic_compute_cyclomatic(code: str, filename: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
@@ -229,20 +258,39 @@ def basic_compute_cyclomatic(code: str, filename: str) -> int:
         except Exception:
             # If file cannot be read, fall back to empty source so result is 1
             code = ""
-
     if code is None:
         code = ""
+    code = remove_cpp_comments(code)
+    #code = remove_comments_with_clang(code, filename="tmp.cpp") # Alternative using clang
+    
+    # Keywords and operators that increase cyclomatic complexity
+    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'else', 'do', 'goto']
     # Switch itself doesn't add to cyclomatic complexity, only case labels do.
-    control_keywords = ['if', 'for', 'while', 'case', 'catch', 'else', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
-
     for line in code.splitlines():
-        stripped = line.strip()
+        stripped = line.strip() # Leading and Trailing whitespaces removed
         for keyword in control_keywords:
-            if stripped.startswith(keyword):
+            if re.search(rf'\b{keyword}\b', stripped): # Only match with word boundaries
+                # Edge Cases: 
+                # -> label: 
+                # -> if (x > 0) 
+                # -> } if (x > 0)
                 count += 1
         for op in logical_operators:
             count += stripped.count(op)
-
     return count + 1  # +1 for the default path
+
+'''
+Edge Cases for Commenting:
+1) 
+std::string s = "This is not a // comment";
+char c = '/';
+std::string t = "/* not a comment */";
+2)
+/* Outer comment
+   /* Inner comment */
+   End of outer */
+3) 
+#define STR(x) "/* " #x " */"
+'''

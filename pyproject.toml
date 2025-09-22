@@ -35,7 +35,7 @@ dependencies = [
     "typing_extensions==4.14.1",
     "wcwidth==0.2.13",
     "clang>=16.0.0",  # Add Python clang bindings
-]
+] # pip install "libclang==18.1.1"
 
 [project.scripts]
 code-metrics = "code_complexity.__main__:main"

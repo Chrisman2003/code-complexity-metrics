@@ -42,6 +42,7 @@ struct Node {
     Node(int v) : value(v) {}
 };
 
+
 class Graph {
     std::map<int, Node*> nodes;
 public:
