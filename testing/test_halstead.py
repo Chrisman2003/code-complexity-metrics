@@ -53,57 +53,53 @@ def test_halstead_complex_cpp():
     assert round(time(metrics), 2) == 92587.43
 
 
-'''
+
 def test_halstead_complex_cuda():
     """Tests Halstead metrics on a complex CUDA file."""
     code = load_code("complex/complex_cuda.cu")
-    metrics = halstead_metrics_cuda(code)
-    
-    # Expected Halstead metrics for complex_cuda.cu (unchanged)
-    assert metrics['n1'] == 25
-    assert metrics['n2'] == 47
-    assert metrics['N1'] == 250
-    assert metrics['N2'] == 121
+    metrics = halstead_metrics_cuda(code) # Language specific constructs ANALYZED!
+    # Expected Halstead metrics for complex_cuda.cu with cuda language extension
+    assert metrics['n1'] == 32
+    assert metrics['n2'] == 40
+    assert metrics['N1'] == 263
+    assert metrics['N2'] == 108
     assert vocabulary(metrics) == 72
     assert size(metrics) == 371
     assert round(volume(metrics), 2) == 2289.04
-    assert round(difficulty(metrics), 2) == 32.18
-    assert round(effort(metrics), 2) == 73663.33
-    assert round(time(metrics), 2) == 4092.41
+    assert round(difficulty(metrics), 2) == 43.20
+    assert round(effort(metrics), 2) == 98886.62
+    assert round(time(metrics), 2) == 5493.70
 
 
 def test_halstead_complex_kokkos():
     """Tests Halstead metrics on a complex Kokkos C++ file."""
     code = load_code("complex/complex_kokkos.cpp")
-    metrics = halstead_metrics_kokkos(code)
-    
-    # Expected Halstead metrics for complex_kokkos.cpp (unchanged)
-    assert metrics['n1'] == 22
-    assert metrics['n2'] == 50
-    assert metrics['N1'] == 134
-    assert metrics['N2'] == 109
+    metrics = halstead_metrics_kokkos(code) # Language specific constructs ANALYZED!
+    # Expected Halstead metrics for complex_kokkos.cpp with Kokkos language extension
+    assert metrics['n1'] == 24
+    assert metrics['n2'] == 48
+    assert metrics['N1'] == 150
+    assert metrics['N2'] == 93
     assert vocabulary(metrics) == 72
     assert size(metrics) == 243
     assert round(volume(metrics), 2) == 1499.29
-    assert round(difficulty(metrics), 2) == 23.98
-    assert round(effort(metrics), 2) == 35953.02
-    assert round(time(metrics), 2) == 1997.39
+    assert round(difficulty(metrics), 2) == 23.25
+    assert round(effort(metrics), 2) == 34858.53
+    assert round(time(metrics), 2) == 1936.59
 
 
 def test_halstead_complex_opencl():
     """Tests Halstead metrics on a complex OpenCL C++ file."""
     code = load_code("complex/complex_opencl.cpp")
-    metrics = halstead_metrics_opencl(code)
-    
-    # Expected Halstead metrics for complex_opencl.cpp (unchanged)
-    assert metrics['n1'] == 31
-    assert metrics['n2'] == 128
-    assert metrics['N1'] == 313
-    assert metrics['N2'] == 300
+    metrics = halstead_metrics_opencl(code) # Language specific constructs ANALYZED!
+    # Expected Halstead metrics for complex_opencl.cpp with OpenCL language extension
+    assert metrics['n1'] == 41
+    assert metrics['n2'] == 118
+    assert metrics['N1'] == 342
+    assert metrics['N2'] == 271
     assert vocabulary(metrics) == 159
     assert size(metrics) == 613
     assert round(volume(metrics), 2) == 4482.80
-    assert round(difficulty(metrics), 2) == 36.33
-    assert round(effort(metrics), 2) == 162851.62
-    assert round(time(metrics), 2) == 9047.31
-'''
+    assert round(difficulty(metrics), 2) == 47.08
+    assert round(effort(metrics), 2) == 211052.37
+    assert round(time(metrics), 2) == 11725.13
