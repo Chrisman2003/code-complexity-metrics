@@ -33,7 +33,7 @@ def test_cyclomatic_simple_cpp():
 
     The expected complexity is at least 1.
     """
-    code = load_code("simple/OLD_simple.cpp")
+    code = load_code("old/OLD_simple.cpp")
     assert basic_compute_cyclomatic(code) >= 1
 
 

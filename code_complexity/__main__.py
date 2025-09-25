@@ -2,7 +2,9 @@ import argparse
 import os
 import time
 import logging
+import inspect
 from code_complexity.metrics import cyclomatic_parallel, sloc, halstead, cyclomatic, cognitive, nesting_depth
+
 
 # -------------------------------
 # Logging setup
@@ -55,10 +57,15 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_fu
         logger.error("Failed to read file %s: %s", file_path, e)
         return
 
+    sig = inspect.signature(cyclomatic_func)
+    params = len(sig.parameters)
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
-    cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
+    if params == 1:
+        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
+    else:
+        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
     cognitive_complexity, cognitive_time = timed(cognitive.basic_compute_cognitive, code) 
     halstead_metrics, halstead_time = timed(halstead_func, code)
 

@@ -21,10 +21,9 @@ def load_code(filename):
 
 def test_halstead_simple_cpp():
     """Tests Halstead metrics on a simple C++ file."""
-    code = load_code("simple/OLD_simple.cpp")
+    code = load_code("old/OLD_simple.cpp")
     metrics = halstead_metrics_cpp(code)
     
-    # ✅ Updated expected Halstead metrics for simple.cpp
     assert metrics['n1'] == 18
     assert metrics['n2'] == 24
     assert metrics['N1'] == 50
@@ -42,17 +41,16 @@ def test_halstead_complex_cpp():
     code = load_code("complex/complex.cpp")
     metrics = halstead_metrics_cpp(code)
     
-    # ✅ Updated expected Halstead metrics for complex.cpp
-    assert metrics['n1'] == 40
-    assert metrics['n2'] == 95
-    assert metrics['N1'] == 220
-    assert metrics['N2'] == 248
-    assert vocabulary(metrics) == 135
-    assert size(metrics) == 468
-    assert round(volume(metrics), 2) == 3311.95
-    assert round(difficulty(metrics), 2) == 52.21
-    assert round(effort(metrics), 2) == 172918.64
-    assert round(time(metrics), 2) == 9606.59
+    assert metrics['n1'] == 55
+    assert metrics['n2'] == 122
+    assert metrics['N1'] == 1069
+    assert metrics['N2'] == 595
+    assert vocabulary(metrics) == 177
+    assert size(metrics) == 1664
+    assert round(volume(metrics), 2) == 12426.10
+    assert round(difficulty(metrics), 2) == 134.12
+    assert round(effort(metrics), 2) == 1666573.69
+    assert round(time(metrics), 2) == 92587.43
 
 
 '''

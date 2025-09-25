@@ -237,7 +237,7 @@ def remove_comments_with_clang(code: str, filename: str = "tmp.cpp") -> str:
     tokens = tu.get_tokens(extent=tu.cursor.extent)
     return "".join(t.spelling for t in tokens if t.kind != clang.cindex.TokenKind.COMMENT)
 
-def basic_compute_cyclomatic(code: str, filename: str) -> int:
+def basic_compute_cyclomatic(code: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
     
@@ -251,18 +251,17 @@ def basic_compute_cyclomatic(code: str, filename: str) -> int:
     Returns:
         int: Heuristic cyclomatic complexity value.
     """
-    if filename:
-        try:
-            with open(filename, "r", encoding="utf-8", errors="ignore") as fh:
-                code = fh.read()
-        except Exception:
-            # If file cannot be read, fall back to empty source so result is 1
-            code = ""
-    if code is None:
-        code = ""
+    #if filename:
+    #    try:
+    #        with open(filename, "r", encoding="utf-8", errors="ignore") as fh:
+    #            code = fh.read()
+    #    except Exception:
+    #        # If file cannot be read, fall back to empty source so result is 1
+    #        code = ""
+    #if code is None:
+    #    code = ""
     code = remove_cpp_comments(code)
-    #code = remove_comments_with_clang(code, filename="tmp.cpp") # Alternative using clang
-    
+    #code = remove_comments_with_clang(code, filename="tmp.cpp") # Alternative using clang  
     # Keywords and operators that increase cyclomatic complexity
     control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'else', 'do', 'goto']
     # Switch itself doesn't add to cyclomatic complexity, only case labels do.
