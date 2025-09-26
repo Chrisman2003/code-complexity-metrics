@@ -1,9 +1,9 @@
 import networkx as nx
 import subprocess
-import re
 import tempfile
 import os
-
+from code_complexity.metrics.cyclomatic import get_clang_include_flags
+from code_complexity.metrics.cyclomatic import build_cfg_from_dump
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
 # -----------------------------------------------------------------------------
@@ -11,99 +11,6 @@ import os
 # for C++ code using Clang's static analyzer for precise CFG extraction,
 # as well as a simpler heuristic method based on control-flow keywords.
 # -----------------------------------------------------------------------------
-    
-def get_clang_include_flags() -> list[str]:
-    """Construct Clang-compatible include flags for system headers.
-
-    This function builds a list of `-isystem` flags to ensure Clang can find
-    all necessary headers when analyzing C++ or OpenCL code. It merges:
-
-    1. Clang's own builtin headers (via `clang++ -print-resource-dir`).
-    2. GCC's standard library include paths (via `g++ -E -x c++ - -v`).
-    3. Fallback system include paths (`/usr/include`, `/usr/local/include`).
-
-    Returns:
-        list[str]: A list of `-isystem <path>` flags to pass to Clang.
-    """
-    # Step 1: Add Clang's builtin resource headers.
-    # These headers include stddef.h, stdint.h, and OpenCL-specific files
-    # (e.g., opencl-c.h) that GCC's libstdc++ does not provide.
-    clang_resource_dir = subprocess.run(
-        ["clang++", "-print-resource-dir"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip() # clang_resource_dir holds actual string result of clang++ -print-resource-dir.
-    include_flags = ["-isystem", os.path.join(clang_resource_dir, "include")]
-    # Step 2: Add GCC system include directories.
-    # Extract from verbose output of `g++` preprocessing.
-    # This ensures that downstream Clang analysis (in compute_cyclomatic) can locate all
-    # standard headers on any machine/architecture
-    process = subprocess.run(
-        ["g++", # Invoke GCC C++ compiler
-         "-E",  # preprocess only
-         "-x",  # specify language
-         "c++", # treat input as C++
-         "-",   # read from stdin
-         "-v"], # verbose
-        input="",
-        text=True,
-        capture_output=True,
-    )
-
-    in_block = False
-    for line in process.stderr.splitlines():
-        if "#include <...> search starts here:" in line:
-            in_block = True
-            continue
-        if "End of search list." in line:
-            break
-        if in_block:
-            path = line.strip()
-            include_flags.extend(["-isystem", path])
-    # Step 3: Add fallback system includes if present.
-    # <iostream> lives here on some systems
-    # /usr/lib
-    for path in ("/usr/include", "/usr/local/include"):
-        if os.path.exists(path):
-            include_flags.extend(["-isystem", path])
-    return include_flags
-
-def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
-    node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
-    succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
-    func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
-
-    function_cfgs = {}
-    current_function = None
-    current_node = None
-    cfg = nx.DiGraph()
-
-    for line in output.splitlines():
-        func_match = func_start_pattern.match(line)
-        node_match = node_pattern.search(line)
-        succ_match = succ_pattern.search(line)
-        if func_match:
-            # Start a new function CFG.
-            current_function = func_match.group(2)
-            cfg = nx.DiGraph()
-            function_cfgs[current_function] = cfg
-            current_node = None
-            continue
-        if current_function is None:
-            # Skip lines outside of function CFGs.
-            continue
-        if node_match:
-            # Found a new CFG node.
-            current_node = int(node_match.group(1))
-            cfg.add_node(current_node)
-        if succ_match and current_node is not None:
-            # Add edges from the current node to its successors.
-            successors = [int(s[1:]) for s in succ_match.group(2).split()]
-            for succ in successors:
-                cfg.add_edge(current_node, succ)
-    return function_cfgs
-
 def compute_cyclomatic(code: str, filename: str) -> int:
     """Compute cyclomatic complexity of C++ code using Clang CFG.
 
@@ -234,42 +141,3 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 os.remove(tmp_path)
             except OSError:
                 pass
-
-def basic_compute_cyclomatic(code: str | None = None, filename: str | None = None) -> int:
-    """
-    Compute a simplified cyclomatic complexity estimate using heuristics.
-
-    Accepts either the source text via `code` or a path via `filename`.
-    If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
-
-    Args:
-        code: Source code as a string (optional if filename provided).
-        filename: Path to source file to load (optional).
-
-    Returns:
-        int: Heuristic cyclomatic complexity value.
-    """
-    if filename:
-        try:
-            with open(filename, "r", encoding="utf-8", errors="ignore") as fh:
-                code = fh.read()
-        except Exception:
-            # If file cannot be read, fall back to empty source so result is 1
-            code = ""
-
-    if code is None:
-        code = ""
-
-    control_keywords = ['if', 'for', 'while', 'case', 'catch', 'switch', 'else', 'do', 'goto']
-    logical_operators = ['&&', '||', '?', 'and', 'or']
-    count = 0
-
-    for line in code.splitlines():
-        stripped = line.strip()
-        for keyword in control_keywords:
-            if stripped.startswith(keyword):
-                count += 1
-        for op in logical_operators:
-            count += stripped.count(op)
-
-    return count + 1  # +1 for the default path

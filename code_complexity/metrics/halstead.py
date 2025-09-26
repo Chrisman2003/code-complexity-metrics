@@ -55,7 +55,7 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
     """
     # Merge base and extension-specific non-operators
     merged_nonoperands = core_non_operands | additional_non_operands
-    print(merged_nonoperands)
+    #print(merged_nonoperands)
     # Split into keyword-like (alphanumeric) and symbolic operators
     keyword_ops = {op for op in merged_nonoperands if re.match(r'^[A-Za-z_]\w*$', op)}
     symbol_ops = merged_nonoperands - keyword_ops

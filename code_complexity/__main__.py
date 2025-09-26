@@ -3,7 +3,7 @@ import os
 import time
 import logging
 import inspect
-from code_complexity.metrics import cyclomatic_parallel, sloc, halstead, cyclomatic, cognitive, nesting_depth
+from code_complexity.metrics import cyclomatic_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
 
 
 # -------------------------------
