@@ -1,6 +1,22 @@
 # Code Complexity Analyzer
 
-A Python tool to analyze source code and compute **SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports C++, CUDA, OpenCL, and Kokkos code and can compare GPU-specific constructs against a C++ baseline.
+A Python tool to analyze source code and compute Code Complexity Measures.**SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports parallelizing frameworks for code constructs and particularly with respect to halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
+-> Code Complexity Measures:
+--> SLOC
+--> Nested Depth
+--> Cyclomatic
+--> Cognitive
+--> Halstead
+
+-> Parallelizing Frameworks:
+--> C++
+--> CUDA 
+--> OpenCL
+--> Kokkos
+--> (SyCl)
+--> (OpenMP)
+
+The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
 ---
 
