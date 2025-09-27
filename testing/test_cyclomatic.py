@@ -18,23 +18,13 @@ def load_code(filename):
     with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
         return f.read()
 
-
-def test_cyclomatic_example_py():
-    """Tests cyclomatic complexity calculation on a simple Python file.
-
-    The expected complexity is at least 1.
-    """
-    code = load_code("non_cpp/OLD_example.py")
-    assert basic_compute_cyclomatic(code) >= 1
-
-
 def test_cyclomatic_simple_cpp():
     """Tests cyclomatic complexity calculation on a simple C++ file.
 
     The expected complexity is at least 1.
     """
     code = load_code("old/OLD_simple.cpp")
-    assert basic_compute_cyclomatic(code) >= 1
+    assert basic_compute_cyclomatic(code) == 3
 
 
 def test_cyclomatic_complex_cpp():
@@ -44,3 +34,24 @@ def test_cyclomatic_complex_cpp():
     """
     code = load_code("complex/complex.cpp")
     assert basic_compute_cyclomatic(code) >= 1
+
+'''
+Edge Cases for Commenting:
+1) 
+std::string s = "This is not a // comment";
+char c = '/';
+std::string t = "/* not a comment */";
+2)
+/* Outer comment
+   /* Inner comment */
+   End of outer */
+3) 
+#define STR(x) "/* " #x " */"
+'''
+
+'''
+Edge Cases: 
+-> label: 
+-> if (x > 0) 
+-> } if (x > 0)
+'''

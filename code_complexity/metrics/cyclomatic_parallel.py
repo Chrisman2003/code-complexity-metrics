@@ -2,6 +2,8 @@ import networkx as nx
 import subprocess
 import tempfile
 import os
+import clang.cindex
+import sys
 from code_complexity.metrics.cyclomatic import get_clang_include_flags
 from code_complexity.metrics.cyclomatic import build_cfg_from_dump
 # -----------------------------------------------------------------------------
@@ -141,3 +143,23 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 os.remove(tmp_path)
             except OSError:
                 pass
+            
+def remove_comments_with_clang(code: str, filename: str = "tmp.cpp") -> str:
+    """Remove comments using Clang's tokenization."""
+    # Configure libclang first
+    if sys.platform.startswith("linux"):
+        libclang_path = "/usr/lib/llvm-18/lib/libclang.so"
+    elif sys.platform.startswith("darwin"):
+        libclang_path = "/usr/local/opt/llvm/lib/libclang.dylib"
+    elif sys.platform.startswith("win32"):
+        libclang_path = r"C:\Program Files\LLVM\bin\libclang.dll"
+    else:
+        raise RuntimeError(f"Unsupported platform: {sys.platform}")
+    clang.cindex.Config.set_library_file(libclang_path)
+    # Then the rest of your function
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(code)
+    index = clang.cindex.Index.create()
+    tu = index.parse(filename, args=["-std=c++17"])
+    tokens = tu.get_tokens(extent=tu.cursor.extent)
+    return "".join(t.spelling for t in tokens if t.kind != clang.cindex.TokenKind.COMMENT)

@@ -10,10 +10,10 @@ int main() {
     if (x < y) {
         cout << "x is less than y" << endl;
     } else {
-        cout << "x is greater or equal to y" << endl;
+        cout << "x is greater or equal to y" << endl; // or inside string gets counted
     }
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) { //The or of the for gets counted
         x += i;
     }
 

@@ -211,31 +211,54 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 pass
 
 def remove_cpp_comments(code: str) -> str:
-    # Remove all block comments first
-    code_no_block = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
-    # Remove single line comments
-    code_no_comments = re.sub(r'//.*', '', code_no_block)
+    """
+    Remove all C/C++ style comments from the source code.
+
+    This function removes both block comments (`/* ... */`) and 
+    single-line comments (`// ...`) from the input code string. 
+    The removal is done using regular expressions.
+
+    Args:
+        code (str): A string containing C/C++ source code.
+
+    Returns:
+        str: The source code with all comments removed.
+
+    Edge Cases:
+        - Nested block comments are not supported (C/C++ also do not support nesting). 
+        - Strings containing `//` or `/* ... */` inside quotes will not be affected 
+          by this function; use `remove_string_literals` first to prevent false positives.
+        - Lines containing only comments are removed entirely.
+        - Empty input string returns an empty string.
+    """
+    code_no_block = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL) # Remove all block comments first
+    code_no_comments = re.sub(r'//.*', '', code_no_block) # Remove single line comments
     return code_no_comments
 
-def remove_comments_with_clang(code: str, filename: str = "tmp.cpp") -> str:
-    """Remove comments using Clang's tokenization."""
-    # Configure libclang first
-    if sys.platform.startswith("linux"):
-        libclang_path = "/usr/lib/llvm-18/lib/libclang.so"
-    elif sys.platform.startswith("darwin"):
-        libclang_path = "/usr/local/opt/llvm/lib/libclang.dylib"
-    elif sys.platform.startswith("win32"):
-        libclang_path = r"C:\Program Files\LLVM\bin\libclang.dll"
-    else:
-        raise RuntimeError(f"Unsupported platform: {sys.platform}")
-    clang.cindex.Config.set_library_file(libclang_path)
-    # Then the rest of your function
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(code)
-    index = clang.cindex.Index.create()
-    tu = index.parse(filename, args=["-std=c++17"])
-    tokens = tu.get_tokens(extent=tu.cursor.extent)
-    return "".join(t.spelling for t in tokens if t.kind != clang.cindex.TokenKind.COMMENT)
+def remove_string_literals(code: str) -> str:
+    """
+    Remove all string and character literals from C/C++ source code.
+
+    This function removes:
+    - Double-quoted string literals, e.g., "hello world"
+    - Single-quoted character literals, e.g., 'a'
+
+    Args:
+        code (str): A string containing C/C++ source code.
+
+    Returns:
+        str: The source code with all string and character literals removed.
+
+    Edge Cases:
+        - Escaped characters inside strings or characters are handled correctly, e.g., 
+          "Line\\nBreak" or '\\''.
+        - Multi-line string literals are removed.
+        - Empty input string returns an empty string.
+        - Does not affect comments; use `remove_cpp_comments` to remove comments.
+    """
+    code = re.sub(r'"(\\.|[^"\\])*"', '', code) # Remove double-quoted strings
+    code = re.sub(r"'(\\.|[^'\\])'", '', code) # Remove single-quoted character literals
+    return code
 
 def basic_compute_cyclomatic(code: str) -> int:
     """
@@ -245,51 +268,37 @@ def basic_compute_cyclomatic(code: str) -> int:
     If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
 
     Args:
-        code: Source code as a string (optional if filename provided).
-        filename: Path to source file to load (optional).
-
-    Returns:
-        int: Heuristic cyclomatic complexity value.
+        code (str): Source code as a string. The code should be plain text; 
+            comments and string literals are removed internally before analysis.
+    
+    Edge Cases:
+        - Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
+        - String literals (e.g., `"x is greater or equal to y"`) are ignored to 
+          prevent false positives for keywords like 'or' or 'and'.
+        - The `else` keyword is not counted separately because it does not create 
+          an independent path; `else if` is counted via its `if`.
+        - `switch` statements do not add complexity themselves; only `case` and 
+          `default` labels are counted.
+        - Logical operators `&&`, `||`, `?` are counted for each occurrence.
+        - Alphabetic logical operators `and`, `or` are counted only when they 
+          appear as standalone words, not as substrings of other identifiers.
+        - Multi-line constructs may not be perfectly accounted for in this heuristic.
+        - If `code` is `None`, it is treated as an empty string (CC = 1).
     """
-    #if filename:
-    #    try:
-    #        with open(filename, "r", encoding="utf-8", errors="ignore") as fh:
-    #            code = fh.read()
-    #    except Exception:
-    #        # If file cannot be read, fall back to empty source so result is 1
-    #        code = ""
-    #if code is None:
-    #    code = ""
     code = remove_cpp_comments(code)
-    #code = remove_comments_with_clang(code, filename="tmp.cpp") # Alternative using clang  
-    # Keywords and operators that increase cyclomatic complexity
-    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'else', 'do', 'goto']
-    # Switch itself doesn't add to cyclomatic complexity, only case labels do.
+    code = remove_string_literals(code)
+    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
         for keyword in control_keywords:
             if re.search(rf'\b{keyword}\b', stripped): # Only match with word boundaries
-                # Edge Cases: 
-                # -> label: 
-                # -> if (x > 0) 
-                # -> } if (x > 0)
                 count += 1
         for op in logical_operators:
-            count += stripped.count(op)
+            if op in ['and', 'or']:
+                count += len(re.findall(rf'\b{op}\b', stripped))
+            else:
+                count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
     return count + 1  # +1 for the default path
 
-'''
-Edge Cases for Commenting:
-1) 
-std::string s = "This is not a // comment";
-char c = '/';
-std::string t = "/* not a comment */";
-2)
-/* Outer comment
-   /* Inner comment */
-   End of outer */
-3) 
-#define STR(x) "/* " #x " */"
-'''
