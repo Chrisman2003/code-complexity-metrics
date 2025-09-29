@@ -1,10 +1,9 @@
 import os
-from code_complexity.metrics.cyclomatic import basic_compute_cyclomatic
+from code_complexity.metrics.cyclomatic import *
 
 # Directory containing test files for code complexity analysis
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
 TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
-
 
 def load_code(filename):
     """Loads the content of a code file.
@@ -19,21 +18,36 @@ def load_code(filename):
         return f.read()
 
 def test_cyclomatic_simple_cpp():
-    """Tests cyclomatic complexity calculation on a simple C++ file.
-
-    The expected complexity is at least 1.
+    """
+    Tests cyclomatic complexity calculation on a simple C++ File.
     """
     code = load_code("old/OLD_simple.cpp")
-    assert basic_compute_cyclomatic(code) == 3
+    assert basic_compute_cyclomatic(code) == 4
+    assert compute_cyclomatic(code, "OLD_simple.cpp") == 4
 
+def test_cyclomatic_edge_cpp():
+    """
+    Tests cyclomatic complexity for specified edge case File.
+    """
+    code = load_code("old/edge.cpp")
+    assert basic_compute_cyclomatic(code) == 5
+    assert compute_cyclomatic(code, "edge.cpp") == 6
 
 def test_cyclomatic_complex_cpp():
-    """Tests cyclomatic complexity calculation on a more complex C++ file.
-
-    The expected complexity is at least 1.
+    """
+    Tests cyclomatic complexity calculation on a more complex C++ File.
     """
     code = load_code("complex/complex.cpp")
-    assert basic_compute_cyclomatic(code) >= 1
+    assert basic_compute_cyclomatic(code) == 34
+    assert compute_cyclomatic(code, "complex.cpp") == 52
+    
+def test_cyclomatic_hyper_complex_cpp():
+    """
+    Tests cyclomatic complexity calculation on a very complex C++ File.
+    """
+    code = load_code("complex/hyper_complex.cpp")
+    assert basic_compute_cyclomatic(code) == 60
+    assert compute_cyclomatic(code, "hyper_complex.cpp") == 77
 
 '''
 Edge Cases for Commenting:

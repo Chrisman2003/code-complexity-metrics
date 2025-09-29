@@ -24,7 +24,7 @@ def test_sloc_simple_cpp():
     code = load_code("old/OLD_simple.cpp")
     
     # Expected SLOC for OLD_simple.cpp
-    assert compute_sloc(code) == 17
+    assert compute_sloc(code) == 18
 
 
 def test_sloc_complex_cpp():

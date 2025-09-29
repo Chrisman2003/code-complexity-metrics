@@ -2,6 +2,7 @@ import re
 from clang import cindex
 from clang.cindex import CursorKind
 import collections
+from code_complexity.metrics.shared import *
 
 # Flow-breaking AST kinds (common ones)
 FLOW_KINDS = {

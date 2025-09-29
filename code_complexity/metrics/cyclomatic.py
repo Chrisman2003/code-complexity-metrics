@@ -3,8 +3,7 @@ import subprocess
 import re
 import tempfile
 import os
-import clang.cindex
-import sys
+from code_complexity.metrics.shared import *
 
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
@@ -157,8 +156,6 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             if os.path.exists(p):
                 extra_includes.extend(["-I", p])
         include_flags = [*include_flags, *extra_includes]
-        # Run Clang static analyzer to dump CFG.
-        # Set clang_args depending on file extension (CUDA or C++)
         clang_args = [
             "clang++",       # Invoke Clang C++ compiler.
             "-std=c++17",    # Use C++17 standard.
@@ -173,7 +170,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             *include_flags,
             tmp_path,
         ]
-        process = subprocess.run(
+        process = subprocess.run( # Run Clang static analyzer to dump CFG.
             clang_args,
             capture_output=True,
             text=True,
@@ -191,8 +188,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         and then compute cyclomatic complexity for each function separately.
         '''
         function_cfgs = build_cfg_from_dump(output)
-        # Compute total cyclomatic complexity.
-        total_complexity = 0
+        total_complexity = 0 # Compute total cyclomatic complexity.
         for func_name, func_cfg in function_cfgs.items():
             edges = func_cfg.number_of_edges()
             nodes = func_cfg.number_of_nodes()
@@ -210,56 +206,6 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             except OSError:
                 pass
 
-def remove_cpp_comments(code: str) -> str:
-    """
-    Remove all C/C++ style comments from the source code.
-
-    This function removes both block comments (`/* ... */`) and 
-    single-line comments (`// ...`) from the input code string. 
-    The removal is done using regular expressions.
-
-    Args:
-        code (str): A string containing C/C++ source code.
-
-    Returns:
-        str: The source code with all comments removed.
-
-    Edge Cases:
-        - Nested block comments are not supported (C/C++ also do not support nesting). 
-        - Strings containing `//` or `/* ... */` inside quotes will not be affected 
-          by this function; use `remove_string_literals` first to prevent false positives.
-        - Lines containing only comments are removed entirely.
-        - Empty input string returns an empty string.
-    """
-    code_no_block = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL) # Remove all block comments first
-    code_no_comments = re.sub(r'//.*', '', code_no_block) # Remove single line comments
-    return code_no_comments
-
-def remove_string_literals(code: str) -> str:
-    """
-    Remove all string and character literals from C/C++ source code.
-
-    This function removes:
-    - Double-quoted string literals, e.g., "hello world"
-    - Single-quoted character literals, e.g., 'a'
-
-    Args:
-        code (str): A string containing C/C++ source code.
-
-    Returns:
-        str: The source code with all string and character literals removed.
-
-    Edge Cases:
-        - Escaped characters inside strings or characters are handled correctly, e.g., 
-          "Line\\nBreak" or '\\''.
-        - Multi-line string literals are removed.
-        - Empty input string returns an empty string.
-        - Does not affect comments; use `remove_cpp_comments` to remove comments.
-    """
-    code = re.sub(r'"(\\.|[^"\\])*"', '', code) # Remove double-quoted strings
-    code = re.sub(r"'(\\.|[^'\\])'", '', code) # Remove single-quoted character literals
-    return code
-
 def basic_compute_cyclomatic(code: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
@@ -272,18 +218,18 @@ def basic_compute_cyclomatic(code: str) -> int:
             comments and string literals are removed internally before analysis.
     
     Edge Cases:
-        - Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
-        - String literals (e.g., `"x is greater or equal to y"`) are ignored to 
-          prevent false positives for keywords like 'or' or 'and'.
-        - The `else` keyword is not counted separately because it does not create 
-          an independent path; `else if` is counted via its `if`.
-        - `switch` statements do not add complexity themselves; only `case` and 
-          `default` labels are counted.
-        - Logical operators `&&`, `||`, `?` are counted for each occurrence.
-        - Alphabetic logical operators `and`, `or` are counted only when they 
-          appear as standalone words, not as substrings of other identifiers.
-        - Multi-line constructs may not be perfectly accounted for in this heuristic.
-        - If `code` is `None`, it is treated as an empty string (CC = 1).
+        1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
+        2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
+           prevent false positives for keywords like 'or' or 'and'.
+        3) The `else` keyword is not counted separately because it does not create 
+           an independent path; `else if` is counted via its `if`.
+        4) `switch` statements do not add complexity themselves; only `case` and 
+           `default` labels are counted.
+        5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
+        6) Alphabetic logical operators `and`, `or` are counted only when they 
+           appear as standalone words, not as substrings of other identifiers.
+        7) Multi-line constructs may not be perfectly accounted for in this heuristic.
+        8) If `code` is `None`, it is treated as an empty string (CC = 1).
     """
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
