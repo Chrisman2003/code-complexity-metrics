@@ -21,7 +21,7 @@ def load_code(filename):
 
 def test_halstead_simple_cpp():
     """Tests Halstead metrics on a simple C++ file."""
-    code = load_code("old/OLD_simple.cpp")
+    code = load_code("cpp/OLD_simple.cpp")
     metrics = halstead_metrics_cpp(code)
 
     # Updated expected values based on latest analysis (2025-09-28)
@@ -101,3 +101,7 @@ def test_halstead_complex_opencl():
     assert round(effort(metrics), 2) == 162331.52
     assert round(time(metrics), 2) == 9018.42
 
+'''
+Edge Case:
+Boundary Word Wrapping for keywords searched by the Halstead Function ?
+'''

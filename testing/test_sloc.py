@@ -21,7 +21,7 @@ def load_code(filename):
 
 def test_sloc_simple_cpp():
     """Tests the source lines of code (SLOC) calculation on a simple C++ file."""
-    code = load_code("old/OLD_simple.cpp")
+    code = load_code("cpp/OLD_simple.cpp")
     
     # Expected SLOC for OLD_simple.cpp
     assert compute_sloc(code) == 18

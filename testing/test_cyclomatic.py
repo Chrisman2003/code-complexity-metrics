@@ -21,7 +21,7 @@ def test_cyclomatic_simple_cpp():
     """
     Tests cyclomatic complexity calculation on a simple C++ File.
     """
-    code = load_code("old/OLD_simple.cpp")
+    code = load_code("cpp/OLD_simple.cpp")
     assert basic_compute_cyclomatic(code) == 4
     assert compute_cyclomatic(code, "OLD_simple.cpp") == 4
 
@@ -29,7 +29,7 @@ def test_cyclomatic_edge_cpp():
     """
     Tests cyclomatic complexity for specified edge case File.
     """
-    code = load_code("old/edge.cpp")
+    code = load_code("cpp/edge.cpp")
     assert basic_compute_cyclomatic(code) == 5
     assert compute_cyclomatic(code, "edge.cpp") == 6
 
