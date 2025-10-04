@@ -6,7 +6,5 @@ def normalize_by_loc(records):
         rec["cyclomatic_per_line"] = rec["cyclomatic"] / loc
         rec["nesting_per_line"] = rec["nesting"] / loc
         rec["sloc_per_line"] = rec["sloc"] / loc
-        # Halstead metrics often return a dict; normalize if numeric value exists
-        if isinstance(rec["halstead"], dict) and "effort" in rec["halstead"]:
-            rec["halstead_effort_per_line"] = rec["halstead"]["effort"] / loc
+        rec["halstead_per_line"] = rec["halstead"] / loc
     return records

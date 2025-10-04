@@ -8,10 +8,6 @@ def summarize(records):
     summary = df.describe()
     
     # Correlations between metrics
-    correlations = df[["cognitive", "cyclomatic", "nesting", "sloc"]].corr()
-    
-    # Optional: Halstead effort correlation
-    if "halstead_effort_per_line" in df.columns:
-        correlations["halstead_effort"] = df["halstead_effort_per_line"].corr(df["cognitive_per_line"])
-    
+    correlations = df[["cognitive", "cyclomatic", "nesting", "sloc", "halstead"]].corr()
+       
     return summary, correlations

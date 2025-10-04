@@ -37,7 +37,8 @@ dependencies = [
     "clang>=16.0.0",  # Add Python clang bindings
     "pandas==2.3.3",
     "matplotlib==3.10.6",
-    "seaborn==0.13.2"
+    "seaborn==0.13.2",
+    "reportlab==4.4.4"
 ] # pip install "libclang==18.1.1"
 
 [project.scripts]

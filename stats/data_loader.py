@@ -19,7 +19,7 @@ def collect_metrics(root_dir: str):
                 nesting = compute_nesting_depth(code)
                 cyclomatic = basic_compute_cyclomatic(code)
                 cognitive = basic_compute_cognitive(code)
-                halstead = halstead_metrics_merged(code)
+                halstead = effort(halstead_metrics_merged(code))
                 records.append({
                     "file": filepath,
                     "sloc": sloc,

@@ -1,11 +1,12 @@
-from stats.data_loader import collect_metrics
+from stats.data_loader import collect_metrics   
 from stats.preprocessing import normalize_by_loc
 from stats.analysis import summarize
 from stats.visualization import plot_all_metrics
+from stats.report_generator import generate_report
 
 def main():
     # 1️⃣ Collect metrics from your samples
-    root_dir = "samples/"  # adjust path as needed
+    root_dir = "../polyhedral-gravity-model-parallel"  # adjust path as needed
     print("Collecting metrics...")
     records = collect_metrics(root_dir)
     print(f"Collected metrics for {len(records)} files.\n")
@@ -20,7 +21,8 @@ def main():
     print("Correlations:\n", correlations, "\n")
     
     # 4️⃣ Visualization
-    plot_all_metrics(records)
+    # plot_all_metrics(records)
+    generate_report(records, output_path="complexity_report.pdf")
     
 if __name__ == "__main__":
     main()
