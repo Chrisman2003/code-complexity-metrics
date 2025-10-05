@@ -1,0 +1,1725 @@
+
+Node(int v)
+ [B2 (ENTRY)]
+   Succs (1): B1
+
+ [B1]
+   1: v
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: value([B1.2]) (Member initializer)
+   4:  (CXXConstructExpr, children() (Member initializer), std::vector<Node *>)
+   5: children([B1.4]) (Member initializer)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+~Graph() noexcept
+ [B6 (ENTRY)]
+   Succs (1): B5
+
+ [B1]
+   1: this->nodes.~map() (Member object destructor)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B2]
+   1: operator!=
+   2: [B2.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const _Self &, const _Self &) noexcept)
+   3: __begin1
+   4: [B2.3] (ImplicitCastExpr, NoOp, const _Self)
+   5: __end1
+   6: [B2.5] (ImplicitCastExpr, NoOp, const _Self)
+   7: [B2.4] != [B2.6] (OperatorCall)
+   T: for (auto & : [B5.2]) {
+    [B4.20];
+}
+
+   Preds (2): B3 B5
+   Succs (2): B4 B1
+
+ [B3]
+   1: operator++
+   2: [B3.1] (ImplicitCastExpr, FunctionToPointerDecay, _Self &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B3.3] (OperatorCall)
+   Preds (1): B4
+   Succs (1): B2
+
+ [B4]
+   1: operator*
+   2: [B4.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B4.3] (ImplicitCastExpr, NoOp, const struct std::_Rb_tree_iterator<struct std::pair<const int, struct Node *> >)
+   5: * [B4.4] (OperatorCall)
+   6: auto &;
+   7: get<0UL>
+   8: [B4.7] (ImplicitCastExpr, FunctionToPointerDecay, typename tuple_element<0UL, pair<const int, Node *> >::type &(*)(pair<const int, Node *> &) noexcept)
+   9: 
+  10: [B4.8]([B4.9])
+  11: std::tuple_element<0, std::pair<const int, Node *>>::type _ = get<0UL>();
+  12: get<1UL>
+  13: [B4.12] (ImplicitCastExpr, FunctionToPointerDecay, typename tuple_element<1UL, pair<const int, Node *> >::type &(*)(pair<const int, Node *> &) noexcept)
+  14: 
+  15: [B4.13]([B4.14])
+  16: std::tuple_element<1, std::pair<const int, Node *>>::type node = get<1UL>();
+  17: node
+  18: [B4.17] (ImplicitCastExpr, LValueToRValue, std::tuple_element<1, struct std::pair<const int, struct Node *> >::type)
+  19: [B4.18]->~Node() (Implicit destructor)
+  20: delete [B4.18]
+   Preds (1): B2
+   Succs (1): B3
+
+ [B5]
+   1: this
+   2: [B5.1]->nodes
+   3: auto &&__range1 = this->nodes;
+   4: __range1
+   5: [B5.4].end
+   6: [B5.5]() (CXXRecordTypedCall, [B5.7])
+   7: auto __end1 = __range1.end();
+   8: __range1
+   9: [B5.8].begin
+  10: [B5.9]() (CXXRecordTypedCall, [B5.11])
+  11: auto __begin1 = __range1.begin();
+   Preds (1): B6
+   Succs (1): B2
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+void addNode(int value)
+ [B3 (ENTRY)]
+   Succs (1): B2
+
+ [B1]
+   1: CFGNewAllocator(Node *)
+   2: value
+   3: [B1.2] (ImplicitCastExpr, LValueToRValue, int)
+   4: [B1.3] (CXXConstructExpr, [B1.5], Node)
+   5: new Node([B1.4])
+   6: operator[]
+   7: [B1.6] (ImplicitCastExpr, FunctionToPointerDecay, mapped_type &(*)(const key_type &))
+   8: this
+   9: [B1.8]->nodes
+  10: value
+  11: [B1.10] (ImplicitCastExpr, NoOp, const key_type)
+  12: [B1.9][[B1.11]] (OperatorCall)
+  13: [B1.12] = [B1.5]
+   Preds (1): B2
+   Succs (1): B0
+
+ [B2]
+   1: operator==
+   2: [B2.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const _Self &, const _Self &) noexcept)
+   3: this
+   4: [B2.3]->nodes
+   5: [B2.4].find
+   6: value
+   7: [B2.6] (ImplicitCastExpr, NoOp, const key_type)
+   8: [B2.5]([B2.7]) (CXXRecordTypedCall, [B2.10])
+   9: [B2.8] (ImplicitCastExpr, NoOp, const iterator)
+  10: [B2.9]
+  11: this
+  12: [B2.11]->nodes
+  13: [B2.12].end
+  14: [B2.13]() (CXXRecordTypedCall, [B2.16])
+  15: [B2.14] (ImplicitCastExpr, NoOp, const iterator)
+  16: [B2.15]
+  17: [B2.10] == [B2.16] (OperatorCall)
+   T: if [B2.17]
+   Preds (1): B3
+   Succs (2): B1 B0
+
+ [B0 (EXIT)]
+   Preds (2): B1 B2
+
+void addEdge(int from, int to)
+ [B2 (ENTRY)]
+   Succs (1): B1
+
+ [B1]
+   1: this
+   2: [B1.1]->addNode
+   3: from
+   4: [B1.3] (ImplicitCastExpr, LValueToRValue, int)
+   5: [B1.2]([B1.4])
+   6: this
+   7: [B1.6]->addNode
+   8: to
+   9: [B1.8] (ImplicitCastExpr, LValueToRValue, int)
+  10: [B1.7]([B1.9])
+  11: operator[]
+  12: [B1.11] (ImplicitCastExpr, FunctionToPointerDecay, mapped_type &(*)(const key_type &))
+  13: this
+  14: [B1.13]->nodes
+  15: from
+  16: [B1.15] (ImplicitCastExpr, NoOp, const key_type)
+  17: [B1.14][[B1.16]] (OperatorCall)
+  18: [B1.17] (ImplicitCastExpr, LValueToRValue, mapped_type)
+  19: [B1.18]->children
+  20: [B1.19].push_back
+  21: operator[]
+  22: [B1.21] (ImplicitCastExpr, FunctionToPointerDecay, mapped_type &(*)(const key_type &))
+  23: this
+  24: [B1.23]->nodes
+  25: to
+  26: [B1.25] (ImplicitCastExpr, NoOp, const key_type)
+  27: [B1.24][[B1.26]] (OperatorCall)
+  28: [B1.27] (ImplicitCastExpr, NoOp, const value_type)
+  29: [B1.20]([B1.28])
+   Preds (1): B2
+   Succs (1): B0
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+int sumValuesDFS(int start)
+ [B2 (ENTRY)]
+   Succs (1): B1
+
+ [B1]
+   1:  (CXXConstructExpr, [B1.2], std::set<int>)
+   2: std::set<int> visited;
+   3: this
+   4: [B1.3]->dfsHelper
+   5: operator[]
+   6: [B1.5] (ImplicitCastExpr, FunctionToPointerDecay, mapped_type &(*)(const key_type &))
+   7: this
+   8: [B1.7]->nodes
+   9: start
+  10: [B1.9] (ImplicitCastExpr, NoOp, const key_type)
+  11: [B1.8][[B1.10]] (OperatorCall)
+  12: [B1.11] (ImplicitCastExpr, LValueToRValue, mapped_type)
+  13: visited
+  14: [B1.4]([B1.12], [B1.13])
+  15: return [B1.14];
+  16: [B1.2].~std::set<int>() (Implicit destructor)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+int dfsHelper(Node *node, std::set<int> &visited)
+ [B9 (ENTRY)]
+   Succs (1): B8
+
+ [B1]
+   1: sum
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: return [B1.2];
+   Preds (1): B2
+   Succs (1): B0
+
+ [B2]
+   1: operator!=
+   2: [B2.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const __normal_iterator<Node **, vector<Node *, allocator<Node *> > > &, const __normal_iterator<Node **, vector<Node *, allocator<Node *> > > &) noexcept)
+   3: __begin1
+   4: [B2.3] (ImplicitCastExpr, NoOp, const __normal_iterator<Node **, vector<Node *, allocator<Node *> > >)
+   5: __end1
+   6: [B2.5] (ImplicitCastExpr, NoOp, const __normal_iterator<Node **, vector<Node *, allocator<Node *> > >)
+   7: [B2.4] != [B2.6] (OperatorCall)
+   T: for (auto child : [B5.15]) {
+    [B4.15];
+}
+
+   Preds (2): B3 B5
+   Succs (2): B4 B1
+
+ [B3]
+   1: operator++
+   2: [B3.1] (ImplicitCastExpr, FunctionToPointerDecay, __normal_iterator<Node **, vector<Node *> > &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B3.3] (OperatorCall)
+   Preds (1): B4
+   Succs (1): B2
+
+ [B4]
+   1: operator*
+   2: [B4.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B4.3] (ImplicitCastExpr, NoOp, const class __gnu_cxx::__normal_iterator<struct Node **, class std::vector<struct Node *> >)
+   5: * [B4.4] (OperatorCall)
+   6: [B4.5] (ImplicitCastExpr, LValueToRValue, struct Node *)
+   7: auto child;
+   8: sum
+   9: this
+  10: [B4.9]->dfsHelper
+  11: child
+  12: [B4.11] (ImplicitCastExpr, LValueToRValue, struct Node *)
+  13: visited
+  14: [B4.10]([B4.12], [B4.13])
+  15: [B4.8] += [B4.14]
+   Preds (1): B2
+   Succs (1): B3
+
+ [B5]
+   1: visited
+   2: [B5.1].insert
+   3: node
+   4: [B5.3] (ImplicitCastExpr, LValueToRValue, Node *)
+   5: [B5.4]->value
+   6: [B5.5] (ImplicitCastExpr, NoOp, const value_type)
+   7: [B5.2]([B5.6])
+   8: node
+   9: [B5.8] (ImplicitCastExpr, LValueToRValue, Node *)
+  10: [B5.9]->value
+  11: [B5.10] (ImplicitCastExpr, LValueToRValue, int)
+  12: int sum = node->value;
+  13: node
+  14: [B5.13] (ImplicitCastExpr, LValueToRValue, Node *)
+  15: [B5.14]->children
+  16: auto &&__range1 = node->children;
+  17: __range1
+  18: [B5.17].end
+  19: [B5.18]() (CXXRecordTypedCall, [B5.20])
+  20: auto __end1 = __range1.end();
+  21: __range1
+  22: [B5.21].begin
+  23: [B5.22]() (CXXRecordTypedCall, [B5.24])
+  24: auto __begin1 = __range1.begin();
+   Preds (1): B7
+   Succs (1): B2
+
+ [B6]
+   1: 0
+   2: return [B6.1];
+   Preds (2): B7 B8
+   Succs (1): B0
+
+ [B7]
+   1: visited
+   2: [B7.1] (ImplicitCastExpr, NoOp, const class std::set<int>)
+   3: [B7.2].count
+   4: node
+   5: [B7.4] (ImplicitCastExpr, LValueToRValue, Node *)
+   6: [B7.5]->value
+   7: [B7.6] (ImplicitCastExpr, NoOp, const key_type)
+   8: [B7.3]([B7.7])
+   9: [B7.8] (ImplicitCastExpr, IntegralToBoolean, _Bool)
+   T: if [B8.4] || [B7.9]
+   Preds (1): B8
+   Succs (2): B6 B5
+
+ [B8]
+   1: node
+   2: [B8.1] (ImplicitCastExpr, LValueToRValue, Node *)
+   3: [B8.2] (ImplicitCastExpr, PointerToBoolean, _Bool)
+   4: ![B8.3]
+   T: [B8.4] || ...
+   Preds (1): B9
+   Succs (2): B6 B7
+
+ [B0 (EXIT)]
+   Preds (2): B1 B6
+
+double fibonacci(int n)
+ [B4 (ENTRY)]
+   Succs (1): B3
+
+ [B1]
+   1: fibonacci
+   2: [B1.1] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(int))
+   3: n
+   4: [B1.3] (ImplicitCastExpr, LValueToRValue, int)
+   5: 1
+   6: [B1.4] - [B1.5]
+   7: [B1.2]([B1.6])
+   8: fibonacci
+   9: [B1.8] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(int))
+  10: n
+  11: [B1.10] (ImplicitCastExpr, LValueToRValue, int)
+  12: 2
+  13: [B1.11] - [B1.12]
+  14: [B1.9]([B1.13])
+  15: [B1.7] + [B1.14]
+  16: return [B1.15];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B2]
+   1: n
+   2: [B2.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: [B2.2] (ImplicitCastExpr, IntegralToFloating, double)
+   4: return [B2.3];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B3]
+   1: n
+   2: [B3.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 1
+   4: [B3.2] <= [B3.3]
+   T: if [B3.4]
+   Preds (1): B4
+   Succs (2): B2 B1
+
+ [B0 (EXIT)]
+   Preds (2): B1 B2
+
+double power(double x, int n)
+ [B8 (ENTRY)]
+   Succs (1): B7
+
+ [B1]
+   1: x
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, double)
+   3: half
+   4: [B1.3] (ImplicitCastExpr, LValueToRValue, double)
+   5: [B1.2] * [B1.4]
+   6: half
+   7: [B1.6] (ImplicitCastExpr, LValueToRValue, double)
+   8: [B1.5] * [B1.7]
+   9: return [B1.8];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B2]
+   1: half
+   2: [B2.1] (ImplicitCastExpr, LValueToRValue, double)
+   3: half
+   4: [B2.3] (ImplicitCastExpr, LValueToRValue, double)
+   5: [B2.2] * [B2.4]
+   6: return [B2.5];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B3]
+   1: power
+   2: [B3.1] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(double, int))
+   3: x
+   4: [B3.3] (ImplicitCastExpr, LValueToRValue, double)
+   5: n
+   6: [B3.5] (ImplicitCastExpr, LValueToRValue, int)
+   7: 2
+   8: [B3.6] / [B3.7]
+   9: [B3.2]([B3.4], [B3.8])
+  10: double half = power(x, n / 2);
+  11: n
+  12: [B3.11] (ImplicitCastExpr, LValueToRValue, int)
+  13: 2
+  14: [B3.12] % [B3.13]
+  15: 0
+  16: [B3.14] == [B3.15]
+   T: if [B3.16]
+   Preds (1): B5
+   Succs (2): B2 B1
+
+ [B4]
+   1: 1.
+   2: power
+   3: [B4.2] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(double, int))
+   4: x
+   5: [B4.4] (ImplicitCastExpr, LValueToRValue, double)
+   6: n
+   7: [B4.6] (ImplicitCastExpr, LValueToRValue, int)
+   8: -[B4.7]
+   9: [B4.3]([B4.5], [B4.8])
+  10: [B4.1] / [B4.9]
+  11: return [B4.10];
+   Preds (1): B5
+   Succs (1): B0
+
+ [B5]
+   1: n
+   2: [B5.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 0
+   4: [B5.2] < [B5.3]
+   T: if [B5.4]
+   Preds (1): B7
+   Succs (2): B4 B3
+
+ [B6]
+   1: 1.
+   2: return [B6.1];
+   Preds (1): B7
+   Succs (1): B0
+
+ [B7]
+   1: n
+   2: [B7.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 0
+   4: [B7.2] == [B7.3]
+   T: if [B7.4]
+   Preds (1): B8
+   Succs (2): B6 B5
+
+ [B0 (EXIT)]
+   Preds (4): B1 B2 B4 B6
+
+ComplexProcessor(size_t n)
+ [B5 (ENTRY)]
+   Succs (1): B4
+
+ [B1]
+   1: i
+   2: ++[B1.1]
+   Preds (1): B2
+   Succs (1): B3
+
+ [B2]
+   1: this
+   2: [B2.1]->data
+   3: [B2.2].push_back
+   4: rand
+   5: [B2.4] (ImplicitCastExpr, FunctionToPointerDecay, int (*)(void) noexcept(true))
+   6: [B2.5]()
+   7: 100
+   8: [B2.6] % [B2.7]
+   9: [B2.8]
+  10: [B2.3]([B2.9])
+   Preds (1): B3
+   Succs (1): B1
+
+ [B3]
+   1: i
+   2: [B3.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: n
+   4: [B3.3] (ImplicitCastExpr, LValueToRValue, size_t)
+   5: [B3.2] < [B3.4]
+   T: for (...; [B3.5]; ...)
+   Preds (2): B1 B4
+   Succs (2): B2 B0
+
+ [B4]
+   1:  (CXXConstructExpr, data() (Member initializer), std::vector<int>)
+   2: data([B4.1]) (Member initializer)
+   3: 0
+   4: [B4.3] (ImplicitCastExpr, IntegralCast, size_t)
+   5: size_t i = 0;
+   Preds (1): B5
+   Succs (1): B3
+
+ [B0 (EXIT)]
+   Preds (1): B3
+
+int process()
+ [B16 (ENTRY)]
+   Succs (1): B15
+
+ [B1]
+   1: total
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: return [B1.2];
+   Preds (1): B14
+   Succs (1): B0
+
+ [B2]
+   1: i
+   2: ++[B2.1]
+   Preds (1): B7
+   Succs (1): B14
+
+ [B3]
+   1: j
+   2: ++[B3.1]
+   Preds (2): B4 B5
+   Succs (1): B7
+
+ [B4]
+   1: total
+   2: j
+   3: [B4.2] (ImplicitCastExpr, LValueToRValue, int)
+   4: [B4.1] += [B4.3]
+   Preds (1): B6
+   Succs (1): B3
+
+ [B5]
+   1: total
+   2: j
+   3: [B5.2] (ImplicitCastExpr, LValueToRValue, int)
+   4: [B5.1] -= [B5.3]
+   Preds (1): B6
+   Succs (1): B3
+
+ [B6]
+   1: i
+   2: [B6.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: j
+   4: [B6.3] (ImplicitCastExpr, LValueToRValue, int)
+   5: [B6.4] (ImplicitCastExpr, IntegralCast, size_t)
+   6: [B6.2] + [B6.5]
+   7: 2
+   8: [B6.7] (ImplicitCastExpr, IntegralCast, size_t)
+   9: ([B6.6]) % [B6.8]
+  10: 0
+  11: [B6.10] (ImplicitCastExpr, IntegralCast, size_t)
+  12: [B6.9] == [B6.11]
+   T: if [B6.12]
+   Preds (1): B7
+   Succs (2): B5 B4
+
+ [B7]
+   1: j
+   2: [B7.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 3
+   4: [B7.2] <= [B7.3]
+   T: for (...; [B7.4]; ...)
+   Preds (2): B3 B8
+   Succs (2): B6 B2
+
+ [B8]
+   1: 1
+   2: int j = 1;
+   Preds (3): B9 B10 B12
+   Succs (1): B7
+
+ [B9]
+   1: total
+   2: power
+   3: [B9.2] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(double, int))
+   4: 2.
+   5: operator[]
+   6: [B9.5] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   7: this
+   8: [B9.7]->data
+   9: i
+  10: [B9.9] (ImplicitCastExpr, LValueToRValue, size_t)
+  11: [B9.8][[B9.10]] (OperatorCall)
+  12: [B9.11] (ImplicitCastExpr, LValueToRValue, value_type)
+  13: 10
+  14: [B9.12] % [B9.13]
+  15: [B9.3]([B9.4], [B9.14])
+  16: [B9.1] += [B9.15]
+   Preds (1): B11
+   Succs (1): B8
+
+ [B10]
+   1: total
+   2: fibonacci
+   3: [B10.2] (ImplicitCastExpr, FunctionToPointerDecay, double (*)(int))
+   4: operator[]
+   5: [B10.4] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   6: this
+   7: [B10.6]->data
+   8: i
+   9: [B10.8] (ImplicitCastExpr, LValueToRValue, size_t)
+  10: [B10.7][[B10.9]] (OperatorCall)
+  11: [B10.10] (ImplicitCastExpr, LValueToRValue, value_type)
+  12: 20
+  13: [B10.11] % [B10.12]
+  14: [B10.3]([B10.13])
+  15: [B10.1] += [B10.14]
+   Preds (1): B11
+   Succs (1): B8
+
+ [B11]
+   1: operator[]
+   2: [B11.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   3: this
+   4: [B11.3]->data
+   5: i
+   6: [B11.5] (ImplicitCastExpr, LValueToRValue, size_t)
+   7: [B11.4][[B11.6]] (OperatorCall)
+   8: [B11.7] (ImplicitCastExpr, LValueToRValue, value_type)
+   9: 3
+  10: [B11.8] % [B11.9]
+  11: 0
+  12: [B11.10] == [B11.11]
+   T: if [B11.12]
+   Preds (1): B13
+   Succs (2): B10 B9
+
+ [B12]
+   1: total
+   2: factorial
+   3: [B12.2] (ImplicitCastExpr, FunctionToPointerDecay, int (*)(int))
+   4: operator[]
+   5: [B12.4] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   6: this
+   7: [B12.6]->data
+   8: i
+   9: [B12.8] (ImplicitCastExpr, LValueToRValue, size_t)
+  10: [B12.7][[B12.9]] (OperatorCall)
+  11: [B12.10] (ImplicitCastExpr, LValueToRValue, value_type)
+  12: 10
+  13: [B12.11] % [B12.12]
+  14: [B12.3]([B12.13])
+  15: [B12.1] += [B12.14]
+   Preds (1): B13
+   Succs (1): B8
+
+ [B13]
+   1: operator[]
+   2: [B13.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   3: this
+   4: [B13.3]->data
+   5: i
+   6: [B13.5] (ImplicitCastExpr, LValueToRValue, size_t)
+   7: [B13.4][[B13.6]] (OperatorCall)
+   8: [B13.7] (ImplicitCastExpr, LValueToRValue, value_type)
+   9: 2
+  10: [B13.8] % [B13.9]
+  11: 0
+  12: [B13.10] == [B13.11]
+   T: if [B13.12]
+   Preds (1): B14
+   Succs (2): B12 B11
+
+ [B14]
+   1: i
+   2: [B14.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: this
+   4: [B14.3]->data
+   5: [B14.4] (ImplicitCastExpr, NoOp, const class std::vector<int>)
+   6: [B14.5].size
+   7: [B14.6]()
+   8: [B14.2] < [B14.7]
+   T: for (...; [B14.8]; ...)
+   Preds (2): B2 B15
+   Succs (2): B13 B1
+
+ [B15]
+   1: 0
+   2: int total = 0;
+   3: 0
+   4: [B15.3] (ImplicitCastExpr, IntegralCast, size_t)
+   5: size_t i = 0;
+   Preds (1): B16
+   Succs (1): B14
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+std::vector<int> filterEven() const
+ [B7 (ENTRY)]
+   Succs (1): B6
+
+ [B1]
+   1: result
+   2: [B1.1] (ImplicitCastExpr, NoOp, std::vector<int>)
+   3: [B1.2] (CXXConstructExpr, [B1.4], std::vector<int>)
+   4: return [B1.3];
+   5: [B6.2].~std::vector<int>() (Implicit destructor)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B2]
+   1: operator!=
+   2: [B2.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const __normal_iterator<const int *, vector<int, allocator<int> > > &, const __normal_iterator<const int *, vector<int, allocator<int> > > &) noexcept)
+   3: __begin1
+   4: [B2.3] (ImplicitCastExpr, NoOp, const __normal_iterator<const int *, vector<int, allocator<int> > >)
+   5: __end1
+   6: [B2.5] (ImplicitCastExpr, NoOp, const __normal_iterator<const int *, vector<int, allocator<int> > >)
+   7: [B2.4] != [B2.6] (OperatorCall)
+   T: for (auto v : [B6.4])
+    if ([B5.13])
+        [B4.5];
+
+   Preds (2): B3 B6
+   Succs (2): B5 B1
+
+ [B3]
+   1: operator++
+   2: [B3.1] (ImplicitCastExpr, FunctionToPointerDecay, __normal_iterator<const int *, vector<int> > &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B3.3] (OperatorCall)
+   Preds (2): B4 B5
+   Succs (1): B2
+
+ [B4]
+   1: result
+   2: [B4.1].push_back
+   3: v
+   4: [B4.3] (ImplicitCastExpr, NoOp, const value_type)
+   5: [B4.2]([B4.4])
+   Preds (1): B5
+   Succs (1): B3
+
+ [B5]
+   1: operator*
+   2: [B5.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B5.3] (ImplicitCastExpr, NoOp, const class __gnu_cxx::__normal_iterator<const int *, class std::vector<int> >)
+   5: * [B5.4] (OperatorCall)
+   6: [B5.5] (ImplicitCastExpr, LValueToRValue, int)
+   7: auto v;
+   8: v
+   9: [B5.8] (ImplicitCastExpr, LValueToRValue, int)
+  10: 2
+  11: [B5.9] % [B5.10]
+  12: 0
+  13: [B5.11] == [B5.12]
+   T: if [B5.13]
+   Preds (1): B2
+   Succs (2): B4 B3
+
+ [B6]
+   1:  (CXXConstructExpr, [B6.2], std::vector<int>)
+   2: std::vector<int> result;
+   3: this
+   4: [B6.3]->data
+   5: auto &&__range1 = this->data;
+   6: __range1
+   7: [B6.6].end
+   8: [B6.7]() (CXXRecordTypedCall, [B6.9])
+   9: auto __end1 = __range1.end();
+  10: __range1
+  11: [B6.10].begin
+  12: [B6.11]() (CXXRecordTypedCall, [B6.13])
+  13: auto __begin1 = __range1.begin();
+   Preds (1): B7
+   Succs (1): B2
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+int main()
+ [B25 (ENTRY)]
+   Succs (1): B24
+
+ [B1]
+   1: 0
+   2: return [B1.1];
+   3: [B9.51].~std::vector<std::string>() (Implicit destructor)
+   4: [B9.8].~std::map<std::string, int>() (Implicit destructor)
+   5: [B13.58].~std::vector<int>() (Implicit destructor)
+   6: [B13.35].~ComplexProcessor() (Implicit destructor)
+   7: [B13.9].~Matrix<int>() (Implicit destructor)
+   8: [B20.75].~Matrix<int>() (Implicit destructor)
+   9: [B20.69].~Matrix<int>() (Implicit destructor)
+  10: [B24.2].~Graph() (Implicit destructor)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B2]
+   1: operator!=
+   2: [B2.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const _Self &, const _Self &) noexcept)
+   3: __begin1
+   4: [B2.3] (ImplicitCastExpr, NoOp, const _Self)
+   5: __end1
+   6: [B2.5] (ImplicitCastExpr, NoOp, const _Self)
+   7: [B2.4] != [B2.6] (OperatorCall)
+   T: for (auto & : [B5.1])
+    [B4.36];
+
+   Preds (2): B3 B5
+   Succs (2): B4 B1
+
+ [B3]
+   1: operator++
+   2: [B3.1] (ImplicitCastExpr, FunctionToPointerDecay, _Self &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B3.3] (OperatorCall)
+   Preds (1): B4
+   Succs (1): B2
+
+ [B4]
+   1: operator*
+   2: [B4.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B4.3] (ImplicitCastExpr, NoOp, const struct std::_Rb_tree_iterator<struct std::pair<const class std::basic_string<char>, int> >)
+   5: * [B4.4] (OperatorCall)
+   6: auto &;
+   7: get<0UL>
+   8: [B4.7] (ImplicitCastExpr, FunctionToPointerDecay, typename tuple_element<0UL, pair<const basic_string<char>, int> >::type &(*)(pair<const basic_string<char>, int> &) noexcept)
+   9: 
+  10: [B4.8]([B4.9])
+  11: std::tuple_element<0, std::pair<const std::basic_string<char>, int>>::type word = get<0UL>();
+  12: get<1UL>
+  13: [B4.12] (ImplicitCastExpr, FunctionToPointerDecay, typename tuple_element<1UL, pair<const basic_string<char>, int> >::type &(*)(pair<const basic_string<char>, int> &) noexcept)
+  14: 
+  15: [B4.13]([B4.14])
+  16: std::tuple_element<1, std::pair<const std::basic_string<char>, int>>::type count = get<1UL>();
+  17: operator<<
+  18: [B4.17] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  19: operator<<
+  20: [B4.19] (ImplicitCastExpr, FunctionToPointerDecay, __ostream_type &(*)(int))
+  21: operator<<
+  22: [B4.21] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  23: operator<<
+  24: [B4.23] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const basic_string<char, char_traits<char>, allocator<char> > &))
+  25: std::cout
+  26: word
+  27: [B4.25] << [B4.26] (OperatorCall)
+  28: ": "
+  29: [B4.28] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  30: [B4.27] << [B4.29] (OperatorCall)
+  31: count
+  32: [B4.31] (ImplicitCastExpr, LValueToRValue, std::tuple_element<1, struct std::pair<const class std::basic_string<char>, int> >::type)
+  33: [B4.30] << [B4.32] (OperatorCall)
+  34: "\n"
+  35: [B4.34] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  36: [B4.33] << [B4.35] (OperatorCall)
+   Preds (1): B2
+   Succs (1): B3
+
+ [B5]
+   1: wordCount
+   2: auto &&__range1 = wordCount;
+   3: __range1
+   4: [B5.3].end
+   5: [B5.4]() (CXXRecordTypedCall, [B5.6])
+   6: auto __end1 = __range1.end();
+   7: __range1
+   8: [B5.7].begin
+   9: [B5.8]() (CXXRecordTypedCall, [B5.10])
+  10: auto __begin1 = __range1.begin();
+   Preds (1): B6
+   Succs (1): B2
+
+ [B6]
+   1: operator!=
+   2: [B6.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const __normal_iterator<basic_string<char> *, vector<basic_string<char>, allocator<basic_string<char> > > > &, const __normal_iterator<basic_string<char> *, vector<basic_string<char>, allocator<basic_string<char> > > > &) noexcept)
+   3: __begin1
+   4: [B6.3] (ImplicitCastExpr, NoOp, const __normal_iterator<basic_string<char> *, vector<basic_string<char>, allocator<basic_string<char> > > >)
+   5: __end1
+   6: [B6.5] (ImplicitCastExpr, NoOp, const __normal_iterator<basic_string<char> *, vector<basic_string<char>, allocator<basic_string<char> > > >)
+   7: [B6.4] != [B6.6] (OperatorCall)
+   T: for (auto &w : [B9.60])
+    [B8.13];
+
+   Preds (2): B7 B9
+   Succs (2): B8 B5
+
+ [B7]
+   1: operator++
+   2: [B7.1] (ImplicitCastExpr, FunctionToPointerDecay, __normal_iterator<basic_string<char> *, vector<basic_string<char> > > &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B7.3] (OperatorCall)
+   Preds (1): B8
+   Succs (1): B6
+
+ [B8]
+   1: operator*
+   2: [B8.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B8.3] (ImplicitCastExpr, NoOp, const class __gnu_cxx::__normal_iterator<class std::basic_string<char> *, class std::vector<class std::basic_string<char> > >)
+   5: * [B8.4] (OperatorCall)
+   6: auto &w;
+   7: operator[]
+   8: [B8.7] (ImplicitCastExpr, FunctionToPointerDecay, mapped_type &(*)(const key_type &))
+   9: wordCount
+  10: w
+  11: [B8.10] (ImplicitCastExpr, NoOp, const key_type)
+  12: [B8.9][[B8.11]] (OperatorCall)
+  13: [B8.12]++
+   Preds (1): B6
+   Succs (1): B7
+
+ [B9]
+   1: operator<<
+   2: [B9.1] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+   3: std::cout
+   4: "\n"
+   5: [B9.4] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+   6: [B9.3] << [B9.5] (OperatorCall)
+   7:  (CXXConstructExpr, [B9.8], std::map<std::string, int>)
+   8: std::map<std::string, int> wordCount;
+   9: "apple"
+  10: [B9.9] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  11: 
+  12: [B9.10] (CXXConstructExpr, class std::basic_string<char>)
+  13: [B9.12] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  14: [B9.13] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  15: "banana"
+  16: [B9.15] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  17: 
+  18: [B9.16] (CXXConstructExpr, class std::basic_string<char>)
+  19: [B9.18] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  20: [B9.19] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  21: "apple"
+  22: [B9.21] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  23: 
+  24: [B9.22] (CXXConstructExpr, class std::basic_string<char>)
+  25: [B9.24] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  26: [B9.25] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  27: "cherry"
+  28: [B9.27] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  29: 
+  30: [B9.28] (CXXConstructExpr, class std::basic_string<char>)
+  31: [B9.30] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  32: [B9.31] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  33: "banana"
+  34: [B9.33] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  35: 
+  36: [B9.34] (CXXConstructExpr, class std::basic_string<char>)
+  37: [B9.36] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  38: [B9.37] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  39: "apple"
+  40: [B9.39] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  41: 
+  42: [B9.40] (CXXConstructExpr, class std::basic_string<char>)
+  43: [B9.42] (ImplicitCastExpr, ConstructorConversion, class std::basic_string<char>)
+  44: [B9.43] (ImplicitCastExpr, NoOp, const class std::basic_string<char>)
+  45: {[B9.9], [B9.15], [B9.21], [B9.27], [B9.33], [B9.39]}
+  46: [B9.45] (BindTemporary)
+  47: [B9.46]
+  48: [B9.47]
+  49: 
+  50: [B9.48] (CXXConstructExpr, [B9.51], std::vector<std::string>)
+  51: std::vector<std::string> words = {"apple", "banana", "apple", "cherry", "banana", "apple"};
+  52: ~allocator_type() (Temporary object destructor)
+  53: ~const std::basic_string<char>[6]() (Temporary object destructor)
+  54: ~std::allocator<char>() (Temporary object destructor)
+  55: ~std::allocator<char>() (Temporary object destructor)
+  56: ~std::allocator<char>() (Temporary object destructor)
+  57: ~std::allocator<char>() (Temporary object destructor)
+  58: ~std::allocator<char>() (Temporary object destructor)
+  59: ~std::allocator<char>() (Temporary object destructor)
+  60: words
+  61: auto &&__range1 = words;
+  62: __range1
+  63: [B9.62].end
+  64: [B9.63]() (CXXRecordTypedCall, [B9.65])
+  65: auto __end1 = __range1.end();
+  66: __range1
+  67: [B9.66].begin
+  68: [B9.67]() (CXXRecordTypedCall, [B9.69])
+  69: auto __begin1 = __range1.begin();
+   Preds (1): B10
+   Succs (1): B6
+
+ [B10]
+   1: operator!=
+   2: [B10.1] (ImplicitCastExpr, FunctionToPointerDecay, _Bool (*)(const __normal_iterator<int *, vector<int, allocator<int> > > &, const __normal_iterator<int *, vector<int, allocator<int> > > &) noexcept)
+   3: __begin1
+   4: [B10.3] (ImplicitCastExpr, NoOp, const __normal_iterator<int *, vector<int, allocator<int> > >)
+   5: __end1
+   6: [B10.5] (ImplicitCastExpr, NoOp, const __normal_iterator<int *, vector<int, allocator<int> > >)
+   7: [B10.4] != [B10.6] (OperatorCall)
+   T: for (auto v : [B13.65])
+    [B12.18];
+
+   Preds (2): B11 B13
+   Succs (2): B12 B9
+
+ [B11]
+   1: operator++
+   2: [B11.1] (ImplicitCastExpr, FunctionToPointerDecay, __normal_iterator<int *, vector<int> > &(*)(void) noexcept)
+   3: __begin1
+   4: ++ [B11.3] (OperatorCall)
+   Preds (1): B12
+   Succs (1): B10
+
+ [B12]
+   1: operator*
+   2: [B12.1] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(void) const noexcept)
+   3: __begin1
+   4: [B12.3] (ImplicitCastExpr, NoOp, const class __gnu_cxx::__normal_iterator<int *, class std::vector<int> >)
+   5: * [B12.4] (OperatorCall)
+   6: [B12.5] (ImplicitCastExpr, LValueToRValue, int)
+   7: auto v;
+   8: operator<<
+   9: [B12.8] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  10: operator<<
+  11: [B12.10] (ImplicitCastExpr, FunctionToPointerDecay, __ostream_type &(*)(int))
+  12: std::cout
+  13: v
+  14: [B12.13] (ImplicitCastExpr, LValueToRValue, int)
+  15: [B12.12] << [B12.14] (OperatorCall)
+  16: " "
+  17: [B12.16] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  18: [B12.15] << [B12.17] (OperatorCall)
+   Preds (1): B10
+   Succs (1): B11
+
+ [B13]
+   1: operator+
+   2: [B13.1] (ImplicitCastExpr, FunctionToPointerDecay, Matrix<int> (*)(const Matrix<int> &) const)
+   3: mat1
+   4: [B13.3] (ImplicitCastExpr, NoOp, const class Matrix<int>)
+   5: mat2
+   6: [B13.5] (ImplicitCastExpr, NoOp, const Matrix<int>)
+   7: [B13.4] + [B13.6] (OperatorCall) (CXXRecordTypedCall, [B13.9], [B13.8])
+   8: [B13.7] (BindTemporary)
+   9: Matrix<int> mat3 = mat1 + mat2;
+  10: operator<<
+  11: [B13.10] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  12: operator<<
+  13: [B13.12] (ImplicitCastExpr, FunctionToPointerDecay, __ostream_type &(*)(int))
+  14: operator<<
+  15: [B13.14] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  16: std::cout
+  17: "Matrix[2][3] sum: "
+  18: [B13.17] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  19: [B13.16] << [B13.18] (OperatorCall)
+  20: mat3
+  21: [B13.20] (ImplicitCastExpr, NoOp, const class Matrix<int>)
+  22: [B13.21].get
+  23: 2
+  24: [B13.23] (ImplicitCastExpr, IntegralCast, size_t)
+  25: 3
+  26: [B13.25] (ImplicitCastExpr, IntegralCast, size_t)
+  27: [B13.22]([B13.24], [B13.26])
+  28: [B13.19] << [B13.27] (OperatorCall)
+  29: "\n"
+  30: [B13.29] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  31: [B13.28] << [B13.30] (OperatorCall)
+  32: 50
+  33: [B13.32] (ImplicitCastExpr, IntegralCast, size_t)
+  34: [B13.33] (CXXConstructExpr, [B13.35], ComplexProcessor)
+  35: ComplexProcessor processor(50);
+  36: operator<<
+  37: [B13.36] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  38: operator<<
+  39: [B13.38] (ImplicitCastExpr, FunctionToPointerDecay, __ostream_type &(*)(int))
+  40: operator<<
+  41: [B13.40] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  42: std::cout
+  43: "Complex processing result: "
+  44: [B13.43] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  45: [B13.42] << [B13.44] (OperatorCall)
+  46: processor
+  47: [B13.46].process
+  48: [B13.47]()
+  49: [B13.45] << [B13.48] (OperatorCall)
+  50: "\n"
+  51: [B13.50] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  52: [B13.49] << [B13.51] (OperatorCall)
+  53: processor
+  54: [B13.53] (ImplicitCastExpr, NoOp, const class ComplexProcessor)
+  55: [B13.54].filterEven
+  56: [B13.55]() (CXXRecordTypedCall, [B13.58], [B13.57])
+  57: [B13.56] (BindTemporary)
+  58: auto evens = processor.filterEven();
+  59: operator<<
+  60: [B13.59] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  61: std::cout
+  62: "Filtered evens: "
+  63: [B13.62] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  64: [B13.61] << [B13.63] (OperatorCall)
+  65: evens
+  66: auto &&__range1 = evens;
+  67: __range1
+  68: [B13.67].end
+  69: [B13.68]() (CXXRecordTypedCall, [B13.70])
+  70: auto __end1 = __range1.end();
+  71: __range1
+  72: [B13.71].begin
+  73: [B13.72]() (CXXRecordTypedCall, [B13.74])
+  74: auto __begin1 = __range1.begin();
+   Preds (1): B19
+   Succs (1): B10
+
+ [B14]
+   1: i
+   2: ++[B14.1]
+   Preds (1): B17
+   Succs (1): B19
+
+ [B15]
+   1: j
+   2: ++[B15.1]
+   Preds (1): B16
+   Succs (1): B17
+
+ [B16]
+   1: mat1
+   2: [B16.1].set
+   3: i
+   4: [B16.3] (ImplicitCastExpr, LValueToRValue, int)
+   5: [B16.4] (ImplicitCastExpr, IntegralCast, size_t)
+   6: j
+   7: [B16.6] (ImplicitCastExpr, LValueToRValue, int)
+   8: [B16.7] (ImplicitCastExpr, IntegralCast, size_t)
+   9: i
+  10: [B16.9] (ImplicitCastExpr, LValueToRValue, int)
+  11: j
+  12: [B16.11] (ImplicitCastExpr, LValueToRValue, int)
+  13: [B16.10] + [B16.12]
+  14: [B16.2]([B16.5], [B16.8], [B16.13])
+  15: mat2
+  16: [B16.15].set
+  17: i
+  18: [B16.17] (ImplicitCastExpr, LValueToRValue, int)
+  19: [B16.18] (ImplicitCastExpr, IntegralCast, size_t)
+  20: j
+  21: [B16.20] (ImplicitCastExpr, LValueToRValue, int)
+  22: [B16.21] (ImplicitCastExpr, IntegralCast, size_t)
+  23: i
+  24: [B16.23] (ImplicitCastExpr, LValueToRValue, int)
+  25: j
+  26: [B16.25] (ImplicitCastExpr, LValueToRValue, int)
+  27: [B16.24] * [B16.26]
+  28: [B16.16]([B16.19], [B16.22], [B16.27])
+   Preds (1): B17
+   Succs (1): B15
+
+ [B17]
+   1: j
+   2: [B17.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 5
+   4: [B17.2] < [B17.3]
+   T: for (...; [B17.4]; ...)
+   Preds (2): B15 B18
+   Succs (2): B16 B14
+
+ [B18]
+   1: 0
+   2: int j = 0;
+   Preds (1): B19
+   Succs (1): B17
+
+ [B19]
+   1: i
+   2: [B19.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 5
+   4: [B19.2] < [B19.3]
+   T: for (...; [B19.4]; ...)
+   Preds (2): B14 B20
+   Succs (2): B18 B13
+
+ [B20]
+   1: g
+   2: [B20.1].addEdge
+   3: 1
+   4: 2
+   5: [B20.2]([B20.3], [B20.4])
+   6: g
+   7: [B20.6].addEdge
+   8: 1
+   9: 3
+  10: [B20.7]([B20.8], [B20.9])
+  11: g
+  12: [B20.11].addEdge
+  13: 2
+  14: 4
+  15: [B20.12]([B20.13], [B20.14])
+  16: g
+  17: [B20.16].addEdge
+  18: 2
+  19: 5
+  20: [B20.17]([B20.18], [B20.19])
+  21: g
+  22: [B20.21].addEdge
+  23: 3
+  24: 6
+  25: [B20.22]([B20.23], [B20.24])
+  26: g
+  27: [B20.26].addEdge
+  28: 3
+  29: 7
+  30: [B20.27]([B20.28], [B20.29])
+  31: g
+  32: [B20.31].addEdge
+  33: 4
+  34: 8
+  35: [B20.32]([B20.33], [B20.34])
+  36: g
+  37: [B20.36].addEdge
+  38: 5
+  39: 9
+  40: [B20.37]([B20.38], [B20.39])
+  41: g
+  42: [B20.41].addEdge
+  43: 6
+  44: 10
+  45: [B20.42]([B20.43], [B20.44])
+  46: operator<<
+  47: [B20.46] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  48: operator<<
+  49: [B20.48] (ImplicitCastExpr, FunctionToPointerDecay, __ostream_type &(*)(int))
+  50: operator<<
+  51: [B20.50] (ImplicitCastExpr, FunctionToPointerDecay, basic_ostream<char, char_traits<char> > &(*)(basic_ostream<char, char_traits<char> > &, const char *))
+  52: std::cout
+  53: "DFS sum from 1: "
+  54: [B20.53] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  55: [B20.52] << [B20.54] (OperatorCall)
+  56: g
+  57: [B20.56].sumValuesDFS
+  58: 1
+  59: [B20.57]([B20.58])
+  60: [B20.55] << [B20.59] (OperatorCall)
+  61: "\n"
+  62: [B20.61] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+  63: [B20.60] << [B20.62] (OperatorCall)
+  64: 5
+  65: [B20.64] (ImplicitCastExpr, IntegralCast, size_t)
+  66: 5
+  67: [B20.66] (ImplicitCastExpr, IntegralCast, size_t)
+  68: [B20.65], [B20.67] (CXXConstructExpr, [B20.69], Matrix<int>)
+  69: Matrix<int> mat1(5, 5);
+  70: 5
+  71: [B20.70] (ImplicitCastExpr, IntegralCast, size_t)
+  72: 5
+  73: [B20.72] (ImplicitCastExpr, IntegralCast, size_t)
+  74: [B20.71], [B20.73] (CXXConstructExpr, [B20.75], Matrix<int>)
+  75: Matrix<int> mat2(5, 5);
+  76: 0
+  77: int i = 0;
+   Preds (1): B23
+   Succs (1): B19
+
+ [B21]
+   1: i
+   2: ++[B21.1]
+   Preds (1): B22
+   Succs (1): B23
+
+ [B22]
+   1: g
+   2: [B22.1].addNode
+   3: i
+   4: [B22.3] (ImplicitCastExpr, LValueToRValue, int)
+   5: [B22.2]([B22.4])
+   Preds (1): B23
+   Succs (1): B21
+
+ [B23]
+   1: i
+   2: [B23.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 10
+   4: [B23.2] <= [B23.3]
+   T: for (...; [B23.4]; ...)
+   Preds (2): B21 B24
+   Succs (2): B22 B20
+
+ [B24]
+   1:  (CXXConstructExpr, [B24.2], Graph)
+   2: Graph g;
+   3: 1
+   4: int i = 1;
+   Preds (1): B25
+   Succs (1): B23
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+template<> int gcd<int>(int a, int b)
+ [B5 (ENTRY)]
+   Succs (1): B4
+
+ [B1]
+   1: a
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: return [B1.2];
+   Preds (1): B4
+   Succs (1): B0
+
+ [B2]
+   Preds (1): B3
+   Succs (1): B4
+
+ [B3]
+   1: b
+   2: [B3.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: int t = b;
+   4: a
+   5: [B3.4] (ImplicitCastExpr, LValueToRValue, int)
+   6: b
+   7: [B3.6] (ImplicitCastExpr, LValueToRValue, int)
+   8: [B3.5] % [B3.7]
+   9: b
+  10: [B3.9] = [B3.8]
+  11: t
+  12: [B3.11] (ImplicitCastExpr, LValueToRValue, int)
+  13: a
+  14: [B3.13] = [B3.12]
+   Preds (1): B4
+   Succs (1): B2
+
+ [B4]
+   1: b
+   2: [B4.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 0
+   4: [B4.2] != [B4.3]
+   T: while [B4.4]
+   Preds (2): B2 B5
+   Succs (2): B3 B1
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+template<> int lcm<int>(int a, int b)
+ [B2 (ENTRY)]
+   Succs (1): B1
+
+ [B1]
+   1: a
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: gcd
+   4: [B1.3] (ImplicitCastExpr, FunctionToPointerDecay, int (*)(int, int))
+   5: a
+   6: [B1.5] (ImplicitCastExpr, LValueToRValue, int)
+   7: b
+   8: [B1.7] (ImplicitCastExpr, LValueToRValue, int)
+   9: [B1.4]([B1.6], [B1.8])
+  10: [B1.2] / [B1.9]
+  11: b
+  12: [B1.11] (ImplicitCastExpr, LValueToRValue, int)
+  13: ([B1.10]) * [B1.12]
+  14: return [B1.13];
+   Preds (1): B2
+   Succs (1): B0
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+template<> int factorial<int>(int n)
+ [B4 (ENTRY)]
+   Succs (1): B3
+
+ [B1]
+   1: n
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: factorial
+   4: [B1.3] (ImplicitCastExpr, FunctionToPointerDecay, int (*)(int))
+   5: n
+   6: [B1.5] (ImplicitCastExpr, LValueToRValue, int)
+   7: 1
+   8: [B1.6] - [B1.7]
+   9: [B1.4]([B1.8])
+  10: [B1.2] * [B1.9]
+  11: return [B1.10];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B2]
+   1: 1
+   2: return [B2.1];
+   Preds (1): B3
+   Succs (1): B0
+
+ [B3]
+   1: n
+   2: [B3.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: 1
+   4: [B3.2] <= [B3.3]
+   T: if [B3.4]
+   Preds (1): B4
+   Succs (2): B2 B1
+
+ [B0 (EXIT)]
+   Preds (2): B1 B2
+
+Matrix(size_t rows, size_t cols)
+ [B2 (ENTRY)]
+   Succs (1): B1
+
+ [B1]
+   1: rows
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: cols
+   4: [B1.3] (ImplicitCastExpr, LValueToRValue, size_t)
+   5: 0
+   6: [B1.5] (ImplicitCastExpr, NoOp, const int)
+   7: [B1.6]
+   8: 
+   9: std::vector<int>([B1.4], [B1.7]) (CXXConstructExpr, [B1.10], [B1.12], std::vector<int>)
+  10: [B1.9] (BindTemporary)
+  11: [B1.10] (ImplicitCastExpr, NoOp, const std::vector<int>)
+  12: [B1.11]
+  13: 
+  14: [B1.2], [B1.12] (CXXConstructExpr, data([B1.2], [B1.12]) (Member initializer), std::vector<std::vector<int> >)
+  15: data([B1.14]) (Member initializer)
+  16: ~allocator_type() (Temporary object destructor)
+  17: ~std::vector<int>() (Temporary object destructor)
+  18: ~allocator_type() (Temporary object destructor)
+   Preds (1): B2
+   Succs (1): B0
+
+ [B0 (EXIT)]
+   Preds (1): B1
+
+void set(size_t r, size_t c, int val)
+ [B6 (ENTRY)]
+   Succs (1): B5
+
+ [B1]
+   1: val
+   2: [B1.1] (ImplicitCastExpr, LValueToRValue, int)
+   3: operator[]
+   4: [B1.3] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   5: operator[]
+   6: [B1.5] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   7: this
+   8: [B1.7]->data
+   9: r
+  10: [B1.9] (ImplicitCastExpr, LValueToRValue, size_t)
+  11: [B1.8][[B1.10]] (OperatorCall)
+  12: c
+  13: [B1.12] (ImplicitCastExpr, LValueToRValue, size_t)
+  14: [B1.11][[B1.13]] (OperatorCall)
+  15: [B1.14] = [B1.2]
+   Preds (2): B2 B4
+   Succs (1): B0
+
+ [B2]
+   1: ~std::out_of_range() (Temporary object destructor)
+   Succs (1): B1
+
+ [B3]
+   1: "Matrix index"
+   2: [B3.1] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+   3: [B3.2] (CXXConstructExpr, [B3.4], std::out_of_range)
+   4: [B3.3] (BindTemporary)
+   5: std::out_of_range([B3.4]) (CXXFunctionalCastExpr, ConstructorConversion, std::out_of_range)
+   6: throw [B3.5]
+   Preds (2): B4 B5
+   Succs (1): B0
+
+ [B4]
+   1: c
+   2: [B4.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: operator[]
+   4: [B4.3] (ImplicitCastExpr, FunctionToPointerDecay, reference (*)(size_type) noexcept)
+   5: this
+   6: [B4.5]->data
+   7: 0
+   8: [B4.7] (ImplicitCastExpr, IntegralCast, size_type)
+   9: [B4.6][[B4.8]] (OperatorCall)
+  10: [B4.9] (ImplicitCastExpr, NoOp, const class std::vector<int>)
+  11: [B4.10].size
+  12: [B4.11]()
+  13: [B4.2] >= [B4.12]
+   T: if [B5.8] || [B4.13]
+   Preds (1): B5
+   Succs (2): B3 B1
+
+ [B5]
+   1: r
+   2: [B5.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: this
+   4: [B5.3]->data
+   5: [B5.4] (ImplicitCastExpr, NoOp, const class std::vector<class std::vector<int> >)
+   6: [B5.5].size
+   7: [B5.6]()
+   8: [B5.2] >= [B5.7]
+   T: [B5.8] || ...
+   Preds (1): B6
+   Succs (2): B3 B4
+
+ [B0 (EXIT)]
+   Preds (2): B1 B3
+
+Matrix<int> operator+(const Matrix<int> &other) const
+ [B13 (ENTRY)]
+   Succs (1): B12
+
+ [B1]
+   1: result
+   2: [B1.1] (ImplicitCastExpr, NoOp, Matrix<int>)
+   3: [B1.2] (CXXConstructExpr, [B1.4], Matrix<int>)
+   4: return [B1.3];
+   5: [B8.15].~Matrix<int>() (Implicit destructor)
+   Preds (1): B7
+   Succs (1): B0
+
+ [B2]
+   1: i
+   2: ++[B2.1]
+   Preds (1): B5
+   Succs (1): B7
+
+ [B3]
+   1: j
+   2: ++[B3.1]
+   Preds (1): B4
+   Succs (1): B5
+
+ [B4]
+   1: result
+   2: [B4.1].set
+   3: i
+   4: [B4.3] (ImplicitCastExpr, LValueToRValue, size_t)
+   5: j
+   6: [B4.5] (ImplicitCastExpr, LValueToRValue, size_t)
+   7: operator[]
+   8: [B4.7] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   9: operator[]
+  10: [B4.9] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+  11: this
+  12: [B4.11]->data
+  13: i
+  14: [B4.13] (ImplicitCastExpr, LValueToRValue, size_t)
+  15: [B4.12][[B4.14]] (OperatorCall)
+  16: j
+  17: [B4.16] (ImplicitCastExpr, LValueToRValue, size_t)
+  18: [B4.15][[B4.17]] (OperatorCall)
+  19: [B4.18] (ImplicitCastExpr, LValueToRValue, value_type)
+  20: other
+  21: [B4.20].get
+  22: i
+  23: [B4.22] (ImplicitCastExpr, LValueToRValue, size_t)
+  24: j
+  25: [B4.24] (ImplicitCastExpr, LValueToRValue, size_t)
+  26: [B4.21]([B4.23], [B4.25])
+  27: [B4.19] + [B4.26]
+  28: [B4.2]([B4.4], [B4.6], [B4.27])
+   Preds (1): B5
+   Succs (1): B3
+
+ [B5]
+   1: j
+   2: [B5.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: operator[]
+   4: [B5.3] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   5: this
+   6: [B5.5]->data
+   7: 0
+   8: [B5.7] (ImplicitCastExpr, IntegralCast, size_type)
+   9: [B5.6][[B5.8]] (OperatorCall)
+  10: [B5.9].size
+  11: [B5.10]()
+  12: [B5.2] < [B5.11]
+   T: for (...; [B5.12]; ...)
+   Preds (2): B3 B6
+   Succs (2): B4 B2
+
+ [B6]
+   1: 0
+   2: [B6.1] (ImplicitCastExpr, IntegralCast, size_t)
+   3: size_t j = 0;
+   Preds (1): B7
+   Succs (1): B5
+
+ [B7]
+   1: i
+   2: [B7.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: this
+   4: [B7.3]->data
+   5: [B7.4].size
+   6: [B7.5]()
+   7: [B7.2] < [B7.6]
+   T: for (...; [B7.7]; ...)
+   Preds (2): B2 B8
+   Succs (2): B6 B1
+
+ [B8]
+   1: this
+   2: [B8.1]->data
+   3: [B8.2].size
+   4: [B8.3]()
+   5: operator[]
+   6: [B8.5] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   7: this
+   8: [B8.7]->data
+   9: 0
+  10: [B8.9] (ImplicitCastExpr, IntegralCast, size_type)
+  11: [B8.8][[B8.10]] (OperatorCall)
+  12: [B8.11].size
+  13: [B8.12]()
+  14: [B8.4], [B8.13] (CXXConstructExpr, [B8.15], Matrix<int>)
+  15: Matrix<int> result(this->data.size(), this->data[0].size());
+  16: 0
+  17: [B8.16] (ImplicitCastExpr, IntegralCast, size_t)
+  18: size_t i = 0;
+   Preds (2): B9 B11
+   Succs (1): B7
+
+ [B9]
+   1: ~std::invalid_argument() (Temporary object destructor)
+   Succs (1): B8
+
+ [B10]
+   1: "Matrix sizes do not match"
+   2: [B10.1] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+   3: [B10.2] (CXXConstructExpr, [B10.4], std::invalid_argument)
+   4: [B10.3] (BindTemporary)
+   5: std::invalid_argument([B10.4]) (CXXFunctionalCastExpr, ConstructorConversion, std::invalid_argument)
+   6: throw [B10.5]
+   Preds (2): B11 B12
+   Succs (1): B0
+
+ [B11]
+   1: operator[]
+   2: [B11.1] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   3: this
+   4: [B11.3]->data
+   5: 0
+   6: [B11.5] (ImplicitCastExpr, IntegralCast, size_type)
+   7: [B11.4][[B11.6]] (OperatorCall)
+   8: [B11.7].size
+   9: [B11.8]()
+  10: operator[]
+  11: [B11.10] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+  12: other
+  13: [B11.12].data
+  14: 0
+  15: [B11.14] (ImplicitCastExpr, IntegralCast, size_type)
+  16: [B11.13][[B11.15]] (OperatorCall)
+  17: [B11.16].size
+  18: [B11.17]()
+  19: [B11.9] != [B11.18]
+   T: if [B12.9] || [B11.19]
+   Preds (1): B12
+   Succs (2): B10 B8
+
+ [B12]
+   1: this
+   2: [B12.1]->data
+   3: [B12.2].size
+   4: [B12.3]()
+   5: other
+   6: [B12.5].data
+   7: [B12.6].size
+   8: [B12.7]()
+   9: [B12.4] != [B12.8]
+   T: [B12.9] || ...
+   Preds (1): B13
+   Succs (2): B10 B11
+
+ [B0 (EXIT)]
+   Preds (2): B1 B10
+
+int get(size_t r, size_t c) const
+ [B6 (ENTRY)]
+   Succs (1): B5
+
+ [B1]
+   1: operator[]
+   2: [B1.1] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   3: operator[]
+   4: [B1.3] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   5: this
+   6: [B1.5]->data
+   7: r
+   8: [B1.7] (ImplicitCastExpr, LValueToRValue, size_t)
+   9: [B1.6][[B1.8]] (OperatorCall)
+  10: c
+  11: [B1.10] (ImplicitCastExpr, LValueToRValue, size_t)
+  12: [B1.9][[B1.11]] (OperatorCall)
+  13: [B1.12] (ImplicitCastExpr, LValueToRValue, value_type)
+  14: return [B1.13];
+   Preds (2): B2 B4
+   Succs (1): B0
+
+ [B2]
+   1: ~std::out_of_range() (Temporary object destructor)
+   Succs (1): B1
+
+ [B3]
+   1: "Matrix index"
+   2: [B3.1] (ImplicitCastExpr, ArrayToPointerDecay, const char *)
+   3: [B3.2] (CXXConstructExpr, [B3.4], std::out_of_range)
+   4: [B3.3] (BindTemporary)
+   5: std::out_of_range([B3.4]) (CXXFunctionalCastExpr, ConstructorConversion, std::out_of_range)
+   6: throw [B3.5]
+   Preds (2): B4 B5
+   Succs (1): B0
+
+ [B4]
+   1: c
+   2: [B4.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: operator[]
+   4: [B4.3] (ImplicitCastExpr, FunctionToPointerDecay, const_reference (*)(size_type) const noexcept)
+   5: this
+   6: [B4.5]->data
+   7: 0
+   8: [B4.7] (ImplicitCastExpr, IntegralCast, size_type)
+   9: [B4.6][[B4.8]] (OperatorCall)
+  10: [B4.9].size
+  11: [B4.10]()
+  12: [B4.2] >= [B4.11]
+   T: if [B5.7] || [B4.12]
+   Preds (1): B5
+   Succs (2): B3 B1
+
+ [B5]
+   1: r
+   2: [B5.1] (ImplicitCastExpr, LValueToRValue, size_t)
+   3: this
+   4: [B5.3]->data
+   5: [B5.4].size
+   6: [B5.5]()
+   7: [B5.2] >= [B5.6]
+   T: [B5.7] || ...
+   Preds (1): B6
+   Succs (2): B3 B4
+
+ [B0 (EXIT)]
+   Preds (2): B1 B3
+

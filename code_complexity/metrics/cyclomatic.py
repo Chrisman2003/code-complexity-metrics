@@ -87,22 +87,46 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
     func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
-    
+    #func_start_pattern = re.compile(r"""
+    #    ^                                   # Start of line
+    #    (?:template<.*>\s*)?                # [Optional] template declaration
+    #    ([\w:\<\>\,\s\*&]+?)                # (1) Return type (lazy to avoid greedily eating the function name)
+    #    \s+                                 # Space between type and name
+    #    ([\w:<>~]+)                         # (2) Function name (normal, operator+, destructor, etc.)
+    #    \s*\([^)]*\)                        # Parameter list
+    #    \s*(?:const)?                       # Optional 'const'
+    #    $                                   # End of line
+    #""", re.VERBOSE)
+
     function_cfgs = {}
     current_function = None
     current_node = None
     cfg = nx.DiGraph()
-    for line in output.splitlines():
-        func_match = func_start_pattern.match(line)
-        node_match = node_pattern.search(line)
-        succ_match = succ_pattern.search(line)
-        if func_match:
-            # Start a new function CFG.
-            current_function = func_match.group(2)
+    lines = output.splitlines()
+    for i, line in enumerate(lines):
+        if "(ENTRY)" in line:
+            # The line above is assumed to be the function declaration
+            decl_line = lines[i - 1].strip() if i > 0 else ""
+            # Extract function name as the word before first '('
+            if '(' in decl_line:
+                current_function = decl_line.split('(')[0].split()[-1]
+            else:
+                current_function = f"unknown_{i}"
             cfg = nx.DiGraph()
             function_cfgs[current_function] = cfg
             current_node = None
-            continue
+            continue    
+        
+        #func_match = func_start_pattern.match(line)
+        node_match = node_pattern.search(line)
+        succ_match = succ_pattern.search(line)
+        #if func_match:
+        #    # Start a new function CFG.
+        #    current_function = func_match.group(2)
+        #    cfg = nx.DiGraph()
+        #    function_cfgs[current_function] = cfg
+        #    current_node = None
+        #    continue
         if current_function is None:
             # Skip lines outside of function CFGs.
             continue
@@ -177,6 +201,13 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         )
 
         output = process.stdout + "\n" + process.stderr
+        
+        # Save CFG to a file
+        cfg_file_path = os.path.join(original_dir, "clang_cfg_dump.txt")
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(output)
+        print(f"Clang CFG dump saved to: {cfg_file_path}")
+        
         #print(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
@@ -236,15 +267,40 @@ def basic_compute_cyclomatic(code: str) -> int:
     control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
+    num_functions = 0
+    # Count function definitions (ignoring function calls!)
+    function_pattern = re.compile(r"""
+        (?:template\s*<[^>]+>\s*)*                     # optional template(s)
+        (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type (greedy)
+        #([\w:<>\~*&]+(?:\s+[\w:<>\~*&]+)*) 
+        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name (with scope)
+        \([^{};]*\)\s*                                 # parameter list (flat, allows (), <>)
+        (?:const\s*)?(?:noexcept\s*)?                  # optional specifiers
+        (?:->\s*[\w:\<\>\s\*&]+)?                      # optional trailing return type
+        \s*\{                                          # start of function body
+        """, re.VERBOSE | re.DOTALL
+    )
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
+        # Count Control Keywords
         for keyword in control_keywords:
             if re.search(rf'\b{keyword}\b', stripped): # Only match with word boundaries
                 count += 1
+        # Count Logical Operators
         for op in logical_operators:
             if op in ['and', 'or']:
                 count += len(re.findall(rf'\b{op}\b', stripped))
             else:
                 count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
-    return count + 1  # +1 for the default path
+                # Count functions (definitions only, not calls)
+        if re.match(function_pattern, stripped):
+            # Exclude mis-matched control statements
+            if not any(stripped.startswith(k) for k in (control_keywords + ['switch'])):
+                print(  # Debugging: show detected function definitions.
+                    f"Function: {stripped}"
+                )
+                num_functions += 1
+    return count + num_functions # +1 for the default path
 
+# Edge Case: Boolean Operators for CFG Method Version
+# Edge Case: Clang doesn't produce CFG for non-instantiated templates

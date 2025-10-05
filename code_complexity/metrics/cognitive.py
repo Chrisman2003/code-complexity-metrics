@@ -31,7 +31,6 @@ def basic_compute_cognitive(code: str) -> int:
     """   
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-
     # Control flow keywords (notice: no plain 'else')
     control_keywords = ['if', 'for', 'while', 'switch', 'catch', 'do'] # switch with branches add 1
     #logical_operators = ['&&', '||', '?', 'and', 'or']
@@ -43,14 +42,12 @@ def basic_compute_cognitive(code: str) -> int:
         stripped = line.strip()
         if not stripped:
             continue
-        line_log = {"line": line, "code": stripped, "matches": [], "complexity_before": complexity}
-
+        
         # --- Control keywords ---
         for keyword in control_keywords: # Count control keywords
-            matches = re.findall(rf'\b{keyword}\b', stripped)#
+            matches = re.findall(rf'\b{keyword}\b', stripped)
             complexity += len(matches) * (1 + nesting)
-            #line_log["matches"].append((keyword, len(matches), nesting))
-        
+            
         # --- Jump statements ---
         if re.search(r'\bgoto\s+\w+', stripped):
             complexity += 1 + nesting
@@ -78,13 +75,6 @@ def basic_compute_cognitive(code: str) -> int:
              found_nesting_keyword = True
         if found_nesting_keyword and '{' in stripped:   
             nesting += stripped.count('{')    
-            
-        # Final Log
-        # line_log["complexity_after"] = complexity
-        # line_log["nesting"] = nesting
-        # print(line_log)
-        # print("\n")
-        
     return complexity
 
 '''

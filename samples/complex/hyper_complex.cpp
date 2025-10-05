@@ -33,6 +33,9 @@ T lcm(T a, T b) {
     return (a / gcd(a, b)) * b;
 }
 
+int x = gcd<int>(10, 15);   // Forces gcd<int> CFG
+int y = lcm<int>(10, 15);   // Forces lcm<int> CFG
+    
 template<typename T>
 T factorial(T n) {
     if (n <= 1) return 1;

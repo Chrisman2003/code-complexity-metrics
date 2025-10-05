@@ -3,7 +3,7 @@ int sort (int x[ ], int n)
 {
     int i, j, save, im1;
     /*This function sorts array x in ascending order */
-    If (n< 2) return 1;
+    if (n< 2) return 1;
     for (i=2; i< =n; i++)
     {
         im1=i-1;

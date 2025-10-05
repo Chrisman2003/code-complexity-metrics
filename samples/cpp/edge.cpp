@@ -1,27 +1,17 @@
 #include <iostream>
 
-int foo(int x) {
-    if (x > 0) {
-        return x;
-    } else {
-        return -x;
-    }
+double fibonacci(int n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-int bar(int y) {
-    switch (y) {
-        case 1: return 10;
-        case 2: return foo(20);
-        default: return 0;
-    }
+double power(double x, int n) {
+    if (n == 0) return 1.0;
+    if (n < 0) return 1.0 / power(x, -n);
+    double half = power(x, n / 2);
+    if (n % 2 == 0) return half * half;
+    return x * half * half;
 }
-
-int main() {
-    std::cout << foo(5) << std::endl;
-    std::cout << bar(2) << std::endl;
-    return 0;
-}
-
 
 
 /*
