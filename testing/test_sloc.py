@@ -22,14 +22,28 @@ def load_code(filename):
 def test_sloc_simple_cpp():
     """Tests the source lines of code (SLOC) calculation on a simple C++ file."""
     code = load_code("cpp/OLD_simple.cpp")
-    
     # Expected SLOC for OLD_simple.cpp
     assert compute_sloc(code) == 18
 
+
+def test_cyclomatic_edge_cpp():
+    """
+    Tests cyclomatic complexity for specified edge case File.
+    """
+    code = load_code("cpp/edge.cpp")
+    assert compute_sloc(code) == 12
+    
 
 def test_sloc_complex_cpp():
     """Tests the source lines of code (SLOC) calculation on a complex C++ file."""
     code = load_code("complex/complex.cpp")
     
     # Expected SLOC for complex.cpp
-    assert compute_sloc(code) == 166
+    assert compute_sloc(code) == 168
+
+def test_cyclomatic_hyper_complex_cpp():
+    """
+    Tests cyclomatic complexity calculation on a very complex C++ File.
+    """
+    code = load_code("complex/hyper_complex.cpp")
+    assert compute_sloc(code) == 222

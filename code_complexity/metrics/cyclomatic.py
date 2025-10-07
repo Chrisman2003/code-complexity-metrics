@@ -4,6 +4,17 @@ import re
 import tempfile
 import os
 from code_complexity.metrics.shared import *
+import logging
+
+# -------------------------------
+# Logging setup
+# -------------------------------
+plain_logger = logging.getLogger("plain")
+plain_handler = logging.StreamHandler()
+plain_handler.setFormatter(logging.Formatter("%(message)s"))
+plain_logger.addHandler(plain_handler)
+plain_logger.setLevel(logging.INFO)
+
 
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
@@ -86,17 +97,6 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     """
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
-    func_start_pattern = re.compile(r'^\s*(\w[\w\s:*&<>]*)\s+(\w+)\(.*\)\s*$')
-    #func_start_pattern = re.compile(r"""
-    #    ^                                   # Start of line
-    #    (?:template<.*>\s*)?                # [Optional] template declaration
-    #    ([\w:\<\>\,\s\*&]+?)                # (1) Return type (lazy to avoid greedily eating the function name)
-    #    \s+                                 # Space between type and name
-    #    ([\w:<>~]+)                         # (2) Function name (normal, operator+, destructor, etc.)
-    #    \s*\([^)]*\)                        # Parameter list
-    #    \s*(?:const)?                       # Optional 'const'
-    #    $                                   # End of line
-    #""", re.VERBOSE)
 
     function_cfgs = {}
     current_function = None
@@ -117,16 +117,9 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             current_node = None
             continue    
         
-        #func_match = func_start_pattern.match(line)
         node_match = node_pattern.search(line)
         succ_match = succ_pattern.search(line)
-        #if func_match:
-        #    # Start a new function CFG.
-        #    current_function = func_match.group(2)
-        #    cfg = nx.DiGraph()
-        #    function_cfgs[current_function] = cfg
-        #    current_node = None
-        #    continue
+        
         if current_function is None:
             # Skip lines outside of function CFGs.
             continue
@@ -189,8 +182,8 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             "-O0",           # Disable optimizations for a clearer CFG.
             "-g",            # Include debug info.
             "-nostdinc",     # Do not use default system includes.
-            "-Xclang", "-analyze",
-            "-Xclang", "-analyzer-checker=debug.DumpCFG",
+            "-Xclang", "-analyze", # Enable static analysis.
+            "-Xclang", "-analyzer-checker=debug.DumpCFG", # Dump the CFG.
             *include_flags,
             tmp_path,
         ]
@@ -203,12 +196,11 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         output = process.stdout + "\n" + process.stderr
         
         # Save CFG to a file
-        cfg_file_path = os.path.join(original_dir, "clang_cfg_dump.txt")
-        with open(cfg_file_path, "w", encoding="utf-8") as f:
-            f.write(output)
-        print(f"Clang CFG dump saved to: {cfg_file_path}")
-        
-        #print(output)  # Debugging: inspect Clang CFG dump.
+        #cfg_file_path = os.path.join(original_dir, "clang_cfg_dump.txt")
+        #with open(cfg_file_path, "w", encoding="utf-8") as f:
+        #    f.write(output)
+        #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
+        #plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -224,9 +216,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             edges = func_cfg.number_of_edges()
             nodes = func_cfg.number_of_nodes()
             cyclomatic_complexity = edges - nodes + 2 * 1  # P = 1 per function.
-            print(
-                f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}"
-            )
+            plain_logger.info(f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}")
             total_complexity += cyclomatic_complexity
         return total_complexity
     finally:
@@ -272,7 +262,6 @@ def basic_compute_cyclomatic(code: str) -> int:
     function_pattern = re.compile(r"""
         (?:template\s*<[^>]+>\s*)*                     # optional template(s)
         (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type (greedy)
-        #([\w:<>\~*&]+(?:\s+[\w:<>\~*&]+)*) 
         (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name (with scope)
         \([^{};]*\)\s*                                 # parameter list (flat, allows (), <>)
         (?:const\s*)?(?:noexcept\s*)?                  # optional specifiers
@@ -296,11 +285,29 @@ def basic_compute_cyclomatic(code: str) -> int:
         if re.match(function_pattern, stripped):
             # Exclude mis-matched control statements
             if not any(stripped.startswith(k) for k in (control_keywords + ['switch'])):
-                print(  # Debugging: show detected function definitions.
-                    f"Function: {stripped}"
-                )
+                plain_logger.info(f"Function detected: {stripped}") # Show detected function for debugging
                 num_functions += 1
     return count + num_functions # +1 for the default path
 
 # Edge Case: Boolean Operators for CFG Method Version
 # Edge Case: Clang doesn't produce CFG for non-instantiated templates
+'''
+Edge Cases for Commenting:
+1) 
+std::string s = "This is not a // comment";
+char c = '/';
+std::string t = "/* not a comment */";
+2)
+/* Outer comment
+   /* Inner comment */
+   End of outer */
+3) 
+#define STR(x) "/* " #x " */"
+'''
+
+'''
+Edge Cases: 
+-> label: 
+-> if (x > 0) 
+-> } if (x > 0)
+'''

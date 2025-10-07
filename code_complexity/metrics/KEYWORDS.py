@@ -7,10 +7,6 @@ cpp_control = {
     'try', 'catch', 'throw',
     # NEW
     'default', 'if constexpr', 'co_return', 'requires_clause', 'requires_expression', 'synchronized',
-}
-
-cpp_control = {
-    # NEW
     'namespace', 'new', 'delete', 'not', 'not_eq', 'or', 'or_eq', 'private', 'protected',
     'public', 'friend', 'virtual', 'explicit', 'inline', 'mutable', 'this', 'alignas', 'alignof', 'decltype',
     'constexpr', 'noexcept', 'co_await', 'co_yield', 'export', 'import', 'module', 'requires',
@@ -212,7 +208,7 @@ one needs to ensure that duplicates are allowed across parallelizing frameworks,
 frameworks themselves -> so as to simplify the implementation.
 Sets anyway don't allow duplicates, so this is inherently guaranteed. 
 -> E.g. 
-Both CUDA and OpenCL contain the keyword float2, hence float2 must be inboth cuda_non_operands and opencl_non_operands,"
+Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and opencl_non_operands,"
 
 Structure:
 -> Base CPP 

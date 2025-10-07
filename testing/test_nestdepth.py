@@ -1,5 +1,5 @@
 import os
-from code_complexity.metrics.cognitive import *
+from code_complexity.metrics.nesting_depth import *
 
 # Directory containing test files for code complexity analysis
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
@@ -23,7 +23,7 @@ def test_cyclomatic_simple_cpp():
     Tests cyclomatic complexity calculation on a simple C++ File.
     """
     code = load_code("cpp/OLD_simple.cpp")
-    assert regex_compute_cognitive(code) == 3
+    assert compute_nesting_depth(code) == 2
 
 
 def test_cyclomatic_edge_cpp():
@@ -31,7 +31,7 @@ def test_cyclomatic_edge_cpp():
     Tests cyclomatic complexity for specified edge case File.
     """
     code = load_code("cpp/edge.cpp")
-    assert regex_compute_cognitive(code) == 4
+    assert compute_nesting_depth(code) == 1
 
 
 def test_cyclomatic_complex_cpp():
@@ -39,7 +39,7 @@ def test_cyclomatic_complex_cpp():
     Tests cyclomatic complexity calculation on a more complex C++ File.
     """
     code = load_code("complex/complex.cpp")
-    assert regex_compute_cognitive(code) == 38
+    assert compute_nesting_depth(code) == 4
 
     
 def test_cyclomatic_hyper_complex_cpp():
@@ -47,6 +47,4 @@ def test_cyclomatic_hyper_complex_cpp():
     Tests cyclomatic complexity calculation on a very complex C++ File.
     """
     code = load_code("complex/hyper_complex.cpp")
-    assert regex_compute_cognitive(code) == 90
-
-
+    assert compute_nesting_depth(code) == 5

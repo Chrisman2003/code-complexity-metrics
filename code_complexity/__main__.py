@@ -5,15 +5,16 @@ import logging
 import inspect
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
 
-
 # -------------------------------
 # Logging setup
 # -------------------------------
-logger = logging.getLogger("code_complexity")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
-)
+metrics_logger = logging.getLogger("metrics")
+metrics_handler = logging.StreamHandler()
+metrics_handler.setFormatter(logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
+))
+metrics_logger.addHandler(metrics_handler)
+metrics_logger.setLevel(logging.INFO)
 
 # -------------------------------
 # Timed execution wrapper
@@ -54,7 +55,7 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
         with open(file_path, 'r', encoding="utf-8", errors="ignore") as file:
             code = file.read()
     except Exception as e:
-        logger.error("Failed to read file %s: %s", file_path, e)
+        metrics_logger.error("Failed to read file %s: %s", file_path, e)
         return
     cyc_name = cyclomatic_func.__name__ # accounting for different parametrization of the 2 functions
     cog_name = cognitive_func.__name__ # accounting for different parametrization of the 2 functions
@@ -65,44 +66,44 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
-    if cog_name == "basic_compute_cognitive":
+    if cog_name == "regex_compute_cognitive":
         cognitive_complexity, cognitive_time = timed(cognitive_func, code) 
     else:
         cognitive_complexity, cognitive_time = timed(cognitive_func, file_path)
     halstead_metrics, halstead_time = timed(halstead_func, code)
 
     # Log results
-    logger.info("Analyzing file: %s", file_path)
-    logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
-    logger.info("Nesting Depth: %d  [runtime: %.4fs]", nesting_count, nesting_time)
-    logger.info("Cyclomatic Complexity: %d  [runtime: %.4fs]", cyclomatic_complexity, cyclomatic_time)
-    logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time) 
-    logger.info("Halstead Metrics:")
+    metrics_logger.info("Analyzing file: %s", file_path)
+    metrics_logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
+    metrics_logger.info("Nesting Depth: %d  [runtime: %.4fs]", nesting_count, nesting_time)
+    metrics_logger.info("Cyclomatic Complexity: %d  [runtime: %.4fs]", cyclomatic_complexity, cyclomatic_time)
+    metrics_logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time) 
+    metrics_logger.info("Halstead Metrics:")
     for k, v in halstead_metrics.items():
-        logger.info("  %s: %s", k, v)
-    logger.info("  Vocabulary: %s", halstead.vocabulary(halstead_metrics))
-    logger.info("  Size: %s", halstead.size(halstead_metrics))
-    logger.info("  Volume: %.2f", halstead.volume(halstead_metrics))
-    logger.info("  Difficulty: %.2f", halstead.difficulty(halstead_metrics))
-    logger.info("  Effort: %.2f", halstead.effort(halstead_metrics))
-    logger.info("  Time: %.2fs", halstead.time(halstead_metrics))
-    logger.info("[Halstead runtime: %.4fs]", halstead_time)
+        metrics_logger.info("  %s: %s", k, v)
+    metrics_logger.info("  Vocabulary: %s", halstead.vocabulary(halstead_metrics))
+    metrics_logger.info("  Size: %s", halstead.size(halstead_metrics))
+    metrics_logger.info("  Volume: %.2f", halstead.volume(halstead_metrics))
+    metrics_logger.info("  Difficulty: %.2f", halstead.difficulty(halstead_metrics))
+    metrics_logger.info("  Effort: %.2f", halstead.effort(halstead_metrics))
+    metrics_logger.info("  Time: %.2fs", halstead.time(halstead_metrics))
+    metrics_logger.info("[Halstead runtime: %.4fs]", halstead_time)
 
     # Compute GPU delta metrics if requested
     if gpu_baseline_func:
         baseline_metrics, _ = timed(gpu_baseline_func, code)
         delta = {k: halstead_metrics[k] - baseline_metrics[k] for k in halstead_metrics}
-        logger.info("GPU Delta Metrics (GPU - C++ baseline):")
+        metrics_logger.info("GPU Delta Metrics (GPU - C++ baseline):")
         for k, v in delta.items():
-            logger.info("  %s: %s", k, v)
-        logger.info("  Vocabulary delta: %s", halstead.vocabulary(halstead_metrics) - halstead.vocabulary(baseline_metrics))
-        logger.info("  Size delta: %s", halstead.size(halstead_metrics) - halstead.size(baseline_metrics))
-        logger.info("  Volume delta: %.2f", halstead.volume(halstead_metrics) - halstead.volume(baseline_metrics))
-        logger.info("  Difficulty delta: %.2f", halstead.difficulty(halstead_metrics) - halstead.difficulty(baseline_metrics))
-        logger.info("  Effort delta: %.2f", halstead.effort(halstead_metrics) - halstead.effort(baseline_metrics))
-        logger.info("  Time delta: %.2fs", halstead.time(halstead_metrics) - halstead.time(baseline_metrics))
+            metrics_logger.info("  %s: %s", k, v)
+        metrics_logger.info("  Vocabulary delta: %s", halstead.vocabulary(halstead_metrics) - halstead.vocabulary(baseline_metrics))
+        metrics_logger.info("  Size delta: %s", halstead.size(halstead_metrics) - halstead.size(baseline_metrics))
+        metrics_logger.info("  Volume delta: %.2f", halstead.volume(halstead_metrics) - halstead.volume(baseline_metrics))
+        metrics_logger.info("  Difficulty delta: %.2f", halstead.difficulty(halstead_metrics) - halstead.difficulty(baseline_metrics))
+        metrics_logger.info("  Effort delta: %.2f", halstead.effort(halstead_metrics) - halstead.effort(baseline_metrics))
+        metrics_logger.info("  Time delta: %.2fs", halstead.time(halstead_metrics) - halstead.time(baseline_metrics))
 
-    logger.info("-" * 40)
+    metrics_logger.info("-" * 40)
 
 # -------------------------------
 # Analyze all files in a directory
@@ -142,16 +143,16 @@ def main():
                         help="Enable debug logging")
     parser.add_argument("--cyclomatic", choices=["advanced"], default="basic",
                         help="Cyclomatic complexity calculation method")
-    parser.add_argument("--cognitive", choices=["advanced"], default="basic",
+    parser.add_argument("--cognitive", choices=["advanced"], default="regex",
                         help="Cognitive complexity calculation method")
     args = parser.parse_args()
     # Enable debug logging if verbose
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
+        metrics_logger.setLevel(logging.DEBUG)
 
     # Validate path
     if not os.path.exists(args.path):
-        logger.error("Path does not exist: %s", args.path)
+        metrics_logger.error("Path does not exist: %s", args.path)
         return
 
     # Select Halstead function based on language
@@ -170,7 +171,7 @@ def main():
     # Select Cognitive function based on method
     cognitive_func = {
         "advanced": clang_parallel.compute_cognitive_complexity_file,
-        "basic": cognitive.basic_compute_cognitive
+        "regex": cognitive.regex_compute_cognitive
     }[args.cognitive]
         
     # Determine baseline for GPU delta
@@ -181,7 +182,7 @@ def main():
     elif os.path.isdir(args.path):
         analyze_directory(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
     else:
-        logger.error("Path is neither a file nor a directory: %s", args.path)
+        metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
 
 if __name__ == "__main__":
     main()

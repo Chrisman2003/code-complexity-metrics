@@ -17,6 +17,7 @@ def load_code(filename):
     with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
         return f.read()
 
+
 def test_cyclomatic_simple_cpp():
     """
     Tests cyclomatic complexity calculation on a simple C++ File.
@@ -25,47 +26,29 @@ def test_cyclomatic_simple_cpp():
     assert basic_compute_cyclomatic(code) == 4
     assert compute_cyclomatic(code, "OLD_simple.cpp") == 4
 
+
 def test_cyclomatic_edge_cpp():
     """
     Tests cyclomatic complexity for specified edge case File.
     """
     code = load_code("cpp/edge.cpp")
-    assert basic_compute_cyclomatic(code) == 5
+    assert basic_compute_cyclomatic(code) == 4
     assert compute_cyclomatic(code, "edge.cpp") == 6
+
 
 def test_cyclomatic_complex_cpp():
     """
     Tests cyclomatic complexity calculation on a more complex C++ File.
     """
     code = load_code("complex/complex.cpp")
-    assert basic_compute_cyclomatic(code) == 34
+    assert basic_compute_cyclomatic(code) == 50
     assert compute_cyclomatic(code, "complex.cpp") == 52
+
     
 def test_cyclomatic_hyper_complex_cpp():
     """
     Tests cyclomatic complexity calculation on a very complex C++ File.
     """
     code = load_code("complex/hyper_complex.cpp")
-    assert basic_compute_cyclomatic(code) == 60
-    assert compute_cyclomatic(code, "hyper_complex.cpp") == 77
-
-'''
-Edge Cases for Commenting:
-1) 
-std::string s = "This is not a // comment";
-char c = '/';
-std::string t = "/* not a comment */";
-2)
-/* Outer comment
-   /* Inner comment */
-   End of outer */
-3) 
-#define STR(x) "/* " #x " */"
-'''
-
-'''
-Edge Cases: 
--> label: 
--> if (x > 0) 
--> } if (x > 0)
-'''
+    assert basic_compute_cyclomatic(code) == 83
+    assert compute_cyclomatic(code, "hyper_complex.cpp") == 83

@@ -17,12 +17,15 @@ def count_logical_sequences(line: str, nesting: int) -> int:
     return complexity
 
 
-def basic_compute_cognitive(code: str) -> int:
-    """Compute a basic Cognitive Complexity score using regex-based analysis.
-    This simpler function approximates cognitive complexity without using an AST.
+def regex_compute_cognitive(code: str) -> int:
+    """Compute a Cognitive Complexity score using regex-based analysis.
+    This function approximates cognitive complexity without using an AST.
     It counts flow-breaking constructs and nesting based on braces.
     Cognitive Complexity is about mental effort to understand, not just paths.
-
+    Note that this is not a simplified implementation, unlike cyclomatic complexity 
+    no control flow graph is needed. An AST-based approach might in some cases, however, 
+    be more accurate.
+    
     Args:
         code (str): C++ source code as a string.
 
@@ -104,4 +107,13 @@ Edge Cases:
     [] 13) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
     do increment the nesting level when nested inside other method-like structures:
     [] 14) Preprocessor directive handling
+'''
+
+'''
+Example that breaks nesting:
+if (x > 0)
+{ // Nesting increases here, not on the if line
+    // 
+}
+The current implementation will score the if on the wrong nesting level if the { is on the next line.
 '''
