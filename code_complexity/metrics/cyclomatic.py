@@ -95,9 +95,36 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
         dict[str, nx.DiGraph]: A dictionary where keys are function names and values
         are directed graphs (`nx.DiGraph`) representing the function's control-flow.
     """
+    
+    """ REGEX EXPLANATION
+    Matches nodes that are formatted like "[B<number> (OPTIONAL_LABEL)]".
+    Example matches: "[B12]", "[B7 (LOOP)]"
+    ------------------------
+    -  \[          → Match literal '['
+    -  B           → Match literal 'B'
+    -  (\d+)       → Capture one or more digits (the node number) into group 1
+    -  (?: ...)    → Non-capturing group for optional label
+    -      \s      → Match a space
+    -      \(      → Match literal '('
+    -      [A-Z]+  → Match one or more uppercase letters (the label)
+    -      \)      → Match literal ')'
+    -  ?           → Make the entire non-capturing group optional
+    -  \]          → Match literal ']' """
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
+    """ REGEX EXPLANATION:
+    This regex matches lines that list successor nodes in a format like:
+    "Succs (2): 3, 4, 5"
+    -------------------------------
+    -  Succs       → Match literal string 'Succs'
+    -  \s         → Match a space
+    -  \(         → Match literal '('
+    -  (\d+)      → Capture one or more digits (number of successors) into group 1
+    -  \)         → Match literal ')'
+    -  :          → Match literal colon ':'
+    -  \s         → Match a space
+    -  (.+)       → Capture the rest of the line (comma-separated successor node numbers) into group 2 """
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
-
+    
     function_cfgs = {}
     current_function = None
     current_node = None
@@ -227,6 +254,20 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             except OSError:
                 pass
 
+def detect_fallthroughs(code: str) -> int:
+    fallthroughs = 0
+    switch_blocks = re.findall(r'\bswitch\b\s*\([^)]*\)\s*\{([^}]*)\}', code, re.DOTALL)
+    for block in switch_blocks:
+        # Split each switch block into case segments
+        cases = re.split(r'\bcase\b|\bdefault\b', block)
+        # Skip first segment (before first case)
+        #print(cases)
+        for seg in cases[1:-1]:
+            # Only count if segment lacks 'break;'
+            if 'break;' not in seg:
+                fallthroughs += 1
+    return fallthroughs
+
 def basic_compute_cyclomatic(code: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
@@ -237,20 +278,6 @@ def basic_compute_cyclomatic(code: str) -> int:
     Args:
         code (str): Source code as a string. The code should be plain text; 
             comments and string literals are removed internally before analysis.
-    
-    Edge Cases:
-        1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
-        2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
-           prevent false positives for keywords like 'or' or 'and'.
-        3) The `else` keyword is not counted separately because it does not create 
-           an independent path; `else if` is counted via its `if`.
-        4) `switch` statements do not add complexity themselves; only `case` and 
-           `default` labels are counted.
-        5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
-        6) Alphabetic logical operators `and`, `or` are counted only when they 
-           appear as standalone words, not as substrings of other identifiers.
-        7) Multi-line constructs may not be perfectly accounted for in this heuristic.
-        8) If `code` is `None`, it is treated as an empty string (CC = 1).
     """
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
@@ -260,39 +287,63 @@ def basic_compute_cyclomatic(code: str) -> int:
     num_functions = 0
     # Count function definitions (ignoring function calls!)
     function_pattern = re.compile(r"""
-        (?:template\s*<[^>]+>\s*)*                     # optional template(s)
-        (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type (greedy)
-        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name (with scope)
-        \([^{};]*\)\s*                                 # parameter list (flat, allows (), <>)
-        (?:const\s*)?(?:noexcept\s*)?                  # optional specifiers
-        (?:->\s*[\w:\<\>\s\*&]+)?                      # optional trailing return type
-        \s*\{                                          # start of function body
+        (?:template\s*<[^>]+>\s*)*                     # optional template declaration(s), e.g., template<typename T>
+        (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type including pointers, refs, const, and spaces
+        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name, scoped names, destructors (~), or operator overloads
+        \([^{};]*\)\s*                                 # parameter list in parentheses, flat, no braces or semicolons inside
+        (?:const\s*)?(?:noexcept\s*)?                  # optional const and/or noexcept specifiers after parameters
+        (?:->\s*[\w:\<\>\s\*&]+)?                      # optional C++11 trailing return type, e.g., -> int
+        \s*\{                                          # opening brace of function body to match only definitions
         """, re.VERBOSE | re.DOTALL
     )
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
+        
         # Count Control Keywords
         for keyword in control_keywords:
             if re.search(rf'\b{keyword}\b', stripped): # Only match with word boundaries
                 count += 1
+                
         # Count Logical Operators
         for op in logical_operators:
             if op in ['and', 'or']:
-                count += len(re.findall(rf'\b{op}\b', stripped))
+                count += len(re.findall(rf'\b{op}\b', stripped)) # Alphabetic Operators need word boundaries
             else:
                 count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
                 # Count functions (definitions only, not calls)
+        
         if re.match(function_pattern, stripped):
             # Exclude mis-matched control statements
             if not any(stripped.startswith(k) for k in (control_keywords + ['switch'])):
-                plain_logger.info(f"Function detected: {stripped}") # Show detected function for debugging
+                #plain_logger.info(f"Function detected: {stripped}") # Show detected function for debugging
                 num_functions += 1
-    return count + num_functions # +1 for the default path
+    fallthroughs = detect_fallthroughs(code)
+    #plain_logger.info("fallthroughs:", fallthroughs)
+    return count + num_functions + fallthroughs # +1 for the default path
 
 # Edge Case: Boolean Operators for CFG Method Version
-# Edge Case: Clang doesn't produce CFG for non-instantiated templates
+
+'''
+Edge Cases:
+    1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
+    2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
+       prevent false positives for keywords like 'or' or 'and'.
+    3) The `else` keyword is not counted separately because it does not create 
+       an independent path; `else if` is counted via its `if`.
+    4) `switch` statements do not add complexity themselves; only `case` and 
+       `default` labels are counted.
+    5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
+    6) Alphabetic logical operators `and`, `or` are counted only when they 
+       appear as standalone words, not as substrings of other identifiers.
+    7) Multi-line constructs may not be perfectly accounted for in this heuristic.
+    8) If `code` is `None`, it is treated as an empty string (CC = 1).
+    9) Fall-Through Switch-Case Statements
+    10) Clang doesn't produce CFG components on non-instantiated templates
+'''
+
 '''
 Edge Cases for Commenting:
+1) Fall Through branches in switch/case statements
 1) 
 std::string s = "This is not a // comment";
 char c = '/';

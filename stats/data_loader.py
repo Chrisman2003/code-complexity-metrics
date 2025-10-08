@@ -18,7 +18,7 @@ def collect_metrics(root_dir: str):
                 sloc = compute_sloc(code)
                 nesting = compute_nesting_depth(code)
                 cyclomatic = basic_compute_cyclomatic(code)
-                cognitive = basic_compute_cognitive(code)
+                cognitive = regex_compute_cognitive(code)
                 halstead = effort(halstead_metrics_merged(code))
                 records.append({
                     "file": filepath,

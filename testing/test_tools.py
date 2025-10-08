@@ -18,7 +18,7 @@ def load_code(filename):
         return f.read()
     
 def test_keep_kernel_strings_and_code_opencl():
-    code = load_code("opencl_edge_cases.cpp")
+    code = load_code("complex/opencl_edge_cases.cpp")
     cleaned = remove_string_literals(code)    
     # assert preserved kernel
     assert "__kernel void add" in cleaned

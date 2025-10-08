@@ -48,15 +48,15 @@ def regex_compute_cognitive(code: str) -> int:
         
         # --- Control keywords ---
         for keyword in control_keywords: # Count control keywords
-            matches = re.findall(rf'\b{keyword}\b', stripped)
+            matches = re.findall(rf'\b{keyword}\b', stripped) # Word boundaries to avoid false positives
             complexity += len(matches) * (1 + nesting)
             
         # --- Jump statements ---
-        if re.search(r'\bgoto\s+\w+', stripped):
+        if re.search(r'\bgoto\b\s+\w+', stripped):
             complexity += 1 + nesting
-        if re.search(r'\bbreak\s+\w+', stripped) or re.search(r'\bbreak\s+\d+', stripped):
+        if re.search(r'\bbreak\b\s+\w+', stripped) or re.search(r'\bbreak\s+\d+', stripped):
             complexity += 1 + nesting
-        if re.search(r'\bcontinue\s+\w+', stripped) or re.search(r'\bcontinue\s+\d+', stripped):
+        if re.search(r'\bcontinue\b\s+\w+', stripped) or re.search(r'\bcontinue\s+\d+', stripped):
             complexity += 1 + nesting
         # -> Non-Parametrized Constructs aren't being matched
         
@@ -64,14 +64,14 @@ def regex_compute_cognitive(code: str) -> int:
         complexity += count_logical_sequences(stripped, nesting)
         complexity += stripped.count('?') * (1 + nesting)  # ':' is ignored
         for op in logical_ops_alpha:
-            matches = re.findall(rf'\b{op}\b', stripped)
+            matches = re.findall(rf'\b{op}\b', stripped) # Word boundaries to avoid false positives
             complexity += len(matches) * (1 + nesting)
             
         nesting = max(0, nesting - stripped.count('}'))
         # Increase nesting ONLY if a nesting keyword and a brace are on this line.
         found_nesting_keyword = False
         for keyword in control_keywords:
-            if re.search(rf'\b{keyword}\b', stripped):
+            if re.search(rf'\b{keyword}\b', stripped): # Word boundaries to avoid false positives
                 found_nesting_keyword = True
                 break
         if '?' in stripped:
@@ -106,11 +106,10 @@ Edge Cases:
     [x] 12) goto, break and continue statements only contribute to complexity when parametrized
     [] 13) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
     do increment the nesting level when nested inside other method-like structures:
-    [] 14) Preprocessor directive handling
 '''
 
 '''
-Example that breaks nesting:
+Example that might break nesting [I might have solved it now]:
 if (x > 0)
 { // Nesting increases here, not on the if line
     // 
