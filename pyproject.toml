@@ -34,12 +34,12 @@ dependencies = [
     "traitlets==5.14.3",
     "typing_extensions==4.14.1",
     "wcwidth==0.2.13",
-    "clang>=16.0.0",  # Add Python clang bindings
+    "clang==18.1.8",  # Add Python clang bindings
     "pandas==2.3.3",
     "matplotlib==3.10.6",
     "seaborn==0.13.2",
     "reportlab==4.4.4"
-] # pip install "libclang==18.1.1"
+]
 
 [project.scripts]
 code-metrics = "code_complexity.__main__:main"
