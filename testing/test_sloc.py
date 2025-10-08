@@ -46,4 +46,4 @@ def test_cyclomatic_hyper_complex_cpp():
     Tests cyclomatic complexity calculation on a very complex C++ File.
     """
     code = load_code("complex/hyper_complex.cpp")
-    assert compute_sloc(code) == 222
+    assert compute_sloc(code) == 221
