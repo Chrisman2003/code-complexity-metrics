@@ -3,48 +3,44 @@
 A Python tool to analyze source code and compute Code Complexity Measures.**SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports parallelizing frameworks for code constructs and particularly with respect to halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
 
 ### Code Complexity Measures:
-
---> SLOC
-
---> Nested Depth
-
---> Cyclomatic
-
---> Cognitive
-
---> Halstead
+- SLOC
+- Nested Depth
+- Cyclomatic
+- Cognitive
+- Halstead
 
 ### Parallelizing Frameworks:
-
---> C++
-
---> CUDA 
-
---> OpenCL
-
---> Kokkos
-
---> (SyCl)
-
---> (OpenMP)
+- C++
+- CUDA 
+- OpenCL
+- Kokkos
+- (SyCl)
+- (OpenMP)
 
 The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
----
-
-## Features
-
-- **SLOC (Source Lines of Code)**: Measures the number of actual code lines, ignoring comments and whitespace.  
-- **Cyclomatic Complexity**: Counts the number of linearly independent paths in a program.  
-- **Cognitive Complexity**: Estimates the effort required to understand the code, accounting for control flow and nesting.  
-- **Halstead Metrics**: Measures code complexity based on operators and operands, including vocabulary, program length, volume, difficulty, and effort.  
-- **GPU Delta Metrics**: Compare the added complexity of GPU constructs against a C++ baseline.  
-
----
+### System Installation
+- Aside from the auto configured pip install packages a system insall of clang-18 is needed for version compatibility
+1) [Unrecommended] 
+sudo apt install clang-18 lldb-18 lld-18 
+1) [Recommended]: Installs LLVM/Clang directly from official LLVM APT repositories.
+``bash
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 18
+``
+2) Add LLVM Libraries to the system linker:
+- echo "/usr/lib/llvm-18/lib" | sudo tee /etc/ld.so.conf.d/llvm-18.conf
+- sudo ldconfig
+3) If your system install has unconventional name formatting: create a symlink
+sudo ln -s /usr/lib/llvm-18/lib/"libclang-18.so.1" /usr/lib/llvm-18/lib/libclang.so
+[Where "libclang-18.so.1" is YOUR own malformatted name string!]
+[This Creates a shortcut: It makes a new file entry at the target path, which is /usr/lib/llvm-18/lib/libclang.so]
+[Points to the actual file: This new entry acts as a pointer or alias to the existing, specific versioned file: /usr/lib/llvm-18/lib/libclang-18.so.1]
+sudo ldconfig
 
 ## How It Works
-
-The tool analyzes a source code file or directory in four main steps:
+- The tool analyzes a source code file or directory in four main steps:
 
 ### 1. Preprocessing and Tokenization
 - Reads the source code file (e.g., `main.cpp`).  
@@ -52,23 +48,24 @@ The tool analyzes a source code file or directory in four main steps:
 - Ignores comments, whitespace, and string literals to prevent interference with metric calculations.  
 
 ### 2. Cyclomatic Complexity
-- Initializes complexity to 1 (single path).  
-- Iterates through tokens and increments complexity for control structures like `if`, `for`, `while`, `case`, and `catch`.  
+- Specification standard pursuant to Thomas J McCabe
+- T. J. McCabe, "A Complexity Measure," in IEEE Transactions on Software Engineering, vol. SE-2,
 
 ### 3. Cognitive Complexity
-- Initializes complexity to 0.  
-- Adds 1 for each control flow keyword (`if`, `for`, `while`, `switch`).  
-- Adds 1 for each level of nesting inside loops or conditional blocks.  
+- Specification standard pursuant to Sonarqube
+- {Cognitive Complexity} a new way of measuring understandability By G. Ann Campbell
 
 ### 4. Halstead Metrics
 - Counts **operators** and **operands**, both total and unique.  
 - Computes:  
-  - Program Length: `N = N₁ + N₂`  
-  - Vocabulary: `η = η₁ + η₂`  
-  - Volume: `V = N × log₂(η)`  
-  - Difficulty: `D = (η₁ / 2) × (N₂ / η₂)`  
-  - Effort: `E = V × D`  
-
+  - Vocabulary: η = η₁ + η₂
+  - Program Size: N = N₁ + N₂
+  - Volume: V = N × log₂(η)
+  - Difficulty: D = (η₁ / 2) × (N₂ / η₂)
+  - Effort: E = V × D
+  - Time: T = E/k
+  In the above formulae, k is the stroud number, which has an arbitrary default value of 18.
+  https://www.ibm.com/docs/en/devops-test-embedded/9.0.0?topic=metrics-halstead
 ---
 
 ## Future Plans
