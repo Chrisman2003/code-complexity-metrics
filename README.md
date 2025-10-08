@@ -26,9 +26,7 @@ sudo apt install clang-18 lldb-18 lld-18
 1) [Recommended]: Installs LLVM/Clang directly from official LLVM APT repositories.
 ``bash
 wget https://apt.llvm.org/llvm.sh
-
 chmod +x llvm.sh
-
 sudo ./llvm.sh 18
 ``
 2) Add LLVM Libraries to the system linker:
