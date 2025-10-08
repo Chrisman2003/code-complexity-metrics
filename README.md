@@ -33,11 +33,12 @@ sudo ./llvm.sh 18
 - echo "/usr/lib/llvm-18/lib" | sudo tee /etc/ld.so.conf.d/llvm-18.conf
 - sudo ldconfig
 3) If your system install has unconventional name formatting: create a symlink
-sudo ln -s /usr/lib/llvm-18/lib/"libclang-18.so.1" /usr/lib/llvm-18/lib/libclang.so
-[Where "libclang-18.so.1" is YOUR own malformatted name string!]
-[This Creates a shortcut: It makes a new file entry at the target path, which is /usr/lib/llvm-18/lib/libclang.so]
-[Points to the actual file: This new entry acts as a pointer or alias to the existing, specific versioned file: /usr/lib/llvm-18/lib/libclang-18.so.1]
-sudo ldconfig
+- sudo ln -s /usr/lib/llvm-18/lib/"libclang-18.so.1" /usr/lib/llvm-18/lib/libclang.so
+- [Where "libclang-18.so.1" is YOUR own malformatted name string!]
+- [This Creates a shortcut: It makes a new file entry at the target path, which is /usr/lib/llvm-18/lib/libclang.so]
+- [Points to the actual file: This new entry acts as a pointer or alias to the existing, specific 
+- versioned file: /usr/lib/llvm-18/lib/libclang-18.so.1]
+- sudo ldconfig
 
 ## How It Works
 - The tool analyzes a source code file or directory in four main steps:
