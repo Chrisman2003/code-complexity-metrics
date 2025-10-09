@@ -59,7 +59,7 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
     keyword_ops = {op for op in merged_nonoperands if re.match(r'^[A-Za-z_]\w*$', op)}
     symbol_ops = merged_nonoperands - keyword_ops
     # Escape keywords and symbols for regex
-    escaped_keywords = [r'\b' + re.escape(op) + r'\b' for op in sorted(keyword_ops)]
+    escaped_keywords = [r'\b' + re.escape(op) + r'\b' for op in sorted(keyword_ops)] 
     escaped_symbols  = [re.escape(op) for op in sorted(symbol_ops, key=len, reverse=True)]
     # Combine patterns: keywords first, then symbols
     operator_pattern = r'|'.join(escaped_keywords + escaped_symbols)
@@ -187,3 +187,26 @@ def time(metrics: dict) -> float:
         float: Estimated implementation time.
     """
     return effort(metrics) / 18
+
+
+'''
+---------------------------------------------------------------
+Summary: Why tokenization is not done by whitespace
+---------------------------------------------------------------
+This analyzer extracts tokens (operators and operands) using
+regular expressions rather than splitting on whitespace.   
+Reasons:
+1. Code tokens in C++ (and its GPU extensions like CUDA, OpenCL,
+   Kokkos, etc.) are not reliably separated by spaces.
+      Example: "a+b" and "a + b" should yield the same tokens.
+2. Operators, punctuation, and symbols (e.g. "==", "->", "::", "{", "}")
+   can appear without surrounding whitespace.
+3. Comments and string literals must be ignored — they are removed
+   before regex extraction.
+4. Regex-based matching (via re.findall) provides non-overlapping
+   tokens directly, ensuring consistent parsing regardless of spacing. 
+Therefore:
+Tokenization is pattern-based, not whitespace-based, to correctly
+identify syntactic elements across multiple C++-like languages.
+---------------------------------------------------------------
+'''
