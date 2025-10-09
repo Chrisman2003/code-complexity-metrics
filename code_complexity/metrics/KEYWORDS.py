@@ -1,4 +1,20 @@
-# Parallelizing Frameworks: CUDA, OpenCL, Kokkos, [Future: Sycl, OpenMP]
+'''
+Parallelizing Frameworks: 
+1) CUDA
+2) OpenCL
+3) Kokkos
+[Future]
+4) AdaptiveCPP
+5) OpenMP 
+
+6) OpenACC
+7) OpenGlVulkan 
+8) Slang 
+9) WebGPU
+10) Boost
+11) Metal
+12) Thrust
+'''
 # ------------------------------
 # 1 Standard C++ keywords
 # ------------------------------

@@ -96,7 +96,8 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
         are directed graphs (`nx.DiGraph`) representing the function's control-flow.
     """
     
-    """ REGEX EXPLANATION
+    r""" 
+    REGEX EXPLANATION
     Matches nodes that are formatted like "[B<number> (OPTIONAL_LABEL)]".
     Example matches: "[B12]", "[B7 (LOOP)]"
     ------------------------
@@ -109,9 +110,12 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     -      [A-Z]+  → Match one or more uppercase letters (the label)
     -      \)      → Match literal ')'
     -  ?           → Make the entire non-capturing group optional
-    -  \]          → Match literal ']' """
+    -  \]          → Match literal ']' 
+    """
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
-    """ REGEX EXPLANATION:
+
+    r""" 
+    REGEX EXPLANATION:
     This regex matches lines that list successor nodes in a format like:
     "Succs (2): 3, 4, 5"
     -------------------------------
@@ -122,7 +126,8 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     -  \)         → Match literal ')'
     -  :          → Match literal colon ':'
     -  \s         → Match a space
-    -  (.+)       → Capture the rest of the line (comma-separated successor node numbers) into group 2 """
+    -  (.+)       → Capture the rest of the line (comma-separated successor node numbers) into group 2 
+    """
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
     
     function_cfgs = {}

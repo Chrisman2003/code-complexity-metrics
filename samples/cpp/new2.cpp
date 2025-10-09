@@ -7,10 +7,10 @@ int sort (int x[ ], int n)
     for (i=2; i< =n; i++)
     {
         im1=i-1;
-        for (j=1; j< =im1; j++)
+        for (j=1; j <= im1; j++)
             if (x[i] < x[j])
             {
-                Save = x[i];
+                save = x[i];
                 x[i] = x[j];
                 x[j] = save;
             }
