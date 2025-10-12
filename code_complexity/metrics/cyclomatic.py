@@ -286,6 +286,7 @@ def basic_compute_cyclomatic(code: str) -> int:
     """
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0

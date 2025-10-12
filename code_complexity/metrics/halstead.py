@@ -39,9 +39,6 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     operators = re.findall(operator_pattern, code)
     operands = re.findall(operand_pattern, code)
     
-    operators_old = operators.copy()
-    print(set(operators_old))
-    print("\n")
     # Only extend with GPU patterns if lang specifies a GPU extension
     dynamic_nonoperands = set()
     patterns_to_apply = []
@@ -52,23 +49,20 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         patterns_to_apply = pattern_rules[lang]
     # Result: a list of regex patterns to apply
     # For all regex elements in pattern_rules are used
-    operators_old = operators
     for p_elem in patterns_to_apply:
         matches = re.findall(p_elem, code) # find all matches for this pattern
         operators.extend(matches) # add to operators
         dynamic_nonoperands.update(matches) # add to dynamic non-operands
     
-
-    print(set(operators))
-    print("\n")
-    print(set(operators)- set(operators_old))
     #plain_logger.info("Dynamic Non-Operands Found: %s", dynamic_nonoperands)
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
     #plain_logger.info("Added Dynamic Keywords: %s", full_subtracting_set - subtracting_set)
     # Remove non-operands from operands
     operands = [op for op in operands if op not in full_subtracting_set]
-
+    string_literals = re.findall(r'"(?:\\.|[^"\\])*"', code)  # matches C++ string literals
+    operands.extend(string_literals) # Since string literals are first removed, the actual instances of "" are appended
+    
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
@@ -118,6 +112,7 @@ def halstead_metrics_cpp(code: str) -> dict:
     """Compute Halstead metrics for standard C++ code."""
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, set())
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, '')
 
@@ -126,6 +121,7 @@ def halstead_metrics_cuda(code: str) -> dict:
     """Compute Halstead metrics for CUDA code."""
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, cuda_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'cuda')
 
@@ -134,6 +130,7 @@ def halstead_metrics_kokkos(code: str) -> dict:
     """Compute Halstead metrics for Kokkos code."""
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, kokkos_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'kokkos')
 
@@ -142,6 +139,7 @@ def halstead_metrics_opencl(code: str) -> dict:
     """Compute Halstead metrics for OpenCL code."""
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opencl_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'opencl')
 
@@ -150,6 +148,7 @@ def halstead_metrics_merged(code: str) -> dict:
     """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     merged_extensions = cuda_non_operands | opencl_non_operands | kokkos_non_operands
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, merged_extensions)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'merged')
@@ -256,14 +255,10 @@ identify syntactic elements across multiple C++-like languages.
 '''
 
 """
-26:
-{'return', ')', '(', 'Kokkos::parallel_reduce', '.', 'Kokkos::finalize', '<', '+', 'KOKKOS_LAMBDA', ',', '{', '#', 
-'&', '*', '::', 'Kokkos', 'Kokkos::parallel_for', '+=', ';', 'Kokkos::View', '}', 'Kokkos::initialize', '=', 'int', 
-'<<', '>'}
-"""
-
-"""
-21
-{'+', '{', '.', '(', '<<', '::', '>', ',', 'KOKKOS_LAMBDA', '=', 'int', '*', '+=', ';', '&', '#', ')', '}', '<', 
-'return', 'Kokkos'}    
+Edge Cases:
+1) String Literals are counted as singular operand instances
+2) Library calls have to be stripped
+3) :: is the scope resolution operator
+--> Hence for Kokkos::parallel_for
+--> Kokkos and parallel_for are operands — entities being related by ::
 """

@@ -34,6 +34,7 @@ def regex_compute_cognitive(code: str) -> int:
     """   
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
     # Control flow keywords (notice: no plain 'else')
     control_keywords = ['if', 'for', 'while', 'switch', 'catch', 'do'] # switch with branches add 1
     #logical_operators = ['&&', '||', '?', 'and', 'or']

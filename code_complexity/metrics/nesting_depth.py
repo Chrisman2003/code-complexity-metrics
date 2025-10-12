@@ -12,14 +12,15 @@ def compute_nesting_depth(code: str) -> int:
     Returns:
         int: Maximum nesting depth.
     """
-    # Remove comments and non-kernel string literals
-    code_clean = remove_cpp_comments(code)
-    code_clean = remove_string_literals(code_clean)
+    # Remove comments, non-kernel string literals, Header calls
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    code = remove_cpp_headers(code)
 
     max_depth = 0
     current_depth = 0
 
-    for char in code_clean:
+    for char in code:
         if char == '{':
             current_depth += 1
             max_depth = max(max_depth, current_depth)

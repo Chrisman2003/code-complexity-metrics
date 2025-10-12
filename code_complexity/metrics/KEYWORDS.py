@@ -66,9 +66,10 @@ cpp_operators = {
 }
 
 cpp_side_effect_functions = {
-    'printf', 'fprintf', 'sprintf', 'snprintf', 'puts', 'putchar',
-    'scanf', 'fscanf', 'sscanf', 'gets', 'fgets',
-    'malloc', 'calloc', 'realloc', 'free',
+    'printf', 'fprintf', 'sprintf', 'snprintf', 'puts', 'putchar', 'scanf', 'fscanf', 
+    'sscanf', 'gets', 'fgets', 'malloc', 'calloc', 'realloc', 'free', 
+    'std::cout', 'cout', 'std::cerr', 'cerr', 'std::clog', 'clog' 
+    # Not Using '*' Heuristic since words can occur with or without std:: prefixation
     'exit', 'abort',
     # NEW
     'perror', 'system', 'setenv', 'unsetenv', 'atexit', 'signal', 'fopen', 'freopen', 'fclose', 'fflush',
@@ -176,7 +177,7 @@ kokkos_macros = {
 }
 
 kokkos_classes = {
-    'Kokkos', 'Kokkos::View', 'Kokkos::DefaultExecutionSpace', 'Kokkos::DefaultHostExecutionSpace',
+    'Kokkos::View', 'Kokkos::DefaultExecutionSpace', 'Kokkos::DefaultHostExecutionSpace',
     'Kokkos::MemorySpace', 'Kokkos::LayoutLeft', 'Kokkos::LayoutRight',
     # NEW
     'Kokkos::DualView', 'Kokkos::Experimental', 'Kokkos::ViewHostMirror', 'Kokkos::Fencespace'
@@ -232,3 +233,5 @@ Structure:
 --> Parallizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
 --> Parallizing Framework 3 (Kokkos)  | or between 2 given frameworks
 '''
+
+"Edge Case: remove libraries before analysis"
