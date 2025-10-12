@@ -394,6 +394,40 @@ metal_constants = {
     'MTLTextureType2D', 'MTLTextureUsageShaderRead'
 }
 
+# ------------------------------
+# 12 Thrust keywords & types
+# ------------------------------
+
+thrust_classes = {
+    'thrust::device_vector', 'thrust::host_vector', 'thrust::pair',
+    'thrust::tuple', 'thrust::complex',
+    'thrust::counting_iterator', 'thrust::constant_iterator',
+    'thrust::transform_iterator', 'thrust::zip_iterator',
+    'thrust::permutation_iterator', 'thrust::reverse_iterator',
+    'thrust::sort_iterator',
+}
+
+thrust_functions = {
+    'thrust::sort', 'thrust::transform', 'thrust::reduce', 'thrust::inclusive_scan',
+    'thrust::exclusive_scan', 'thrust::copy', 'thrust::fill', 'thrust::count',
+    'thrust::for_each', 'thrust::unique', 'thrust::remove', 'thrust::replace',
+    'thrust::gather', 'thrust::scatter', 'thrust::sequence', 'thrust::merge',
+    'thrust::inner_product', 'thrust::outer_product',
+    'thrust::min_element', 'thrust::max_element',
+}
+
+thrust_macros = {
+    'THRUST_DEVICE_SYSTEM_CUDA', 'THRUST_DEVICE_SYSTEM_OMP', 'THRUST_DEVICE_SYSTEM_TBB',
+    'THRUST_HOST_SYSTEM_CPP', 'THRUST_HOST_SYSTEM_OMP', 'THRUST_HOST_SYSTEM_TBB',
+    'THRUST_DEVICE_CODE', 'THRUST_HOST_CODE',
+}
+
+thrust_side_effect_functions = {
+    'thrust::device_malloc', 'thrust::device_free',
+    'thrust::system::cuda::malloc', 'thrust::system::cuda::free',
+    'thrust::system::omp::malloc', 'thrust::system::omp::free',
+    'thrust::system::tbb::malloc', 'thrust::system::tbb::free',
+}
 
 # ------------------------------
 # 5 Merged Subsets per type for Component Analysis of Halstead metrics
@@ -421,8 +455,9 @@ opengl_vulkan_non_operands = opengl_vulkan_keywords | opengl_vulkan_functions | 
 webgpu_non_operands = webgpu_classes | webgpu_functions | webgpu_constants | webgpu_macros
 boost_non_operands = boost_classes | boost_functions | boost_macros
 metal_non_operands = metal_storage | metal_classes | metal_functions | metal_constants
+thrust_non_operands = thrust_classes | thrust_functions | thrust_macros | thrust_side_effect_functions
 
-merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands | openacc_non_operands | opengl_vulkan_non_operands | webgpu_non_operands | boost_non_operands | metal_non_operands
+merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands | openacc_non_operands | opengl_vulkan_non_operands | webgpu_non_operands | boost_non_operands | metal_non_operands | thrust_non_operands
 
 '''
 CRUCIAL Edge Case:

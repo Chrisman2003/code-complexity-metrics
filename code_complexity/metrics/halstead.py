@@ -65,7 +65,12 @@ pattern_rules = {
         r'\bdispatchThreads\b|\bdispatchThreadgroups\b|\bcommit\b|\benqueue\b',
         r'\bnew\w+With\w*:\b',    # Objective-C style method calls
         r'\bMTL_[A-Z0-9_]+\b'     # Metal constants / enums
-    ]   
+    ],
+    'thrust': [
+        r'\bthrust::\w+\b',               # all Thrust API calls and classes
+        r'\bTHRUST_[A-Z0-9_]+\b',         # macros
+        r'\bthrust(?:::\w+)+\b',          # nested namespaces like thrust::system::cuda
+    ],
 }
 
 def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, lang: str):
@@ -255,6 +260,13 @@ def halstead_metrics_metal(code: str) -> dict:
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, metal_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'metal')
 
+def halstead_metrics_thrust(code: str) -> dict:
+    """Compute Halstead metrics for Metal code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, thrust_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'thrust')
 
 def halstead_metrics_merged(code: str) -> dict:
     """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
