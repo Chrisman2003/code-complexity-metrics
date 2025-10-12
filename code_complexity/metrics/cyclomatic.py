@@ -5,12 +5,13 @@ import tempfile
 import os
 from code_complexity.metrics.shared import *
 import logging
+import sys
 
 # -------------------------------
 # Logging setup
 # -------------------------------
 plain_logger = logging.getLogger("plain")
-plain_handler = logging.StreamHandler()
+plain_handler = logging.StreamHandler(sys.stdout)
 plain_handler.setFormatter(logging.Formatter("%(message)s"))
 plain_logger.addHandler(plain_handler)
 plain_logger.setLevel(logging.INFO)
@@ -284,9 +285,9 @@ def basic_compute_cyclomatic(code: str) -> int:
         code (str): Source code as a string. The code should be plain text; 
             comments and string literals are removed internally before analysis.
     """
+    code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-    code = remove_cpp_headers(code)
     control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
@@ -367,4 +368,9 @@ Edge Cases:
 -> label: 
 -> if (x > 0) 
 -> } if (x > 0)
+'''
+
+# TODO
+'''
+Cyclomati Function Recognition: still not 100%
 '''

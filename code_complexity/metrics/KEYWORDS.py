@@ -3,9 +3,9 @@ Parallelizing Frameworks:
 1) CUDA
 2) OpenCL
 3) Kokkos
+4) OpenMP 
+5) AdaptiveCPP
 [Future]
-4) AdaptiveCPP
-5) OpenMP 
 
 6) OpenACC
 7) OpenGlVulkan 
@@ -59,7 +59,7 @@ cpp_operators = {
     '&', '|', '^', '~', '!', '+=', '-=', '*=', '/=', '%=', '<<=',
     '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--',
     '->', '->*', '.', '::', '(', ')', '{', '}',
-    '[', ']', ',', ':', ';', '#', '@', '...', '?'
+    '[', ']', ',', ':', ';', '#', '@', '...', '?',
     # NEW
     'and', 'bitand', 'bitor', 'xor', 'compl', 'and_eq', 'xor_eq',
     '<=>', 'co_await_operator', 'operator<=>'
@@ -68,13 +68,13 @@ cpp_operators = {
 cpp_side_effect_functions = {
     'printf', 'fprintf', 'sprintf', 'snprintf', 'puts', 'putchar', 'scanf', 'fscanf', 
     'sscanf', 'gets', 'fgets', 'malloc', 'calloc', 'realloc', 'free', 
-    'std::cout', 'cout', 'std::cerr', 'cerr', 'std::clog', 'clog' 
+    'std::cout', 'cout', 'std::cerr', 'cerr', 'std::clog', 'clog',
     # Not Using '*' Heuristic since words can occur with or without std:: prefixation
-    'exit', 'abort',
+    'exit', 'abort', 'main',
     # NEW
     'perror', 'system', 'setenv', 'unsetenv', 'atexit', 'signal', 'fopen', 'freopen', 'fclose', 'fflush',
     'fwrite', 'fread', 'fseek', 'ftell', 'rewind', 'remove', 'rename', 'tmpfile', 'tmpnam',
- 'new[]', 'delete[]', 'std::terminate', 'std::abort', 'std::quick_exit'
+    'new[]', 'delete[]', 'std::terminate', 'std::abort', 'std::quick_exit'
 }
 
 
@@ -197,15 +197,63 @@ kokkos_side_effect_functions = {
     'Kokkos::fence', 'Kokkos::hwloc_init'
 }
 
+
+# ------------------------------
+# 5 OpenMP keywords & types
+# ------------------------------
+openmp_pragmas = {
+    'omp parallel', 'omp for', 'omp sections', 'omp single', 'omp master',
+    'omp critical', 'omp atomic', 'omp barrier', 'omp task', 'omp taskwait',
+    'omp parallel for', 'omp simd', 'omp reduction'
+}
+
+openmp_clauses = {
+    'private', 'shared', 'firstprivate', 'lastprivate', 'reduction',
+    'schedule', 'collapse', 'num_threads'
+}
+
+openmp_functions = {
+    'omp_get_num_threads', 'omp_get_max_threads', 'omp_get_thread_num', 'omp_set_num_threads'
+}
+
+openmp_constants = {
+    'omp_sched_static', 'omp_sched_dynamic', 'omp_sched_guided'
+}
+
+# ------------------------------
+# 6 AdaptiveCPP (SYCL) keywords & types
+# ------------------------------
+adaptivecpp_classes = {
+    'sycl::queue', 'sycl::buffer', 'sycl::accessor', 'sycl::handler', 'sycl::event',
+    'sycl::range', 'sycl::id', 'sycl::nd_range', 'sycl::nd_item', 'sycl::device', 'sycl::context',
+    'sycl::program', 'sycl::platform', 'sycl::kernel', 'sycl::property', 'sycl::image', 'sycl::sampler'
+}
+
+adaptivecpp_parallel = {
+    'sycl::parallel_for', 'sycl::parallel_for_work_group', 'sycl::single_task',
+    'sycl::group_barrier', 'sycl::nd_item::barrier'
+}
+
+adaptivecpp_side_effect_functions = {
+    'sycl::malloc_device', 'sycl::malloc_shared', 'sycl::malloc_host', 'sycl::free',
+    'sycl::memcpy', 'sycl::memset', 'sycl::event::wait'
+}
+
+adaptivecpp_macros = {
+    'SYCL_EXTERNAL', 'SYCL_UNROLL', 'SYCL_DEVICE_ONLY'
+}
+
 # ------------------------------
 # 5 Merged Subsets per type for Component Analysis of Halstead metrics
 # ------------------------------
+# TODO
 merged_control = cpp_control
 merged_types = cpp_types | cuda_types | opencl_types | kokkos_classes
 merged_modifiers = cpp_modifiers | cuda_storage_qualifiers | opencl_storage_qualifiers | kokkos_macros
 merged_operators = cpp_operators | cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
 merged_functions = cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
 merged_parallel = cuda_atomic | cuda_synchronization | opencl_functions | kokkos_parallel
+# TODO
 
 # ------------------------------
 # 6 Merged Sets by Language Extension
@@ -214,8 +262,10 @@ cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp
 cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions
 opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memory_flags | opencl_types | opencl_side_effect_functions
 kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions
+openmp_non_operands = openmp_pragmas | openmp_clauses | openmp_functions | openmp_constants
+adaptivecpp_non_operands = adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions | adaptivecpp_macros
 
-merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands
+merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands
 
 '''
 CRUCIAL Edge Case:

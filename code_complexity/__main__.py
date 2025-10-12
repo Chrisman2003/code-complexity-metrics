@@ -3,13 +3,14 @@ import os
 import time
 import logging
 import inspect
+import sys
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
 
 # -------------------------------
 # Logging setup
 # -------------------------------
 metrics_logger = logging.getLogger("metrics")
-metrics_handler = logging.StreamHandler()
+metrics_handler = logging.StreamHandler(sys.stdout) 
 metrics_handler.setFormatter(logging.Formatter(
     "%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
 ))
@@ -129,13 +130,21 @@ def main():
     """Command-line interface for analyzing code complexity metrics.
 
     Accepts a file or directory path and optional arguments:
-        --lang: Language for Halstead metrics (cuda, opencl, kokkos, cpp, merged)
+        --lang: Language for Halstead metrics
         --gpu-delta: Compare GPU constructs vs C++ baseline
         --verbose: Enable debug logging
     """
     parser = argparse.ArgumentParser(description="Analyze code complexity metrics for a file or directory.")
     parser.add_argument("path", help="Path to the code file or directory to analyze")
-    parser.add_argument("--lang", choices=["cuda", "opencl", "kokkos", "cpp", "merged"], default="cpp",
+    parser.add_argument("--lang", choices=[
+        "cpp",
+        "cuda",
+        "opencl",
+        "kokkos",
+        "openmp",
+        "adaptivecpp",
+        "merged"
+    ], default="cpp",
                         help="Language extension for Halstead metrics")
     parser.add_argument("--gpu-delta", action="store_true",
                         help="Compute added complexity of GPU constructs vs C++ baseline")
@@ -160,6 +169,8 @@ def main():
         "cuda": halstead.halstead_metrics_cuda,
         "opencl": halstead.halstead_metrics_opencl,
         "kokkos": halstead.halstead_metrics_kokkos,
+        "openmp": halstead.halstead_metrics_openmp,
+        "adaptivecpp": halstead.halstead_metrics_adaptivecpp,
         "merged": halstead.halstead_metrics_merged,
         "cpp": halstead.halstead_metrics_cpp
     }[args.lang]

@@ -94,7 +94,7 @@ def remove_string_literals(code: str) -> str:
     )
     return cleaned_code
 
-def remove_cpp_headers(code: str) -> str:
+def remove_headers(code: str) -> str:
     """
     Remove all C/C++ style headers inclusions from the source code.
 
@@ -110,6 +110,9 @@ def remove_cpp_headers(code: str) -> str:
 
     Edge Cases:
     """
-    code = re.sub(r'#\s*include\s*<[^>]+>', '', code)  # removes #include <...>
-    code = re.sub(r'#\s*include\s*"[^"]+"', '', code)  # removes #include "..."
+    code = re.sub(r'#\s*include\s*<[^>]*>', '', code)  # removes #include <...>
+    code = re.sub(r'#\s*include\s*"[^"]*"', '', code)  # removes #include "..."
+    # Edge Cases #include "" and #include <>
+    # -> Incorrect Program Behaviour
+    # -> First remove headers and then string literals
     return code

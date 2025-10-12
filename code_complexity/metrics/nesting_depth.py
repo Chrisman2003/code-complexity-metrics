@@ -13,9 +13,9 @@ def compute_nesting_depth(code: str) -> int:
         int: Maximum nesting depth.
     """
     # Remove comments, non-kernel string literals, Header calls
+    code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-    code = remove_cpp_headers(code)
 
     max_depth = 0
     current_depth = 0
