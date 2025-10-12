@@ -5,15 +5,15 @@ Parallelizing Frameworks:
 3) Kokkos
 4) OpenMP 
 5) AdaptiveCPP
-[Future]
-
 6) OpenACC
 7) OpenGlVulkan 
-8) Slang 
-9) WebGPU
-10) Boost
-11) Metal
-12) Thrust
+8) WebGPU
+9) Boost
+10) Metal
+[Future]
+
+11) Thrust
+12) Slang 
 '''
 # ------------------------------
 # 1 Standard C++ keywords
@@ -77,7 +77,6 @@ cpp_side_effect_functions = {
     'new[]', 'delete[]', 'std::terminate', 'std::abort', 'std::quick_exit'
 }
 
-
 # ------------------------------
 # 2 CUDA keywords & intrinsics
 # ------------------------------
@@ -130,7 +129,6 @@ cuda_side_effect_functions = {
     'cudaGetLastError', 'cudaPeekAtLastError'
 }
 
-
 # ------------------------------
 # 3 OpenCL keywords & types
 # ------------------------------
@@ -167,7 +165,6 @@ opencl_side_effect_functions = {
     'clEnqueueCopyBuffer', 'clEnqueueCopyImage'
 }
 
-
 # ------------------------------
 # 4 Kokkos keywords & types
 # ------------------------------
@@ -196,7 +193,6 @@ kokkos_side_effect_functions = {
     # NEW
     'Kokkos::fence', 'Kokkos::hwloc_init'
 }
-
 
 # ------------------------------
 # 5 OpenMP keywords & types
@@ -244,6 +240,162 @@ adaptivecpp_macros = {
 }
 
 # ------------------------------
+# 7 OpenACC keywords & types
+# ------------------------------
+openacc_pragmas = {
+    'acc parallel', 'acc kernels', 'acc loop', 'acc data',
+    'acc host_data', 'acc enter data', 'acc exit data', 'acc update',
+    'acc wait', 'acc routine'
+}
+
+openacc_clauses = {
+    'copy', 'copyin', 'copyout', 'create', 'present', 'deviceptr',
+    'num_gangs', 'num_workers', 'vector_length', 'collapse',
+    'private', 'reduction', 'async', 'wait'
+}
+
+openacc_functions = {
+    'acc_get_device_type', 'acc_get_num_devices', 'acc_set_device_type',
+    'acc_set_device_num', 'acc_malloc', 'acc_free', 'acc_memcpy_to_device',
+    'acc_memcpy_from_device', 'acc_wait_all', 'acc_async_test'
+}
+
+openacc_constants = {
+    'acc_device_nvidia', 'acc_device_radeon', 'acc_device_host', 'acc_device_default'
+}
+
+# ------------------------------
+# 8 OpenGL / Vulkan keywords & types
+# ------------------------------
+opengl_vulkan_keywords = {
+    # Vulkan C++ API classes (vulkan.hpp, vulkan_raii.hpp)
+    'vk::Instance', 'vk::Device', 'vk::Queue', 'vk::CommandBuffer', 'vk::ShaderModule',
+    'vk::Pipeline', 'vk::DescriptorSet', 'vk::Image', 'vk::Buffer', 'vk::PhysicalDevice',
+    'vk::SurfaceKHR', 'vk::SwapchainKHR', 'vk::Semaphore', 'vk::Fence',
+    'vk::RenderPass', 'vk::Framebuffer', 'vk::CommandPool', 'vk::Sampler',
+    'vk::SubmitInfo', 'vk::PipelineLayout', 'vk::PipelineCache', 'vk::DescriptorSetLayout',
+    'vk::Event', 'vk::ImageView', 'vk::BufferView', 'vk::DescriptorPool',
+    'vk::ShaderStageFlagBits', 'vk::DescriptorType',
+
+    # OpenGL symbols (gl.h / glad.h)
+    'GL_TRIANGLES', 'GL_LINES', 'GL_POINTS', 'GL_COMPUTE_SHADER',
+    'GL_VERTEX_SHADER', 'GL_FRAGMENT_SHADER', 'GL_GEOMETRY_SHADER', 'GL_UNIFORM_BUFFER',
+    'GL_SHADER_STORAGE_BUFFER', 'GL_TEXTURE_2D', 'GL_ARRAY_BUFFER', 'GL_ELEMENT_ARRAY_BUFFER',
+    'GL_FRAMEBUFFER', 'GL_RENDERBUFFER', 'GL_COLOR_ATTACHMENT0', 'GL_DEPTH_ATTACHMENT',
+    'GL_DEPTH_TEST', 'GL_BLEND', 'GL_FLOAT', 'GL_UNSIGNED_INT', 'GL_STATIC_DRAW',
+}
+
+opengl_vulkan_functions = {
+    # Vulkan C API
+    'vkCreateInstance', 'vkDestroyInstance', 'vkEnumeratePhysicalDevices', 'vkCreateDevice',
+    'vkGetDeviceQueue', 'vkCreateBuffer', 'vkCreateImage', 'vkAllocateMemory', 'vkBindBufferMemory',
+    'vkBindImageMemory', 'vkCreateShaderModule', 'vkCreatePipelineLayout', 'vkCreateComputePipelines',
+    'vkCmdDispatch', 'vkCmdBindPipeline', 'vkCmdBindDescriptorSets', 'vkCmdCopyBuffer',
+    'vkQueueSubmit', 'vkQueueWaitIdle', 'vkDeviceWaitIdle', 'vkDestroyDevice', 'vkDestroyBuffer',
+    'vkDestroyShaderModule', 'vkDestroyPipeline', 'vkFreeMemory', 'vkDestroyImage',
+    'vkBeginCommandBuffer', 'vkEndCommandBuffer', 'vkResetCommandBuffer', '_vk_context',
+
+    # OpenGL C API
+    'glGenBuffers', 'glBindBuffer', 'glBufferData', 'glDeleteBuffers',
+    'glCreateShader', 'glShaderSource', 'glCompileShader', 'glAttachShader',
+    'glLinkProgram', 'glUseProgram', 'glDispatchCompute', 'glDrawArrays', 'glDrawElements',
+    'glEnable', 'glDisable', 'glBindVertexArray', 'glGenVertexArrays', 'glDeleteVertexArrays',
+    'glGetUniformLocation', 'glUniform1i', 'glUniformMatrix4fv', 'glGetAttribLocation',
+    'glBindTexture', 'glActiveTexture', 'glTexImage2D', 'glTexParameteri',
+    'glFramebufferTexture2D', 'glCheckFramebufferStatus',
+}
+
+opengl_vulkan_constants = {
+    'VK_SUCCESS', 'VK_ERROR_OUT_OF_DEVICE_MEMORY', 'VK_ERROR_INITIALIZATION_FAILED',
+    'VK_STRUCTURE_TYPE_APPLICATION_INFO', 'VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO',
+    'VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO', 'VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO',
+    'VK_QUEUE_COMPUTE_BIT', 'VK_PIPELINE_BIND_POINT_COMPUTE',
+    'GL_COMPUTE_SHADER_BIT', 'GL_FRAGMENT_SHADER_BIT', 'GL_VERTEX_SHADER_BIT'
+}
+
+opengl_vulkan_macros = {
+    'VK_NULL_HANDLE', 'VK_MAKE_VERSION', 'GL_CHECK_ERROR', 'GL_VERSION', 'VK_API_VERSION_1_2'
+}
+
+# ------------------------------
+# 9 WebGPU keywords & types
+# ------------------------------
+webgpu_classes = {
+    'wgpu::Device', 'wgpu::Queue', 'wgpu::CommandEncoder', 
+    'wgpu::RenderPassEncoder', 'wgpu::Buffer', 'wgpu::Texture', 
+    'wgpu::ShaderModule', 'wgpu::Pipeline', 'wgpu::BindGroup', 
+    'wgpu::BindGroupLayout', 'wgpu::SwapChain', 'wgpu::CommandBuffer'
+}
+
+webgpu_functions = {
+    'wgpuCreateInstance', 'wgpuDeviceCreateBuffer', 'wgpuDeviceCreateTexture',
+    'wgpuDeviceCreateShaderModule', 'wgpuQueueSubmit', 'wgpuQueueWriteBuffer',
+    'wgpuQueueCopyBufferToBuffer', 'wgpuQueueCopyBufferToTexture',
+    'wgpuQueueCopyTextureToBuffer', 'wgpuCommandEncoderBeginRenderPass',
+    'wgpuCommandEncoderFinish', 'wgpuSwapChainGetCurrentTextureView',
+}
+
+webgpu_constants = {
+    'WGPU_BUFFER_USAGE_VERTEX', 'WGPU_BUFFER_USAGE_INDEX', 'WGPU_BUFFER_USAGE_UNIFORM',
+    'WGPU_TEXTURE_USAGE_RENDER_ATTACHMENT', 'WGPU_TEXTURE_USAGE_COPY_SRC',
+    'WGPU_TEXTURE_USAGE_COPY_DST', 'WGPU_TEXTURE_USAGE_SAMPLED'
+}
+
+webgpu_macros = {
+    'WGPU_NULL_HANDLE', 'WGPU_CREATE_DEFAULT'
+}
+
+# ------------------------------
+# 10 Boost.Compute keywords & types
+# ------------------------------
+
+boost_classes = {
+    'boost::compute::device', 'boost::compute::context', 'boost::compute::command_queue',
+    'boost::compute::vector', 'boost::compute::system', 'boost::compute::function',
+    'boost::compute::copy', 'boost::compute::transform'
+}
+
+boost_functions = {
+    'BOOST_COMPUTE_FUNCTION',  # macro
+    'boost::compute::copy', 'boost::compute::transform',
+    'boost::compute::system::default_device',
+    'boost::compute::command_queue::finish'
+}
+
+boost_macros = {
+    'BOOST_COMPUTE_FUNCTION'
+}
+# No constants specifically for Boost.Compute
+
+# ------------------------------
+# 11 Metal keywords & types
+# ------------------------------
+metal_storage = {
+    # Metal storage qualifiers / keywords
+    'device', 'thread', 'threadgroup', 'constant', 'kernel', 'sampler', 'texture',
+    'thread_index_in_threadgroup', 'threadgroup_position_in_grid',
+}
+metal_classes = {
+    # Metal classes / types
+    'MTLDevice', 'MTLCommandQueue', 'MTLBuffer', 'MTLComputePipelineState',
+    'MTLTexture', 'MTLCommandBuffer', 'MTLRenderPassDescriptor', 'MTLSamplerDescriptor',
+    'MTLComputeCommandEncoder',
+}
+metal_functions = {
+    # Side-effect functions
+    'newBufferWithLength:options:', 'newTextureWithDescriptor:', 'commit', 'enqueue',
+    'createComputePipelineStateWithFunction:error:', 'makeCommandQueue',
+    'makeComputePipelineState', 'setBuffer:offset:atIndex:', 'dispatchThreads',
+    'dispatchThreadgroups',
+}
+metal_constants = {
+    # Constants / enums
+    'MTLResourceCPUCacheModeDefaultCache', 'MTLResourceStorageModeShared',
+    'MTLTextureType2D', 'MTLTextureUsageShaderRead'
+}
+
+
+# ------------------------------
 # 5 Merged Subsets per type for Component Analysis of Halstead metrics
 # ------------------------------
 # TODO
@@ -264,8 +416,13 @@ opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memo
 kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions
 openmp_non_operands = openmp_pragmas | openmp_clauses | openmp_functions | openmp_constants
 adaptivecpp_non_operands = adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions | adaptivecpp_macros
+openacc_non_operands = openacc_pragmas | openacc_clauses | openacc_functions | openacc_constants
+opengl_vulkan_non_operands = opengl_vulkan_keywords | opengl_vulkan_functions | opengl_vulkan_constants | opengl_vulkan_macros
+webgpu_non_operands = webgpu_classes | webgpu_functions | webgpu_constants | webgpu_macros
+boost_non_operands = boost_classes | boost_functions | boost_macros
+metal_non_operands = metal_storage | metal_classes | metal_functions | metal_constants
 
-merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands
+merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands | openacc_non_operands | opengl_vulkan_non_operands | webgpu_non_operands | boost_non_operands | metal_non_operands
 
 '''
 CRUCIAL Edge Case:

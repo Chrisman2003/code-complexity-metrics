@@ -143,6 +143,11 @@ def main():
         "kokkos",
         "openmp",
         "adaptivecpp",
+        "openacc",
+        "opengl_vulkan",
+        "webgpu",
+        "boost",
+        "metal",
         "merged"
     ], default="cpp",
                         help="Language extension for Halstead metrics")
@@ -166,13 +171,18 @@ def main():
 
     # Select Halstead function based on language
     halstead_func = {
+        "cpp": halstead.halstead_metrics_cpp,
         "cuda": halstead.halstead_metrics_cuda,
         "opencl": halstead.halstead_metrics_opencl,
         "kokkos": halstead.halstead_metrics_kokkos,
         "openmp": halstead.halstead_metrics_openmp,
         "adaptivecpp": halstead.halstead_metrics_adaptivecpp,
-        "merged": halstead.halstead_metrics_merged,
-        "cpp": halstead.halstead_metrics_cpp
+        "openacc": halstead.halstead_metrics_openacc,
+        "opengl_vulkan": halstead.halstead_metrics_opengl_vulkan,
+        "webgpu": halstead.halstead_metrics_webgpu,
+        "boost": halstead.halstead_metrics_boost,
+        "metal": halstead.halstead_metrics_metal,
+        "merged": halstead.halstead_metrics_merged
     }[args.lang]
     # Select Cyclomatic function based on method
     cyclomatic_func = {

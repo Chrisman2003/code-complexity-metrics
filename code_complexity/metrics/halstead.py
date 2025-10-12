@@ -5,31 +5,67 @@ from code_complexity.metrics.shared import *
 from code_complexity.metrics.cyclomatic import plain_logger
 
 # Substring Suffix Extension Patterns with Respect to the Kleene Operator (*)
+# Trailing Commas for Maintainability and minimizing potential errors
+# TODO: which languages require :: multiple chaining
 pattern_rules = {
     'cuda': [
-        r'\b__\w+__\b',          # CUDA qualifiers like __global__, __device__
-        r'\bcuda[A-Z]\w*\b',     # CUDA runtime APIs like cudaMalloc, cudaMemcpy
-        r'\batomic[A-Z]\w*\b',   # CUDA atomic intrinsics
+        r'\b__\w+__\b',                  # CUDA qualifiers like __global__, __device__
+        r'\bcuda[A-Z]\w*\b',             # CUDA runtime APIs like cudaMalloc, cudaMemcpy
+        r'\batomic[A-Z]\w*\b',           # CUDA atomic intrinsics
     ],
     'opencl': [
-        r'\bcl[A-Z]\w*\b',       # clCreateBuffer, clEnqueueNDRangeKernel
+        r'\bcl[A-Z]\w*\b',               # clCreateBuffer, clEnqueueNDRangeKernel
         r'\bget_(?:global|local|group)_id\b',  # non-capturing group
     ],
     'kokkos': [ 
-        r'\bKokkos::\w+\b',      # All Kokkos namespace calls
+        r'\bKokkos::\w+\b',              # All Kokkos namespace calls
     ],
     'openmp': [
-        r'\bomp_[a-zA-Z_]+\b',  # matches OpenMP functions like omp_get_num_threads
-        r'#pragma\s+omp\s+[a-zA-Z_\s]+',  # matches pragmas like #pragma omp parallel for
+        r'\bomp_[a-zA-Z_]+\b',           # matches OpenMP functions like omp_get_num_threads
+        r'#pragma\s+omp\s+[a-zA-Z_\s]+', # matches pragmas like #pragma omp parallel for
     ],
     'adaptivecpp': [
-        r'\bsycl::\w+\b',                 # all SYCL class/function names
-        r'\bqueue\b',                     # short forms when using namespace sycl
+        r'\bsycl::\w+\b',                # all SYCL class/function names
+        r'\bqueue\b',                    # short forms when using namespace sycl
         r'\bparallel_for\b',
         r'\bsingle_task\b',
         r'\bnd_range\b',
-        r'\bnd_item\b'
-    ]
+        r'\bnd_item\b',
+        # TODO: Matched Operator {'#pragma acc parallel loop\n        for '}
+    ],
+    'openacc': [
+        r'\bacc_\w+\b',             # OpenACC runtime functions like acc_malloc
+        r'#pragma\s+acc\s+[a-zA-Z_\s]+',  # OpenACC pragma lines
+    ],
+    'opengl_vulkan': [
+        r'\bvk\w+\b',              # Vulkan functions like vkCreateInstance
+        r'\bgl\w+\b',              # OpenGL functions like glBindBuffer
+        r'\bVK_[A-Z0-9_]+\b',           # Vulkan constants like VK_SUCCESS
+        r'\bGL_[A-Z0-9_]+\b',           # OpenGL constants like GL_COMPUTE_SHADER
+        r'\bvk::\w+\b',                 # Vulkan C++ API like vk::Instance
+        r'\bvk(?:::\w+)+\b',                 # Vulkan C++ API like vk::Instance::Instance
+        # TODO: Generalized matching for _vk_context ?
+    ],
+    'webgpu': [
+        r'\bwgpu::\w+\b',       # all WebGPU C++ API classes
+        r'\bwgpu[A-Z]\w*\b',    # WebGPU runtime functions like wgpuCreateInstance
+        r'\bWGPU_[A-Z0-9_]+\b', # constants
+    ],
+    'boost': [
+        r'\bboost::compute::\w+\b',  # all Boost.Compute classes & functions
+        r'\bBOOST_COMPUTE_FUNCTION\b', # macro
+        # TODO: Edge Case:     
+        # - namespace compute = boost::compute;
+        # - compute::device gpu = compute::system::default_device();
+    ],
+    'metal': [
+        r'\bMTL\w+\b',            # Metal classes / types
+        r'\bMTL::\w+\b',            # Metal classes / types
+        r'\b(device|thread|threadgroup|constant|kernel|sampler|texture)\b',
+        r'\bdispatchThreads\b|\bdispatchThreadgroups\b|\bcommit\b|\benqueue\b',
+        r'\bnew\w+With\w*:\b',    # Objective-C style method calls
+        r'\bMTL_[A-Z0-9_]+\b'     # Metal constants / enums
+    ]   
 }
 
 def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, lang: str):
@@ -71,6 +107,8 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
     plain_logger.info("Added Dynamic Keywords: %s", full_subtracting_set - subtracting_set)
+    plain_logger.info("\n")
+    plain_logger.info("Amount of Added Dynamic Keywords: %d", len(dynamic_nonoperands) - len(full_subtracting_set - subtracting_set))
     plain_logger.info("\n")
     
     string_literals = re.findall(r'"(?:\\.|[^"\\])*"', code)  # matches C++ string literals
@@ -177,6 +215,45 @@ def halstead_metrics_adaptivecpp(code: str) -> dict:
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, adaptivecpp_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'adaptivecpp')
 
+def halstead_metrics_openacc(code: str) -> dict:
+    """Compute Halstead metrics for OpenACC code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, openacc_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'openacc')
+
+def halstead_metrics_opengl_vulkan(code: str) -> dict:
+    """Compute Halstead metrics for OpenGL_Vulkan code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opengl_vulkan_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'opengl_vulkan')
+
+def halstead_metrics_webgpu(code: str) -> dict:
+    """Compute Halstead metrics for WebGPU code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, webgpu_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'webgpu')
+
+def halstead_metrics_boost(code: str) -> dict:
+    """Compute Halstead metrics for Boost code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, boost_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'boost')
+
+def halstead_metrics_metal(code: str) -> dict:
+    """Compute Halstead metrics for Metal code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, metal_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'metal')
 
 
 def halstead_metrics_merged(code: str) -> dict:
