@@ -149,6 +149,7 @@ def main():
         "boost",
         "metal",
         "thrust",
+        "auto",
         "merged"
     ], default="cpp",
                         help="Language extension for Halstead metrics")
@@ -184,6 +185,7 @@ def main():
         "boost": halstead.halstead_metrics_boost,
         "metal": halstead.halstead_metrics_metal,
         "thrust": halstead.halstead_metrics_thrust,
+        "auto": halstead.halstead_metrics_auto,
         "merged": halstead.halstead_metrics_merged
     }[args.lang]
     # Select Cyclomatic function based on method

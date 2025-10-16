@@ -10,9 +10,9 @@ Parallelizing Frameworks:
 8) WebGPU
 9) Boost
 10) Metal
+11) Thrust
 [Future]
 
-11) Thrust
 12) Slang 
 '''
 # ------------------------------
@@ -477,3 +477,28 @@ Structure:
 '''
 
 "Edge Case: remove libraries before analysis"
+
+
+'''
+Libraries:
+1) CUDA: #include <cuda_runtime.hpp>
+2) KOKKOS: #include <Kokkos_Core.hpp>
+3) VULKAN/OPENGL: #include <vulkan/vulkan.hpp>
+   #include <vulkan/vulkan_raii.hpp>
+   #include <glm/glm.hpp> 
+4) ADAPTIVECPP: #include <CL/sycl.hpp>
+   #include <sycl/sycl.hpp>
+5) THRUST: #include <thrust/device_vector.h>
+   #include <thrust/reduce.h>
+6) OPENACC: #include <openacc.h>
+7) OPENCL: #include <CL/cl.hpp>
+   #include "opencl_eval.hpp"
+   #include "opencl_init.hpp"
+   #include "opencl_sum.hpp"
+8) OPENMP: #include "omp.h"
+9) SLANG: #include "shader/eval.hpp"
+   #include "shader/eval.cuh"
+10) WEBGPU: #include <wgpu/wgpu.h>
+11) BOOST: #include "boost/compute.hpp"
+12) METAL: #include <Metal/Metal.hpp>
+'''

@@ -12,10 +12,11 @@ pattern_rules = {
         r'\b__\w+__\b',                  # CUDA qualifiers like __global__, __device__
         r'\bcuda[A-Z]\w*\b',             # CUDA runtime APIs like cudaMalloc, cudaMemcpy
         r'\batomic[A-Z]\w*\b',           # CUDA atomic intrinsics
-    ],
+    ], # TODO: xif (error != cudaSuccess) {
     'opencl': [
         r'\bcl[A-Z]\w*\b',               # clCreateBuffer, clEnqueueNDRangeKernel
         r'\bget_(?:global|local|group)_id\b',  # non-capturing group
+        r'\bcl(?:::\w+)+\b',
     ],
     'kokkos': [ 
         r'\bKokkos::\w+\b',              # All Kokkos namespace calls
@@ -70,10 +71,13 @@ pattern_rules = {
         r'\bthrust::\w+\b',               # all Thrust API calls and classes
         r'\bTHRUST_[A-Z0-9_]+\b',         # macros
         r'\bthrust(?:::\w+)+\b',          # nested namespaces like thrust::system::cuda
-    ],
+    ], 
+    # TODO: non-function constructs detected as functions
+    # TODO: edge case - variables named with these prefixations
+    # --> HOWEVER, when parall. framework not used, variable naming is RELAXED!
 }
 
-def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, lang: str):
+def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, lang: str, autolist: list[str] = []):
     """Compute Halstead metrics for given code with parametrized operator and operand patterns.
 
     Args:
@@ -95,13 +99,18 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     # Only extend with GPU patterns if lang specifies a GPU extension
     dynamic_nonoperands = set()
     patterns_to_apply = []
-    if lang == 'merged':
+    if lang == "merged":
         for pat_list in pattern_rules.values():
             patterns_to_apply.extend(pat_list)
+    elif lang == "auto":
+        for l in autolist:
+            if l in pattern_rules:
+                patterns_to_apply.extend(pattern_rules[l])
     elif lang in pattern_rules:
         patterns_to_apply = pattern_rules[lang]
     # Result: a list of regex patterns to apply
-    # For all regex elements in pattern_rules are used
+    # For all regex elements in pattern_rules are used    
+    
     for p_elem in patterns_to_apply:
         matches = re.findall(p_elem, code) # find all matches for this pattern
         operators.extend(matches) # add to operators
@@ -111,9 +120,8 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     plain_logger.info("\n")
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
-    plain_logger.info("Added Dynamic Keywords: %s", full_subtracting_set - subtracting_set)
-    plain_logger.info("\n")
-    plain_logger.info("Amount of Added Dynamic Keywords: %d", len(dynamic_nonoperands) - len(full_subtracting_set - subtracting_set))
+    plain_logger.info("Added Dynamic Non-Operands: %s", full_subtracting_set - subtracting_set)
+    plain_logger.info("Amount of Added Dynamic Keywords: %d", len(full_subtracting_set - subtracting_set))
     plain_logger.info("\n")
     
     string_literals = re.findall(r'"(?:\\.|[^"\\])*"', code)  # matches C++ string literals
@@ -167,6 +175,33 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
     # Set of non-operands to exclude from operand count
     subtracting_set = merged_nonoperands
     return operator_pattern, operand_pattern, subtracting_set
+
+def detect_parallel_framework(code: str) -> set[str]:
+    """
+    Automatically detect the parallelizing framework used in a source file.
+    Returns one or a multiple of ['cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
+                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
+                    'webgpu', 'boost', 'metal', 'thrust']
+    """
+    lib_patterns = { # Assuming correct library declarations
+        "cuda": [r'#include\s*<cuda'],
+        "opencl": [r'#include\s*<CL/cl[^>]*>'],
+        "kokkos": [r'#include\s*<Kokkos'],
+        "openmp": [r'#include\s*[<"]omp'],
+        "adaptivecpp": [r'#include\s*<CL/sycl'],
+        "openacc": [r'#include\s*<openacc'],
+        "opengl_vulkan": [r'#include\s*<vulkan'],
+        "webgpu": [r'#include\s*<wgpu'],
+        "boost": [r'#include\s*"boost'],
+        "metal": [r'#include\s*<Metal'],
+        "thrust": [r'#include\s*<thrust'],
+    }
+    detected_languages = {"cpp"}
+    for lang, patterns in lib_patterns.items():
+        matches = re.findall(patterns[0], code)
+        if len(matches) > 0:
+            detected_languages.add(lang)
+    return detected_languages
 
 
 def halstead_metrics_cpp(code: str) -> dict:
@@ -267,6 +302,42 @@ def halstead_metrics_thrust(code: str) -> dict:
     code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, thrust_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'thrust')
+
+def halstead_metrics_auto(code: str) -> dict:
+    """Compute Halstead metrics with automated language detection for a file (C++ + GPU extensions)."""
+    # Example Alleviating edge case
+    # Kokkos counts "Kokkos:parallel_for" solely, but with the merged collection
+    # The matching pattern "parallel_for" from adaptive cpp would likewise be matched, which is incorrect for exclusive Kokkos
+    
+    detected_langs = detect_parallel_framework(code)
+    print("Detected Languages: ", detected_langs)
+    print("\n")
+    # Start with standard C++ non-operands
+    auto_non_operands = set(cpp_non_operands)
+    # Mapping from framework name → its non-operands set
+    framework_non_operands_map = {
+        "cuda": cuda_non_operands,
+        "opencl": opencl_non_operands,
+        "kokkos": kokkos_non_operands,
+        "openmp": openmp_non_operands,
+        "adaptivecpp": adaptivecpp_non_operands,
+        "openacc": openacc_non_operands,
+        "opengl_vulkan": opengl_vulkan_non_operands,
+        "webgpu": webgpu_non_operands,
+        "boost": boost_non_operands,
+        "metal": metal_non_operands,
+        "thrust": thrust_non_operands,
+    }
+    # Add non-operands for all detected frameworks (except cpp, which is already included)
+    for lang in detected_langs:
+        if lang != 'cpp' and lang in framework_non_operands_map:
+            auto_non_operands |= framework_non_operands_map[lang]
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    #merged_extensions = cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'auto', detected_langs)
 
 def halstead_metrics_merged(code: str) -> dict:
     """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
@@ -398,3 +469,4 @@ Edge Cases (OpenMP):
 
 # Don't want full Function recognitition, since we want CASE-SPECIFIC Parallelizing Framework Construct
 # Analysis. Full Function recognition, would analyze ALL functions regardless of parallelizing framework
+
