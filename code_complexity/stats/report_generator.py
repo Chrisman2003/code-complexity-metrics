@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from stats.analysis import summarize
-from stats.visualization import plot_all_metrics
+from code_complexity.stats.analysis import summarize
+from code_complexity.stats.visualization import plot_all_metrics
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors

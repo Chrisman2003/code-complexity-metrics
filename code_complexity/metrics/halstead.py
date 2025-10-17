@@ -194,7 +194,7 @@ def detect_parallel_framework(code: str) -> set[str]:
         "webgpu": [r'#include\s*<wgpu'],
         "boost": [r'#include\s*"boost'],
         "metal": [r'#include\s*<Metal'],
-        "thrust": [r'#include\s*<thrust'],
+        "thrust": [r'#include\s*[<"]thrust'],
     }
     detected_languages = {"cpp"}
     for lang, patterns in lib_patterns.items():

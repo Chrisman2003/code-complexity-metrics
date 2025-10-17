@@ -5,6 +5,12 @@ import logging
 import inspect
 import sys
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
+from code_complexity.stats.data_loader import collect_metrics
+from code_complexity.stats.preprocessing import normalize_by_loc
+from code_complexity.stats.analysis import summarize
+from code_complexity.stats.visualization import plot_all_metrics
+from code_complexity.stats.report_generator import generate_report
+
 
 # -------------------------------
 # Logging setup
@@ -36,6 +42,27 @@ def timed(func, *args, **kwargs):
     result = func(*args, **kwargs)
     end = time.perf_counter()
     return result, end - start
+
+# -------------------------------
+# Statistical Analysis
+# -------------------------------
+def stat_report(root_dir: str):
+    print("🔍 Collecting metrics from:", root_dir)
+    records = collect_metrics(root_dir)
+    print(f"✅ Collected {len(records)} records\n")
+
+    print("⚙️ Normalizing by LOC...")
+    records = normalize_by_loc(records)
+    print("✅ Normalized\n")
+
+    print("📊 Summarizing metrics...")
+    summary, correlations = summarize(records)
+    print("Summary:\n", summary)
+    print("\nCorrelations:\n", correlations)
+
+    print("📈 Generating report...")
+    generate_report(records, output_path="complexity_report.pdf")
+    print("✅ Report saved as complexity_report.pdf")
 
 # -------------------------------
 # Analyze a single code file
@@ -137,22 +164,11 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze code complexity metrics for a file or directory.")
     parser.add_argument("path", help="Path to the code file or directory to analyze")
     parser.add_argument("--lang", choices=[
-        "cpp",
-        "cuda",
-        "opencl",
-        "kokkos",
-        "openmp",
-        "adaptivecpp",
-        "openacc",
-        "opengl_vulkan",
-        "webgpu",
-        "boost",
-        "metal",
-        "thrust",
-        "auto",
-        "merged"
-    ], default="cpp",
-                        help="Language extension for Halstead metrics")
+        "cpp", "cuda", "opencl", "kokkos", "openmp","adaptivecpp", "openacc",
+        "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "auto", "merged"], 
+    default="cpp", help="Language extension for Halstead metrics")
+    parser.add_argument("--report", action="store_true",
+                    help="Run full statistical analysis pipeline after computing metrics")
     parser.add_argument("--gpu-delta", action="store_true",
                         help="Compute added complexity of GPU constructs vs C++ baseline")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -208,6 +224,10 @@ def main():
         analyze_directory(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
     else:
         metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
-
+    # ✅ NEW: optional stats analysis
+    if args.report:
+        metrics_logger.info("Running full statistical analysis pipeline...")
+        stat_report(args.path)
+    
 if __name__ == "__main__":
     main()
