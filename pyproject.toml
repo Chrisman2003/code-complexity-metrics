@@ -40,7 +40,7 @@ dependencies = [
     "seaborn==0.13.2",
     "reportlab==4.4.4",
     "statsmodels==0.14.5",
-    "" # TODO: Deprecated package
+    "scikit-learn==1.7.2" # TODO: Deprecated package
 ]
 
 [project.scripts]
