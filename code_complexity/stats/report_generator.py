@@ -6,6 +6,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import os
+import io
 """
 report_generator.py
 Generate statistical + visual reports for code complexity analysis.
@@ -58,10 +59,26 @@ def generate_report(records, output_path="complexity_report.pdf"):
     elements.append(Paragraph("Visualizations", styles['Heading2']))
 
     # Example: save plots and embed them
-    os.makedirs("report_figs", exist_ok=True)
-    plot_all_metrics(records, save_dir="report_figs")
-    for plot_file in os.listdir("report_figs"):
-        elements.append(Image(os.path.join("report_figs", plot_file), width=400, height=300))
+    #os.makedirs("report_figs", exist_ok=True)
+    #plot_all_metrics(records, save_dir="report_figs")
+    #for plot_file in os.listdir("report_figs"):
+    #    elements.append(Image(os.path.join("report_figs", plot_file), width=400, height=300))
+    #    elements.append(Spacer(1, 12))
+    # Instead of saving PNGs, render plots directly to a BytesIO buffer
+    for metric in ['sloc', 'nesting',  'cyclomatic', 'cognitive', 'halstead']:
+        plt.figure(figsize=(6,4))
+        plt.hist(df[metric], bins=20, color='skyblue', edgecolor='black')
+        plt.title(f"Distribution of {metric}")
+        plt.xlabel(metric)
+        plt.ylabel("Count")
+        plt.tight_layout()
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+
+        elements.append(Image(buf, width=400, height=300))
         elements.append(Spacer(1, 12))
 
     # --- Build PDF ---

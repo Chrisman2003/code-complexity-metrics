@@ -5,12 +5,13 @@ import logging
 import inspect
 import sys
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
+from code_complexity.stats.advanced_analysis import advanced_stat_report
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.stats.preprocessing import normalize_by_loc
 from code_complexity.stats.analysis import summarize
 from code_complexity.stats.visualization import plot_all_metrics
 from code_complexity.stats.report_generator import generate_report
-
+from code_complexity.gpu_delta import compute_gpu_delta
 
 # -------------------------------
 # Logging setup
@@ -169,6 +170,9 @@ def main():
     default="cpp", help="Language extension for Halstead metrics")
     parser.add_argument("--report", action="store_true",
                     help="Run full statistical analysis pipeline after computing metrics")
+    parser.add_argument("--advanced-report", action="store_true",
+        help="Run extended statistical analysis with distributions, regression, clustering, and GPU delta"
+    )
     parser.add_argument("--gpu-delta", action="store_true",
                         help="Compute added complexity of GPU constructs vs C++ baseline")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -228,6 +232,13 @@ def main():
     if args.report:
         metrics_logger.info("Running full statistical analysis pipeline...")
         stat_report(args.path)
-    
+    if args.advanced_report:
+        metrics_logger.info("Running advanced statistical analysis...")
+        advanced_stat_report(
+        root_dir=args.path,
+        compute_gpu_delta=args.gpu_delta,
+        gpu_lang=args.lang,
+        output_pdf="advanced_metrics_report.pdf"
+    )
 if __name__ == "__main__":
     main()
