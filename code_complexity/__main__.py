@@ -5,12 +5,9 @@ import logging
 import inspect
 import sys
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
-from code_complexity.stats.advanced_analysis import advanced_stat_report
 from code_complexity.stats.data_loader import collect_metrics
-from code_complexity.stats.preprocessing import normalize_by_loc
 from code_complexity.stats.analysis import summarize
-from code_complexity.stats.visualization import plot_all_metrics
-from code_complexity.stats.report_generator import generate_report
+from code_complexity.stats.report_generator import *
 from code_complexity.gpu_delta import compute_gpu_delta
 
 # -------------------------------
@@ -47,23 +44,27 @@ def timed(func, *args, **kwargs):
 # -------------------------------
 # Statistical Analysis
 # -------------------------------
-def stat_report(root_dir: str):
-    print("🔍 Collecting metrics from:", root_dir)
+def stat_report(root_dir: str, report_func):
+    if report_func == generate_basic_report:
+        metrics_logger.info("📊 Running basic statistical analysis pipeline...")
+    else:
+        metrics_logger.info("📊 Running advanced statistical analysis pipeline...")
+    
+    metrics_logger.info("🔍 Collecting metrics from: %s", root_dir)
     records = collect_metrics(root_dir)
-    print(f"✅ Collected {len(records)} records\n")
+    metrics_logger.info("✅ Collected %d records\n", len(records))
 
-    print("⚙️ Normalizing by LOC...")
-    records = normalize_by_loc(records)
-    print("✅ Normalized\n")
-
-    print("📊 Summarizing metrics...")
+    metrics_logger.info("📊 Summarizing metrics...")
     summary, correlations = summarize(records)
-    print("Summary:\n", summary)
-    print("\nCorrelations:\n", correlations)
+    metrics_logger.info("Summary:\n%s", summary)
+    metrics_logger.info("\nCorrelations:\n%s", correlations)
 
-    print("📈 Generating report...")
-    generate_report(records, output_path="complexity_report.pdf")
-    print("✅ Report saved as complexity_report.pdf")
+    metrics_logger.info("📈 Generating report...")
+    if report_func == generate_basic_report:
+        generate_basic_report(records, output_path="complexity_report.pdf")
+    else:
+        generate_advanced_report(records, output_path="complexity_report.pdf")
+    metrics_logger.info("✅ Report saved as complexity_report.pdf")
 
 # -------------------------------
 # Analyze a single code file
@@ -131,7 +132,6 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
         metrics_logger.info("  Difficulty delta: %.2f", halstead.difficulty(halstead_metrics) - halstead.difficulty(baseline_metrics))
         metrics_logger.info("  Effort delta: %.2f", halstead.effort(halstead_metrics) - halstead.effort(baseline_metrics))
         metrics_logger.info("  Time delta: %.2fs", halstead.time(halstead_metrics) - halstead.time(baseline_metrics))
-
     metrics_logger.info("-" * 40)
 
 # -------------------------------
@@ -168,11 +168,8 @@ def main():
         "cpp", "cuda", "opencl", "kokkos", "openmp","adaptivecpp", "openacc",
         "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "auto", "merged"], 
     default="cpp", help="Language extension for Halstead metrics")
-    parser.add_argument("--report", action="store_true",
-                    help="Run full statistical analysis pipeline after computing metrics")
-    parser.add_argument("--advanced-report", action="store_true",
-        help="Run extended statistical analysis with distributions, regression, clustering, and GPU delta"
-    )
+    parser.add_argument("--report", choices=["basic", "advanced"], default=None,
+                    help="Run basic/advanced statistical analysis pipeline after computing metrics")
     parser.add_argument("--gpu-delta", action="store_true",
                         help="Compute added complexity of GPU constructs vs C++ baseline")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -218,27 +215,24 @@ def main():
         "advanced": clang_parallel.compute_cognitive_complexity_file,
         "regex": cognitive.regex_compute_cognitive
     }[args.cognitive]
-        
     # Determine baseline for GPU delta
     gpu_baseline_func = halstead.halstead_metrics_cpp if (args.gpu_delta and args.lang != "cpp") else None
+        
     # Analyze file or directory
-    if os.path.isfile(args.path):
-        analyze_code(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
-    elif os.path.isdir(args.path):
-        analyze_directory(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+    if args.report == None:
+        if os.path.isfile(args.path):
+            analyze_code(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+        elif os.path.isdir(args.path):
+            analyze_directory(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+        else:
+            metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
+    # Stat Analysis
     else:
-        metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
-    # ✅ NEW: optional stats analysis
-    if args.report:
-        metrics_logger.info("Running full statistical analysis pipeline...")
-        stat_report(args.path)
-    if args.advanced_report:
-        metrics_logger.info("Running advanced statistical analysis...")
-        advanced_stat_report(
-        root_dir=args.path,
-        compute_gpu_delta=args.gpu_delta,
-        gpu_lang=args.lang,
-        output_pdf="advanced_metrics_report.pdf"
-    )
+        report_func = {
+            "basic": generate_basic_report,
+            "advanced": generate_advanced_report
+        }[args.report]
+        stat_report(args.path, report_func)
+    
 if __name__ == "__main__":
     main()

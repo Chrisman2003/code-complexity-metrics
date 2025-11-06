@@ -1,6 +1,6 @@
 import re
 import math
-from .KEYWORDS import *
+from .language_tokens import *
 from code_complexity.metrics.shared import *
 from code_complexity.metrics.cyclomatic import plain_logger
 
@@ -116,22 +116,22 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         operators.extend(matches) # add to operators
         dynamic_nonoperands.update(matches) # add to dynamic non-operands
     
-    plain_logger.info("Dynamic Non-Operands Found: %s", dynamic_nonoperands)
-    plain_logger.info("\n")
+    #plain_logger.info("Dynamic Non-Operands Found: %s", dynamic_nonoperands)
+    #plain_logger.info("\n")
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
-    plain_logger.info("Added Dynamic Non-Operands: %s", full_subtracting_set - subtracting_set)
-    plain_logger.info("Amount of Added Dynamic Keywords: %d", len(full_subtracting_set - subtracting_set))
-    plain_logger.info("\n")
+    #plain_logger.info("Added Dynamic Non-Operands: %s", full_subtracting_set - subtracting_set)
+    #plain_logger.info("Amount of Added Dynamic Keywords: %d", len(full_subtracting_set - subtracting_set))
+    #plain_logger.info("\n")
     
     string_literals = re.findall(r'"(?:\\.|[^"\\])*"', code)  # matches C++ string literals
     operands.extend(string_literals) # Since string literals are first removed, the actual instances of "" are appended
     operands = [op for op in operands if op not in full_subtracting_set] # Remove non-operands from operands
     
-    print("Operators", set(operators))
-    print("\n")
-    print("Operands", set(operands))
-    print("\n")
+    #print("Operators", set(operators))
+    #print("\n")
+    #print("Operands", set(operands))
+    #print("\n")
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
@@ -304,14 +304,14 @@ def halstead_metrics_thrust(code: str) -> dict:
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'thrust')
 
 def halstead_metrics_auto(code: str) -> dict:
-    """Compute Halstead metrics with automated language detection for a file (C++ + GPU extensions)."""
+    """Compute Halstead metrics with automated language detection for a file (C++ and GPU extensions)."""
     # Example Alleviating edge case
     # Kokkos counts "Kokkos:parallel_for" solely, but with the merged collection
     # The matching pattern "parallel_for" from adaptive cpp would likewise be matched, which is incorrect for exclusive Kokkos
     
     detected_langs = detect_parallel_framework(code)
-    print("Detected Languages: ", detected_langs)
-    print("\n")
+    #print("Detected Languages: ", detected_langs)
+    #print("\n")
     # Start with standard C++ non-operands
     auto_non_operands = set(cpp_non_operands)
     # Mapping from framework name → its non-operands set

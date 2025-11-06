@@ -233,7 +233,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         #with open(cfg_file_path, "w", encoding="utf-8") as f:
         #    f.write(output)
         #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
-        #plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
+        plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
