@@ -1,3 +1,4 @@
+# Parallelizing Frameworks: CUDA, OpenCL, Kokkos, [Future: Sycl, OpenMP]
 # ------------------------------
 # 1 Standard C++ keywords
 # ------------------------------
@@ -6,10 +7,6 @@ cpp_control = {
     'try', 'catch', 'throw',
     # NEW
     'default', 'if constexpr', 'co_return', 'requires_clause', 'requires_expression', 'synchronized',
-}
-
-cpp_control = {
-    # NEW
     'namespace', 'new', 'delete', 'not', 'not_eq', 'or', 'or_eq', 'private', 'protected',
     'public', 'friend', 'virtual', 'explicit', 'inline', 'mutable', 'this', 'alignas', 'alignof', 'decltype',
     'constexpr', 'noexcept', 'co_await', 'co_yield', 'export', 'import', 'module', 'requires',
@@ -202,3 +199,20 @@ opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memo
 kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions
 
 merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands
+
+'''
+CRUCIAL Edge Case:
+Some parallelizing frameworks contain communal keywords.
+Therefore for the merging of non-operands sets with respect to CPP and the given parallelizing framework,
+one needs to ensure that duplicates are allowed across parallelizing frameworks, just not within the
+frameworks themselves -> so as to simplify the implementation.
+Sets anyway don't allow duplicates, so this is inherently guaranteed. 
+-> E.g. 
+Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and opencl_non_operands,"
+
+Structure:
+-> Base CPP 
+--> Parallizing Framework 1 (CUDA)    | Intersecting Overlap
+--> Parallizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
+--> Parallizing Framework 3 (Kokkos)  | or between 2 given frameworks
+'''

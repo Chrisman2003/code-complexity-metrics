@@ -1,46 +1,20 @@
-def compute_sloc(code: str) -> int:
-    """Compute the Source Lines of Code (SLOC) for C++ code.
+from code_complexity.metrics.shared import *
 
-    Counts all non-empty, non-comment lines. Handles:
-    - Single-line comments (`//`)
-    - Multi-line comments (`/* ... */`)
-    - Preprocessor directives are counted as lines of code
+def compute_sloc(code: str) -> int:
+    """Compute Source Lines of Code (SLOC) after removing comments and string literals.
+
+    Counts all non-empty lines that remain after stripping comments and (non-kernel) string literals.
 
     Args:
-        code (str): The C++ source code.
+        code (str): Full C/C++/OpenCL source code.
 
     Returns:
-        int: Number of source lines of code.
+        int: Number of source lines of code (SLOC).
     """
-    lines = code.splitlines()
-    count = 0
-    in_block_comment = False
-
-    for line in lines:
-        stripped = line.strip()
-        if not stripped:
-            continue
-
-        # Handle multi-line comments
-        while True:
-            if in_block_comment:
-                if '*/' in stripped:
-                    in_block_comment = False
-                    stripped = stripped.split('*/', 1)[1].strip()
-                    continue  # recheck remaining line
-                else:
-                    stripped = ''
-                    break
-            elif '/*' in stripped:
-                in_block_comment = True
-                stripped = stripped.split('/*', 1)[0].strip()
-                continue  # recheck remaining line
-            break
-
-        # Skip single-line comments
-        if stripped.startswith('//') or not stripped:
-            continue
-
-        count += 1
-
-    return count
+    # Remove all comments
+    code_no_comments = remove_cpp_comments(code)
+    # Remove all string literals except kernel strings
+    code_cleaned = remove_string_literals(code_no_comments)
+    # Count all non-empty lines
+    lines = code_cleaned.splitlines()
+    return sum(1 for line in lines if line.strip())

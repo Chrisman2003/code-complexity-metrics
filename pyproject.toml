@@ -34,7 +34,11 @@ dependencies = [
     "traitlets==5.14.3",
     "typing_extensions==4.14.1",
     "wcwidth==0.2.13",
-    "clang>=16.0.0",  # Add Python clang bindings
+    "clang==18.1.8",  # Add Python clang bindings
+    "pandas==2.3.3",
+    "matplotlib==3.10.6",
+    "seaborn==0.13.2",
+    "reportlab==4.4.4"
 ]
 
 [project.scripts]
@@ -47,3 +51,12 @@ include = ["code_complexity*"]
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+
+#Non-Python Dpendencies to install on Ubuntu:
+#SUDO apt dependencies:
+#sudo apt install kokkos libkokkos-dev
+#sudo apt install libomp-dev
+#sudo apt install nvidia-cuda-toolkit
+#sudo apt install clang-15 llvm-15
+#SDK kit for cuda

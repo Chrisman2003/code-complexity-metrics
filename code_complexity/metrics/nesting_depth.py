@@ -1,0 +1,29 @@
+from code_complexity.metrics.shared import *
+
+def compute_nesting_depth(code: str) -> int:
+    """Compute the maximum nesting depth for C++/OpenCL code.
+
+    This function removes comments and string literals before
+    counting curly braces to determine the maximum depth of nested scopes.
+
+    Args:
+        code (str): The source code.
+
+    Returns:
+        int: Maximum nesting depth.
+    """
+    # Remove comments and non-kernel string literals
+    code_clean = remove_cpp_comments(code)
+    code_clean = remove_string_literals(code_clean)
+
+    max_depth = 0
+    current_depth = 0
+
+    for char in code_clean:
+        if char == '{':
+            current_depth += 1
+            max_depth = max(max_depth, current_depth)
+        elif char == '}':
+            current_depth = max(0, current_depth - 1)
+
+    return max_depth

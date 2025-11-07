@@ -1,6 +1,7 @@
 import re
 import math
 from .KEYWORDS import cpp_non_operands, cuda_non_operands, kokkos_non_operands, opencl_non_operands
+from code_complexity.metrics.shared import *
 
 def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set):
     """Compute Halstead metrics for given code with parametrized operator and operand patterns.
@@ -53,11 +54,10 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
             - operand_pattern (str): Regex pattern for operands (identifiers and numbers).
             - subtracting_set (set): Set of tokens to exclude from operand count.
     """
-    # Merge base and extension-specific non-operators
-    merged_nonoperators = core_non_operands | additional_non_operands
+    merged_nonoperands = core_non_operands | additional_non_operands 
     # Split into keyword-like (alphanumeric) and symbolic operators
-    keyword_ops = {op for op in merged_nonoperators if re.match(r'^[A-Za-z_]\w*$', op)}
-    symbol_ops = merged_nonoperators - keyword_ops
+    keyword_ops = {op for op in merged_nonoperands if re.match(r'^[A-Za-z_]\w*$', op)}
+    symbol_ops = merged_nonoperands - keyword_ops
     # Escape keywords and symbols for regex
     escaped_keywords = [r'\b' + re.escape(op) + r'\b' for op in sorted(keyword_ops)]
     escaped_symbols  = [re.escape(op) for op in sorted(symbol_ops, key=len, reverse=True)]
@@ -66,36 +66,46 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
     # Operand pattern: identifiers or numeric literals
     operand_pattern = r'\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+\b'
     # Set of non-operands to exclude from operand count
-    subtracting_set = merged_nonoperators
+    subtracting_set = merged_nonoperands
     return operator_pattern, operand_pattern, subtracting_set
 
 
 def halstead_metrics_cpp(code: str) -> dict:
     """Compute Halstead metrics for standard C++ code."""
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, set())
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
 
 
 def halstead_metrics_cuda(code: str) -> dict:
     """Compute Halstead metrics for CUDA code."""
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, cuda_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
 
 
 def halstead_metrics_kokkos(code: str) -> dict:
     """Compute Halstead metrics for Kokkos code."""
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, kokkos_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
 
 
 def halstead_metrics_opencl(code: str) -> dict:
     """Compute Halstead metrics for OpenCL code."""
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opencl_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)
 
 
 def halstead_metrics_merged(code: str) -> dict:
     """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
     merged_extensions = cuda_non_operands | opencl_non_operands | kokkos_non_operands
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, merged_extensions)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set)

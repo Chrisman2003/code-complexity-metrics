@@ -1,10 +1,9 @@
 import os
-from code_complexity.metrics.sloc import compute_sloc
+from code_complexity.metrics.cognitive import *
 
-# Directory containing test files for SLOC calculation
+# Directory containing test files for code complexity analysis
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
-TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)
-
+TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
 
 def load_code(filename):
     """Loads the content of a code file.
@@ -19,11 +18,12 @@ def load_code(filename):
         return f.read()
 
 
-def test_sloc_simple_cpp():
-    """Tests the source lines of code (SLOC) calculation on a simple C++ file."""
+def test_cyclomatic_simple_cpp():
+    """
+    Tests cyclomatic complexity calculation on a simple C++ File.
+    """
     code = load_code("cpp/OLD_simple.cpp")
-    # Expected SLOC for OLD_simple.cpp
-    assert compute_sloc(code) == 18
+    assert regex_compute_cognitive(code) == 3
 
 
 def test_cyclomatic_edge_cpp():
@@ -31,19 +31,22 @@ def test_cyclomatic_edge_cpp():
     Tests cyclomatic complexity for specified edge case File.
     """
     code = load_code("cpp/edge.cpp")
-    assert compute_sloc(code) == 12
-    
+    assert regex_compute_cognitive(code) == 4
 
-def test_sloc_complex_cpp():
-    """Tests the source lines of code (SLOC) calculation on a complex C++ file."""
+
+def test_cyclomatic_complex_cpp():
+    """
+    Tests cyclomatic complexity calculation on a more complex C++ File.
+    """
     code = load_code("complex/complex.cpp")
-    
-    # Expected SLOC for complex.cpp
-    assert compute_sloc(code) == 168
+    assert regex_compute_cognitive(code) == 38
 
+    
 def test_cyclomatic_hyper_complex_cpp():
     """
     Tests cyclomatic complexity calculation on a very complex C++ File.
     """
     code = load_code("complex/hyper_complex.cpp")
-    assert compute_sloc(code) == 222
+    assert regex_compute_cognitive(code) == 90
+
+
