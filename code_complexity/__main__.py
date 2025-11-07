@@ -56,7 +56,7 @@ def stat_report(root_dir: str, report_func):
 
     metrics_logger.info("📊 Summarizing metrics...")
     summary, correlations = summarize(records)
-    metrics_logger.info("Summary:\n%s", summary)
+    metrics_logger.info("\nSummary:\n%s", summary)
     metrics_logger.info("\nCorrelations:\n%s", correlations)
 
     metrics_logger.info("📈 Generating report...")

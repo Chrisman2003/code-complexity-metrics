@@ -1,12 +1,21 @@
 import pandas as pd
 
 def summarize(records):
-    df = pd.DataFrame(records) # Convert list of dicts to DataFrame
     # Descriptive stats
+    df = pd.DataFrame(records)
     summary = df.describe()
-    # Correlations between metrics
-    correlations = df[["cognitive", "cyclomatic", "nesting", "sloc", "halstead"]].corr()
-    # corr() in pandas computes pairwise correlations between numeric columns.
+    
+    # Base columns for correlation
+    base_cols = ["cognitive", "cyclomatic", "nesting", "sloc", "halstead_difficulty"]
+    
+    # Add optional halstead columns if they exist
+    if "halstead_volume" in df.columns:
+        base_cols.append("halstead_volume")
+    if "halstead_effort" in df.columns:
+        base_cols.append("halstead_effort")
+        
+    # Compute correlations only for columns that exist in df
+    correlations = df[[col for col in base_cols if col in df.columns]].corr()
     row_labels_summ = ["File count", "Mean", "Std", "Min", "25%", "50%", "75%", "Max"]
     summary['Description'] = row_labels_summ
     cols = ['Description'] + [col for col in summary.columns if col != 'Description']

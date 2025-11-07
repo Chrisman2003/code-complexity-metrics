@@ -144,6 +144,32 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         'N2': N2
     }
 
+def detect_parallel_framework(code: str) -> set[str]:
+    """
+    Automatically detect the parallelizing framework used in a source file.
+    Returns one or a multiple of ['cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
+                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
+                    'webgpu', 'boost', 'metal', 'thrust']
+    """
+    lib_patterns = { # Assuming correct library declarations
+        "cuda": [r'#include\s*<cuda'],
+        "opencl": [r'#include\s*<CL/cl[^>]*>'],
+        "kokkos": [r'#include\s*<Kokkos'],
+        "openmp": [r'#include\s*[<"]omp'],
+        "adaptivecpp": [r'#include\s*<CL/sycl'],
+        "openacc": [r'#include\s*<openacc'],
+        "opengl_vulkan": [r'#include\s*<vulkan'],
+        "webgpu": [r'#include\s*<wgpu'],
+        "boost": [r'#include\s*"boost'],
+        "metal": [r'#include\s*<Metal'],
+        "thrust": [r'#include\s*[<"]thrust'],
+    }
+    detected_languages = {"cpp"}
+    for lang, patterns in lib_patterns.items():
+        matches = re.findall(patterns[0], code)
+        if len(matches) > 0:
+            detected_languages.add(lang)
+    return detected_languages
 
 def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[str, str, set]:
     """Compute operator and operand regex patterns and the subtracting set for Halstead metrics.
@@ -175,34 +201,6 @@ def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[
     # Set of non-operands to exclude from operand count
     subtracting_set = merged_nonoperands
     return operator_pattern, operand_pattern, subtracting_set
-
-def detect_parallel_framework(code: str) -> set[str]:
-    """
-    Automatically detect the parallelizing framework used in a source file.
-    Returns one or a multiple of ['cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
-                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
-                    'webgpu', 'boost', 'metal', 'thrust']
-    """
-    lib_patterns = { # Assuming correct library declarations
-        "cuda": [r'#include\s*<cuda'],
-        "opencl": [r'#include\s*<CL/cl[^>]*>'],
-        "kokkos": [r'#include\s*<Kokkos'],
-        "openmp": [r'#include\s*[<"]omp'],
-        "adaptivecpp": [r'#include\s*<CL/sycl'],
-        "openacc": [r'#include\s*<openacc'],
-        "opengl_vulkan": [r'#include\s*<vulkan'],
-        "webgpu": [r'#include\s*<wgpu'],
-        "boost": [r'#include\s*"boost'],
-        "metal": [r'#include\s*<Metal'],
-        "thrust": [r'#include\s*[<"]thrust'],
-    }
-    detected_languages = {"cpp"}
-    for lang, patterns in lib_patterns.items():
-        matches = re.findall(patterns[0], code)
-        if len(matches) > 0:
-            detected_languages.add(lang)
-    return detected_languages
-
 
 def halstead_metrics_cpp(code: str) -> dict:
     """Compute Halstead metrics for standard C++ code."""
@@ -335,7 +333,6 @@ def halstead_metrics_auto(code: str) -> dict:
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-    #merged_extensions = cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands)
     return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'auto', detected_langs)
 
