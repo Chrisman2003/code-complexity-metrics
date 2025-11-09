@@ -442,7 +442,7 @@ merged_parallel = cuda_atomic | cuda_synchronization | opencl_functions | kokkos
 # TODO
 
 # ------------------------------
-# 6 Merged Sets by Language Extension
+# 6 Merged Sets of Non-Operands by Language Extension
 # ------------------------------
 cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp_side_effect_functions
 cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions

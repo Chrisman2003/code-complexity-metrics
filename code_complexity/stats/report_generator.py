@@ -107,14 +107,16 @@ def generate_basic_report(records, output_path="complexity_report.pdf"):
 
     # --- Heat Map ---
     elements.append(Paragraph("Correlation Heatmap", styles['Heading2']))
-    plt.figure(figsize=(6, 5))
+    plt.figure(figsize=(6, 5), dpi=400)
     sns.heatmap(correlations, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
-    plot_to_image(elements, width=350, height=280) # Buf IO Handle
+    plt.xticks(rotation=90)  # 90 degrees → vertical
+    plt.yticks(rotation=0)   # 0 degrees → horizontal
+    plot_to_image(elements, width=350, height=285) # Buf IO Handle
 
     # --- Boxplots + Histograms ---
     elements.append(Paragraph("Boxplots + Histograms", styles['Heading2']))
     for metric in ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_difficulty']:
-        _, axes = plt.subplots(ncols=2, figsize=(10, 4))
+        _, axes = plt.subplots(ncols=2, figsize=(10, 4), dpi=400)
         axes[0].hist(df[metric], bins=20, color='lightblue', edgecolor='black')
         axes[0].set_title(f"Histogram of {metric}")
         axes[0].set_xlabel(metric)
@@ -181,7 +183,7 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     ]))
     elements.append(gpu_tbl)
     # Plot
-    plt.figure(figsize=(7, 6))
+    plt.figure(figsize=(7, 6), dpi=400)
     palette = sns.color_palette("husl", len(df_fw)) 
     fw_color_map = {fw: palette[i] for i, fw in enumerate(df_fw["Framework"])} # Distinct colors
     # Plot Bubbles
@@ -203,7 +205,8 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
                color='w',
                markerfacecolor=fw_color_map[fw],
                markersize=10,
-               markeredgecolor='black')
+               markeredgecolor='black',
+               alpha=0.8)
         for fw in frameworks
     ]
     plt.legend(handles=handles, labels=frameworks, title="Framework",
@@ -217,3 +220,6 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     # --- Build PDF ---
     doc.build(elements)
     print(f"[INFO] Report saved to {output_path}")
+
+
+# TODO: Pure Addition of Halstead Metrics may not be meaningful
