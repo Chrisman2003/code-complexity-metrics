@@ -11,11 +11,17 @@ A Python tool to analyze source code and compute Code Complexity Measures.**SLOC
 
 ### Parallelizing Frameworks:
 - C++
-- CUDA 
+- CUDA
 - OpenCL
 - Kokkos
-- (SyCl)
-- (OpenMP)
+- OpenMP 
+- AdaptiveCPP
+- OpenACC
+- OpenGlVulkan 
+- WebGPU
+- Boost
+- Metal
+- Thrust
 
 The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
