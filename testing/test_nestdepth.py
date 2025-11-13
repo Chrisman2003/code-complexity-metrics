@@ -1,50 +1,26 @@
 import os
-from code_complexity.metrics.nesting_depth import *
+import pytest
+from code_complexity.metrics.nesting_depth import compute_nesting_depth
+from code_complexity.metrics.utils import load_code
 
-# Directory containing test files for code complexity analysis
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
-TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
+# Directory containing test files for code complexity analysis - Using absolute path
+TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "samples"))
 
-def load_code(filename):
-    """Loads the content of a code file.
+# -------------------------------
+# Test cases: (filename, expected nesting depth)
+# -------------------------------
+test_cases = [
+    ("cpp/OLD_simple.cpp", 2),
+    ("cpp/edge.cpp", 1),
+    ("complex/complex.cpp", 4),
+    ("complex/hyper_complex.cpp", 5),
+]
 
-    Args:
-        filename (str): Name of the file to load from TEST_FILES_DIR.
-
-    Returns:
-        str: The content of the file as a string.
-    """
-    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def test_cyclomatic_simple_cpp():
-    """
-    Tests cyclomatic complexity calculation on a simple C++ File.
-    """
-    code = load_code("cpp/OLD_simple.cpp")
-    assert compute_nesting_depth(code) == 2
-
-
-def test_cyclomatic_edge_cpp():
-    """
-    Tests cyclomatic complexity for specified edge case File.
-    """
-    code = load_code("cpp/edge.cpp")
-    assert compute_nesting_depth(code) == 1
-
-
-def test_cyclomatic_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a more complex C++ File.
-    """
-    code = load_code("complex/complex.cpp")
-    assert compute_nesting_depth(code) == 4
-
-    
-def test_cyclomatic_hyper_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a very complex C++ File.
-    """
-    code = load_code("complex/hyper_complex.cpp")
-    assert compute_nesting_depth(code) == 5
+@pytest.mark.parametrize("filename,expected_depth", test_cases)
+def test_nesting_depth(filename, expected_depth):
+    """Parametrized test for nesting depth across multiple C++ files."""
+    code = load_code(filename, TEST_FILES_DIR)
+    detected_depth = compute_nesting_depth(code)
+    assert detected_depth == expected_depth, (
+        f"File {filename}: detected {detected_depth}, expected {expected_depth}"
+    )

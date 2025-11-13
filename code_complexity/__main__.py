@@ -8,7 +8,6 @@ from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, 
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.stats.analysis import summarize
 from code_complexity.stats.report_generator import *
-from code_complexity.gpu_delta import compute_gpu_delta
 
 # -------------------------------
 # Logging setup
@@ -39,7 +38,7 @@ def timed(func, *args, **kwargs):
     start = time.perf_counter()
     result = func(*args, **kwargs)
     end = time.perf_counter()
-    return result, end - start
+    return result, end-start
 
 # -------------------------------
 # Statistical Analysis
@@ -110,6 +109,8 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
     metrics_logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time) 
     metrics_logger.info("Halstead Metrics:")
     for k, v in halstead_metrics.items():
+        if k == 'op_dict':
+            continue
         metrics_logger.info("  %s: %s", k, v)
     metrics_logger.info("  Vocabulary: %s", halstead.vocabulary(halstead_metrics))
     metrics_logger.info("  Size: %s", halstead.size(halstead_metrics))

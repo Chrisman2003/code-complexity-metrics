@@ -3,7 +3,7 @@ import subprocess
 import re
 import tempfile
 import os
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 import logging
 import sys
 
@@ -372,5 +372,5 @@ Edge Cases:
 
 # TODO
 '''
-Cyclomati Function Recognition: still not 100%
+Cyclomatic Function Recognition: still not 100%
 '''

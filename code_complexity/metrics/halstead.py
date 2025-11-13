@@ -1,7 +1,7 @@
 import re
 import math
 from .language_tokens import *
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 from code_complexity.metrics.cyclomatic import plain_logger
 
 # Substring Suffix Extension Patterns with Respect to the Kleene Operator (*)
@@ -92,6 +92,7 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
             - 'n2': Number of distinct operands
             - 'N1': Total number of operators
             - 'N2': Total number of operands
+            - 'op_dict': Dictionary of operators and operands
     """
     # Extract operators and operands using regex
     operators = re.findall(operator_pattern, code)
@@ -141,7 +142,8 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         'n1': n1,
         'n2': n2,
         'N1': N1,
-        'N2': N2
+        'N2': N2,
+        #'op_dict' : {'tot_operators' : operators, 'tot_operands' : operands}
     }
 
 def detect_parallel_framework(code: str) -> set[str]:

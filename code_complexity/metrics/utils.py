@@ -1,4 +1,12 @@
+"""
+Common utility functions used across the repository.
+
+Includes:
+- File I/O helpers
+- String manipulation
+"""
 import re
+import os
 
 def remove_cpp_comments(code: str) -> str:
     """
@@ -116,3 +124,15 @@ def remove_headers(code: str) -> str:
     # -> Incorrect Program Behaviour
     # -> First remove headers and then string literals
     return code
+
+def load_code(filename, TEST_FILES_DIR):
+    """Loads the content of a code file.
+
+    Args:
+        filename (str): Name of the file to load from TEST_FILES_DIR.
+
+    Returns:
+        str: The content of the file as a string.
+    """
+    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
+        return f.read()

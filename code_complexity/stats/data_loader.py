@@ -4,6 +4,7 @@ from code_complexity.metrics.nesting_depth import *
 from code_complexity.metrics.cyclomatic import *
 from code_complexity.metrics.cognitive import *
 from code_complexity.metrics.halstead import *
+from collections import Counter
 '''
 ✅ Ranked from most to least accurate for total file complexity:
 1) E — Effort
@@ -21,13 +22,11 @@ def collect_metrics(root_path: str):
         nesting = compute_nesting_depth(code)
         cyclomatic_val = basic_compute_cyclomatic(code)
         cognitive_val = regex_compute_cognitive(code)
-        halstead_effort = effort(halstead_metrics_auto(code))
         halstead_difficulty = difficulty(halstead_metrics_auto(code))
         halstead_volume = volume(halstead_metrics_auto(code))
         
         # Base Halstead metrics (C++ reference)
         halstead_base = halstead_metrics_cpp(code)
-        halstead_effort_base = effort(halstead_base)
         halstead_difficulty_base = difficulty(halstead_base)
         halstead_volume_base = volume(halstead_base)
         
@@ -55,10 +54,21 @@ def collect_metrics(root_path: str):
         for lang in languages:
             if lang in lang_to_fn and lang != 'cpp':  # skip base C++
                 halstead_lang = lang_to_fn[lang](code)
+                # Convert lists to Counters (multisets)
+                #base_ops = Counter(halstead_base['op_dict']['tot_operators'])
+                #lang_ops = Counter(halstead_lang['op_dict']['tot_operators'])
+                #base_operands = Counter(halstead_base['op_dict']['tot_operands'])
+                #lang_operands = Counter(halstead_lang['op_dict']['tot_operands'])
+#
+                ## Subtract counts element-wise (frequency aware)
+                #diff_ops = lang_ops - base_ops
+                #diff_operands = lang_operands - base_operands
                 gpu_complexity[lang] = {
-                    "effort": effort(halstead_lang) - halstead_effort_base,
                     "difficulty": difficulty(halstead_lang) - halstead_difficulty_base,
-                    "volume": volume(halstead_lang) - halstead_volume_base
+                    "volume": volume(halstead_lang) - halstead_volume_base,
+                    # n1 and n2
+                    #"operators": diff_ops,#list(diff_ops.elements()),   # keep multiplicity
+                    #"operands": diff_operands,#list(diff_operands.elements()),
                 }
                 
         return {
@@ -67,10 +77,10 @@ def collect_metrics(root_path: str):
             "nesting": nesting,
             "cognitive": cognitive_val,
             "cyclomatic": cyclomatic_val,
-            # Halstead Metrics
-            "halstead_effort": halstead_effort,
+            # Halstead Metric
             "halstead_difficulty": halstead_difficulty,
             "halstead_volume": halstead_volume,
+            # op_dict
             # Dictionary: {language, gpu_complexity}
             "gpu_complexity": gpu_complexity,
         }
@@ -92,11 +102,10 @@ def collect_metrics(root_path: str):
     "nesting": 3,
     "cognitive": 15,
     "cyclomatic": 8,
-    "halstead_effort": 450,
     "halstead_difficulty": 20,
     "halstead_volume": 1500,
     "gpu_complexity": {
-        "cuda": {"effort": 200, "difficulty": 10, "volume": 600},
-        "openmp": {"effort": 50, "difficulty": 5, "volume": 100}
+        "cuda": {"difficulty": 10, "volume": 600},
+        "openmp": {"difficulty": 5, "volume": 100}
     }
 '''

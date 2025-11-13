@@ -1,4 +1,4 @@
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 
 def compute_sloc(code: str) -> int:
     """Compute Source Lines of Code (SLOC) after removing comments and string literals.

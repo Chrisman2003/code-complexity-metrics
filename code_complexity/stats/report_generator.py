@@ -13,6 +13,8 @@ import statsmodels.api as sm
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.gpu_delta import compute_gpu_delta
 from matplotlib.lines import Line2D
+# from code_complexity.metrics import halstead
+# from code_complexity.metrics.halstead import * NOTE: DANGEROUS TO IMPORT - overrides functions in main
 
 # -------------------------------
 # Helper Functions
@@ -49,13 +51,20 @@ def aggregate_framework_complexity(records):
             if fw not in totals:
                 totals[fw] = {
                     "Framework": fw,
-                    "Halstead_Effort": 0.0,
+                    "SLOC": 0.0,
                     "Halstead_Volume": 0.0,
-                    "Halstead_Difficulty": 0.0
+                    "Halstead_Difficulty": 0.0,
+                    #"n1": set(),
+                    #"n2": set(),
                 }
-            totals[fw]["Halstead_Effort"] += vals.get("effort", 0.0)
+            totals[fw]["SLOC"] += rec.get("sloc")
+            # Any file where the framework library is included is added
+            # A file can have more than 1 framework library
             totals[fw]["Halstead_Volume"] += vals.get("volume", 0.0)
             totals[fw]["Halstead_Difficulty"] += vals.get("difficulty", 0.0)
+            # Operators and Operands
+            #totals[fw]["n1"] |= vals.get("operators", [])
+            #totals[fw]["n2"] |= vals.get("operands", [])
     return list(totals.values())
 
 # -------------------------------
@@ -174,9 +183,11 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
         "GPU-Framework Native Halstead Complexity",
         styles['Heading2']
     ))
+    print(records)
     df_fw = pd.DataFrame(aggregate_framework_complexity(records))
     # Table
-    gpu_tbl = Table([df_fw.columns.to_list()] + df_fw.round(2).values.tolist())
+    df_fw_display = df_fw.drop(columns=['n1', 'n2'], errors='ignore')
+    gpu_tbl = Table([df_fw_display.columns.to_list()] + df_fw_display.round(2).values.tolist())
     gpu_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.orange),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.black)
@@ -189,10 +200,11 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     # Plot Bubbles
     for fw in df_fw["Framework"]: # fw is a framework name
         fw_row = df_fw[df_fw["Framework"] == fw] # Select Row based on a predicate
+        print(fw_row)
         plt.scatter(
             fw_row["Halstead_Difficulty"],
             fw_row["Halstead_Volume"],
-            s=fw_row["Halstead_Effort"] / df_fw["Halstead_Effort"].max() * 2000, # Normalize Bubble Size
+            s=fw_row["SLOC"] / df_fw["SLOC"].max() * 3000, # Normalize Bubble Size
             c=[fw_color_map[fw]],
             edgecolors="black",
             alpha=0.8,
@@ -211,7 +223,7 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     ]
     plt.legend(handles=handles, labels=frameworks, title="Framework",
                bbox_to_anchor=(1, 0), loc='lower right')
-    plt.title("Halstead Effort = Circle Diameter", fontsize=12)
+    plt.title("SLOC = Circle Diameter", fontsize=12)
     plt.xlabel("Halstead Difficulty")
     plt.ylabel("Halstead Volume")
     plt.tight_layout()
@@ -222,4 +234,4 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     print(f"[INFO] Report saved to {output_path}")
 
 
-# TODO: Pure Addition of Halstead Metrics may not be meaningful
+# TODO: Pure Addition of Halstead Difficulty and Volume may not be meaningful

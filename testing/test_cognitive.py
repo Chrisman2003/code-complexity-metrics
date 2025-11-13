@@ -1,52 +1,24 @@
 import os
-from code_complexity.metrics.cognitive import *
+import pytest
+from code_complexity.metrics.utils import load_code
+from code_complexity.metrics.cognitive import regex_compute_cognitive
 
 # Directory containing test files for code complexity analysis
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
-TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
+TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "samples"))
 
-def load_code(filename):
-    """Loads the content of a code file.
+# -------------------------------
+# Test cases: (filename, expected cognitive complexity)
+# -------------------------------
+test_cases = [
+    ("cpp/OLD_simple.cpp", 3),
+    ("cpp/edge.cpp", 4),
+    ("complex/complex.cpp", 38),
+    ("complex/hyper_complex.cpp", 90),
+]
 
-    Args:
-        filename (str): Name of the file to load from TEST_FILES_DIR.
-
-    Returns:
-        str: The content of the file as a string.
-    """
-    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def test_cyclomatic_simple_cpp():
-    """
-    Tests cyclomatic complexity calculation on a simple C++ File.
-    """
-    code = load_code("cpp/OLD_simple.cpp")
-    assert regex_compute_cognitive(code) == 3
-
-
-def test_cyclomatic_edge_cpp():
-    """
-    Tests cyclomatic complexity for specified edge case File.
-    """
-    code = load_code("cpp/edge.cpp")
-    assert regex_compute_cognitive(code) == 4
-
-
-def test_cyclomatic_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a more complex C++ File.
-    """
-    code = load_code("complex/complex.cpp")
-    assert regex_compute_cognitive(code) == 38
-
-    
-def test_cyclomatic_hyper_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a very complex C++ File.
-    """
-    code = load_code("complex/hyper_complex.cpp")
-    assert regex_compute_cognitive(code) == 90
-
-
+@pytest.mark.parametrize("filename,expected", test_cases)
+def test_cognitive_complexity(filename, expected):
+    """Parametrized test for cognitive complexity."""
+    code = load_code(filename, TEST_FILES_DIR)
+    detected = regex_compute_cognitive(code)
+    assert detected == expected, f"File {filename}: detected {detected}, expected {expected}"

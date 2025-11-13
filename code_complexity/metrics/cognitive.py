@@ -1,7 +1,7 @@
 import re
 from clang import cindex
 from clang.cindex import CursorKind
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 import logging
 logger = logging.getLogger("code_complexity")
 

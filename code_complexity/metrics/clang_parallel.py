@@ -6,7 +6,7 @@ import clang.cindex
 import sys
 from clang import cindex
 from clang.cindex import CursorKind
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 
 from code_complexity.metrics.cyclomatic import get_clang_include_flags
 from code_complexity.metrics.cyclomatic import build_cfg_from_dump

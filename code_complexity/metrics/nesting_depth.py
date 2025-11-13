@@ -1,4 +1,4 @@
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 
 def compute_nesting_depth(code: str) -> int:
     """Compute the maximum nesting depth for C++/OpenCL code.
