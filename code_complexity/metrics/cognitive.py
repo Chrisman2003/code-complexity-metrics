@@ -95,12 +95,15 @@ Edge Cases:
     [x] 3) Over-Penalizing Logical Operators: The metric applies the full nesting penalty to logical operators
     [x] 4) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives.
     [x] 5) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity.
+    
     [x] 6) Nesting Depth overcounting with function braces 
             -> Nesting only increases when a control keyword and a brace are on the same line.
     [x] 7) Cognitive Complexity unlike Cyclomatic Complexity starts at 0 not 1!
-    [] 8) Null-Coalescing Operators
+    [x] 8) Null-Coalescing Operators -> Doesn't exist in C++
     [x] 9) Switch statements: 'cases' don't add complexity, only the switch statement itself [SonarQube specification]
+    
     [x] 10) Sequences of like-boolean operators increment complexity, not the operators themselves
+    
     [] 11) Fundamental increment for recursion (considered a “meta-loop”)
         -> Direct recursion → +1 per function | Indirect recursion (cycles) → +1 per function in the cycle.
         -> Nesting still applies for any control flow inside the function.

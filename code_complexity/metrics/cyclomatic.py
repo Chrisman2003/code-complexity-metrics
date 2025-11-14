@@ -335,15 +335,17 @@ Edge Cases:
     1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
     2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
        prevent false positives for keywords like 'or' or 'and'.
-    3) The `else` keyword is not counted separately because it does not create 
+####3) The `else` keyword is not counted separately because it does not create 
        an independent path; `else if` is counted via its `if`.
-    4) `switch` statements do not add complexity themselves; only `case` and 
+       
+####4) `switch` statements do not add complexity themselves; only `case` and 
        `default` labels are counted.
+       
     5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
     6) Alphabetic logical operators `and`, `or` are counted only when they 
        appear as standalone words, not as substrings of other identifiers.
-    7) Multi-line constructs may not be perfectly accounted for in this heuristic.
-    8) If `code` is `None`, it is treated as an empty string (CC = 1).
+##  7) Multi-line constructs may not be perfectly accounted for in this heuristic.
+    8) If `code` is `None`, it is treated as an empty string (CC = 1).    
     9) Fall-Through Switch-Case Statements
     10) Clang doesn't produce CFG components on non-instantiated templates
 '''

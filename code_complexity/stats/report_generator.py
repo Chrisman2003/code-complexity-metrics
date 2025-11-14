@@ -54,17 +54,12 @@ def aggregate_framework_complexity(records):
                     "SLOC": 0.0,
                     "Halstead_Volume": 0.0,
                     "Halstead_Difficulty": 0.0,
-                    #"n1": set(),
-                    #"n2": set(),
                 }
             totals[fw]["SLOC"] += rec.get("sloc")
             # Any file where the framework library is included is added
             # A file can have more than 1 framework library
             totals[fw]["Halstead_Volume"] += vals.get("volume", 0.0)
             totals[fw]["Halstead_Difficulty"] += vals.get("difficulty", 0.0)
-            # Operators and Operands
-            #totals[fw]["n1"] |= vals.get("operators", [])
-            #totals[fw]["n2"] |= vals.get("operands", [])
     return list(totals.values())
 
 # -------------------------------

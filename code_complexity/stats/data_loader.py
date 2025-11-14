@@ -5,6 +5,8 @@ from code_complexity.metrics.cyclomatic import *
 from code_complexity.metrics.cognitive import *
 from code_complexity.metrics.halstead import *
 from collections import Counter
+from pathlib import Path
+
 '''
 ✅ Ranked from most to least accurate for total file complexity:
 1) E — Effort
@@ -22,17 +24,16 @@ def collect_metrics(root_path: str):
         nesting = compute_nesting_depth(code)
         cyclomatic_val = basic_compute_cyclomatic(code)
         cognitive_val = regex_compute_cognitive(code)
-        halstead_difficulty = difficulty(halstead_metrics_auto(code))
-        halstead_volume = volume(halstead_metrics_auto(code))
+        halstead_difficulty = difficulty(halstead_metrics_auto(code, Path(filepath).suffix))
+        halstead_volume = volume(halstead_metrics_auto(code, Path(filepath).suffix))
         
         # Base Halstead metrics (C++ reference)
-        halstead_base = halstead_metrics_cpp(code)
+        halstead_base = halstead_metrics_cpp(code, Path(filepath).suffix)
         halstead_difficulty_base = difficulty(halstead_base)
         halstead_volume_base = volume(halstead_base)
         
         # Detect languages/frameworks
-        languages = detect_parallel_framework(code)
-        
+        languages = detect_parallel_framework(code, Path(filepath).suffix)
         # Mapping of language/framework to metric function
         lang_to_fn = {
             'cpp': halstead_metrics_cpp,
@@ -46,7 +47,8 @@ def collect_metrics(root_path: str):
             'webgpu': halstead_metrics_webgpu,
             'boost': halstead_metrics_boost,
             'metal': halstead_metrics_metal,
-            'thrust': halstead_metrics_thrust
+            'thrust': halstead_metrics_thrust,
+            'slang': halstead_metrics_slang,
         }
 
         # Compute GPU-native Halstead complexities
@@ -54,23 +56,11 @@ def collect_metrics(root_path: str):
         for lang in languages:
             if lang in lang_to_fn and lang != 'cpp':  # skip base C++
                 halstead_lang = lang_to_fn[lang](code)
-                # Convert lists to Counters (multisets)
-                #base_ops = Counter(halstead_base['op_dict']['tot_operators'])
-                #lang_ops = Counter(halstead_lang['op_dict']['tot_operators'])
-                #base_operands = Counter(halstead_base['op_dict']['tot_operands'])
-                #lang_operands = Counter(halstead_lang['op_dict']['tot_operands'])
-#
-                ## Subtract counts element-wise (frequency aware)
-                #diff_ops = lang_ops - base_ops
-                #diff_operands = lang_operands - base_operands
                 gpu_complexity[lang] = {
                     "difficulty": difficulty(halstead_lang) - halstead_difficulty_base,
                     "volume": volume(halstead_lang) - halstead_volume_base,
-                    # n1 and n2
-                    #"operators": diff_ops,#list(diff_ops.elements()),   # keep multiplicity
-                    #"operands": diff_operands,#list(diff_operands.elements()),
                 }
-                
+        
         return {
             "file": filepath,
             "sloc": sloc_val,
@@ -80,18 +70,16 @@ def collect_metrics(root_path: str):
             # Halstead Metric
             "halstead_difficulty": halstead_difficulty,
             "halstead_volume": halstead_volume,
-            # op_dict
-            # Dictionary: {language, gpu_complexity}
             "gpu_complexity": gpu_complexity,
         }
     # Handle single file
-    if os.path.isfile(root_path) and root_path.endswith((".cpp", ".cu")):
+    if os.path.isfile(root_path) and root_path.endswith((".cpp", ".cu", ".slang")):
         records.append(analyze_file(root_path))
     # Handle directory
     elif os.path.isdir(root_path):
         for subdir, _, files in os.walk(root_path):
             for file in files:
-                if file.endswith((".cpp", ".cu")):
+                if file.endswith((".cpp", ".cu", ".slang")):
                     filepath = os.path.join(subdir, file)
                     records.append(analyze_file(filepath))
     return records

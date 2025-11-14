@@ -4,6 +4,7 @@ import time
 import logging
 import inspect
 import sys
+from pathlib import Path
 from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.stats.analysis import summarize
@@ -99,7 +100,11 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
         cognitive_complexity, cognitive_time = timed(cognitive_func, code) 
     else:
         cognitive_complexity, cognitive_time = timed(cognitive_func, file_path)
-    halstead_metrics, halstead_time = timed(halstead_func, code)
+    if halstead_func.__name__ == "halstead_metrics_auto" or halstead_func.__name__ == "halstead_metrics_cpp":
+        file_suffix = Path(file_path).suffix
+        halstead_metrics, halstead_time = timed(halstead_func, code, file_suffix)
+    else: 
+        halstead_metrics, halstead_time = timed(halstead_func, code)
 
     # Log results
     metrics_logger.info("Analyzing file: %s", file_path)
@@ -167,7 +172,7 @@ def main():
     parser.add_argument("path", help="Path to the code file or directory to analyze")
     parser.add_argument("--lang", choices=[
         "cpp", "cuda", "opencl", "kokkos", "openmp","adaptivecpp", "openacc",
-        "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "auto", "merged"], 
+        "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "slang", "auto", "merged"], 
     default="cpp", help="Language extension for Halstead metrics")
     parser.add_argument("--report", choices=["basic", "advanced"], default=None,
                     help="Run basic/advanced statistical analysis pipeline after computing metrics")
@@ -203,6 +208,7 @@ def main():
         "boost": halstead.halstead_metrics_boost,
         "metal": halstead.halstead_metrics_metal,
         "thrust": halstead.halstead_metrics_thrust,
+        "slang": halstead.halstead_metrics_slang,
         "auto": halstead.halstead_metrics_auto,
         "merged": halstead.halstead_metrics_merged
     }[args.lang]

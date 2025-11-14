@@ -106,7 +106,7 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     if lang == "merged":
         for pat_list in pattern_rules.values():
             patterns_to_apply.extend(pat_list)
-    elif lang == "auto" or lang == "cpp":
+    elif lang == "auto":
         for l in autolist:
             if l in pattern_rules:
                 patterns_to_apply.extend(pattern_rules[l])
@@ -116,11 +116,8 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     # For all regex elements in pattern_rules are used    
     for p_elem in patterns_to_apply:
         matches = re.findall(p_elem, code) # find all matches for this pattern
-        if lang == "cpp":
-            dynamic_nonoperands.update(matches) # add to dynamic non-operands
-        else:
-            operators.extend(matches) # add to operators
-            dynamic_nonoperands.update(matches) # add to dynamic non-operands
+        operators.extend(matches) # add to operators
+        dynamic_nonoperands.update(matches) # add to dynamic non-operands
     
     ## Clean up Operands
     #full_patterns_to_apply = [
@@ -139,11 +136,12 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     operands.extend(double_quotes)
     operands.extend(single_quotes)
     
+    
     operands = [op for op in operands if op not in full_subtracting_set] # Remove non-operands from operands
-    #print("Distinct Operators", set(operators))
-    #print("\n")
-    #print("Distinct Operands", set(operands))
-    #print("\n")
+    print("Operators", operators)
+    print("\n")
+    print("Operands", operands)
+    print("\n")
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
@@ -187,7 +185,7 @@ def detect_parallel_framework(code: str, file_suffix: str = "") -> set[str]:
             detected_languages.add(lang)
     return detected_languages
 
-def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") -> tuple[str, str, set]:
+def compute_sets(core_non_operands: set, additional_non_operands: set) -> tuple[str, str, set]:
     """Compute operator and operand regex patterns and the subtracting set for Halstead metrics.
 
     This ensures deterministic matching by sorting keywords and symbols,
@@ -204,15 +202,11 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
             - subtracting_set (set): Set of tokens to exclude from operand count.
     """
     merged_nonoperands = core_non_operands | additional_non_operands 
+    #merged_nonoperands = merged_non_operands
     
-    if lang == "cpp":
-        operators = core_non_operands
-    else:
-        operators = merged_nonoperands
-
     # Split into keyword-like (alphanumeric) and symbolic operators
-    keyword_ops = {op for op in operators if re.match(r'^[A-Za-z_]\w*$', op)}
-    symbol_ops = operators - keyword_ops
+    keyword_ops = {op for op in merged_nonoperands if re.match(r'^[A-Za-z_]\w*$', op)}
+    symbol_ops = merged_nonoperands - keyword_ops
     # Escape keywords and symbols for regex
     escaped_keywords = [r'\b' + re.escape(op) + r'\b' for op in sorted(keyword_ops)] 
     escaped_symbols  = [re.escape(op) for op in sorted(symbol_ops, key=len, reverse=True)]
@@ -226,13 +220,11 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
 
 def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
     """Compute Halstead metrics for standard C++ code."""
+   #
     detected_langs = detect_parallel_framework(code, file_suffix)
+    print("Detected Langs: ", detected_langs)
     # Start with standard C++ non-operands
-    
-    #print("local cpp non operand state", cpp_non_operands)
-    auto_non_operands = cpp_non_operands.copy()
-    # auto_non_operands = cpp_non_operands
-    
+    auto_non_operands = cpp_non_operands
     # Mapping from framework name → its non-operands set
     framework_non_operands_map = {
         "cuda": cuda_non_operands,
@@ -255,9 +247,10 @@ def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     #code = remove_string_literals(code)
-    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands, "cpp")
+
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands)
     # Only for CPP subtract all possible merged non operands
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'cpp', detected_langs)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'auto')
 
 
 def halstead_metrics_cuda(code: str) -> dict:
@@ -368,7 +361,7 @@ def halstead_metrics_auto(code: str, file_suffix: str = "") -> dict:
     
     detected_langs = detect_parallel_framework(code, file_suffix)
     # Start with standard C++ non-operands
-    auto_non_operands = cpp_non_operands.copy()
+    auto_non_operands = cpp_non_operands
     # Mapping from framework name → its non-operands set
     framework_non_operands_map = {
         "cuda": cuda_non_operands,

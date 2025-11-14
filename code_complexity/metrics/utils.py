@@ -8,6 +8,18 @@ Includes:
 import re
 import os
 
+def load_code(filename, TEST_FILES_DIR):
+    """Loads the content of a code file.
+
+    Args:
+        filename (str): Name of the file to load from TEST_FILES_DIR.
+
+    Returns:
+        str: The content of the file as a string.
+    """
+    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
+        return f.read()
+
 def remove_cpp_comments(code: str) -> str:
     """
     Remove all C/C++ style comments from the source code.
@@ -102,6 +114,27 @@ def remove_string_literals(code: str) -> str:
     )
     return cleaned_code
 
+def remove_string_literals_halstead_indexed(code: str) -> str:
+    """
+    Replace string literals with indexed placeholders s_0, s_1, ...
+    Preserve string literals containing '__kernel'.
+    """
+    counter = 0  # Counter for replacements
+
+    def replacer(match: re.Match) -> str:
+        nonlocal counter
+        s = match.group(0)
+        if "__kernel" in s:
+            return s
+        replacement = f's_{counter}'  # e.g., s_0, s_1, s_2...
+        counter += 1
+        return replacement
+
+    # Regex pattern for raw strings, normal strings, character literals
+    pattern = r'R"[\w]*\(.*?\)[\w]*"|"(\\.|[^"\\])*"|\'(\\.|[^\'\\])\''
+    cleaned_code = re.sub(pattern, replacer, code, flags=re.DOTALL)
+    return cleaned_code
+
 def remove_headers(code: str) -> str:
     """
     Remove all C/C++ style headers inclusions from the source code.
@@ -125,14 +158,3 @@ def remove_headers(code: str) -> str:
     # -> First remove headers and then string literals
     return code
 
-def load_code(filename, TEST_FILES_DIR):
-    """Loads the content of a code file.
-
-    Args:
-        filename (str): Name of the file to load from TEST_FILES_DIR.
-
-    Returns:
-        str: The content of the file as a string.
-    """
-    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
-        return f.read()
