@@ -118,7 +118,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     r""" 
     REGEX EXPLANATION:
     This regex matches lines that list successor nodes in a format like:
-    "Succs (2): 3, 4, 5"
+    "Succs (2): 3, 4"
     -------------------------------
     -  Succs       → Match literal string 'Succs'
     -  \s         → Match a space
@@ -148,7 +148,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             cfg = nx.DiGraph()
             function_cfgs[current_function] = cfg
             current_node = None
-            continue    
+            continue 
         
         node_match = node_pattern.search(line)
         succ_match = succ_pattern.search(line)
@@ -165,9 +165,17 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             successors = [int(s[1:]) for s in succ_match.group(2).split()]
             for succ in successors:
                 cfg.add_edge(current_node, succ)
+        #if succ_match and current_node is not None:
+        #    # Extract all successor B-numbers, ignoring punctuation
+        #    succ_blocks = re.findall(r'B(\d+)', succ_match.group(2))
+        #    successors = [int(x) for x in succ_blocks]
+        #    for succ in successors:
+        #        cfg.add_edge(current_node, succ)
+        
+        
     return function_cfgs
 
-def compute_cyclomatic(code: str, filename: str) -> int:
+def cfg_compute_cyclomatic(code: str, filename: str) -> int:
     """Compute cyclomatic complexity of C++ code using Clang CFG.
     
     Uses Clang's static analyzer to dump the control-flow graph (CFG) of each
@@ -233,7 +241,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         #with open(cfg_file_path, "w", encoding="utf-8") as f:
         #    f.write(output)
         #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
-        plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
+        #plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -274,7 +282,7 @@ def detect_fallthroughs(code: str) -> int:
                 fallthroughs += 1
     return fallthroughs
 
-def basic_compute_cyclomatic(code: str) -> int:
+def regex_compute_cyclomatic(code: str) -> int:
     """
     Compute a simplified cyclomatic complexity estimate using heuristics.
     
@@ -288,7 +296,7 @@ def basic_compute_cyclomatic(code: str) -> int:
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
+    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch'] # 'do' and 'if else' implicit 
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
     num_functions = 0
@@ -296,13 +304,25 @@ def basic_compute_cyclomatic(code: str) -> int:
     function_pattern = re.compile(r"""
         (?:template\s*<[^>]+>\s*)*                     # optional template declaration(s), e.g., template<typename T>
         (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type including pointers, refs, const, and spaces
-        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name, scoped names, destructors (~), or operator overloads
-        \([^{};]*\)\s*                                 # parameter list in parentheses, flat, no braces or semicolons inside
+        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+))\s* # function name, scoped names, destructors (~), or operator overloads
+        \([^{};]*\)\s*                                 # ALSO handle "double ()". Parameter list in parentheses, flat, no braces or semicolons inside
         (?:const\s*)?(?:noexcept\s*)?                  # optional const and/or noexcept specifiers after parameters
         (?:->\s*[\w:\<\>\s\*&]+)?                      # optional C++11 trailing return type, e.g., -> int
         \s*\{                                          # opening brace of function body to match only definitions
         """, re.VERBOSE | re.DOTALL
     )
+    # Find all candidate functions in the full code
+    matches = function_pattern.finditer(code)
+
+    num_functions = 0
+    for match in matches:
+        func_str = match.group()
+        # Skip if function is called via object or pointer
+        # Exclude false positives: lines that are control statements
+        if not any(re.search(rf'\b{k}\b\s*\(', func_str) for k in control_keywords + ['switch']):
+            num_functions += 1
+            #print(f"Function detected: {func_str.strip()} -> Total functions: {num_functions}")
+            
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
         
@@ -319,11 +339,14 @@ def basic_compute_cyclomatic(code: str) -> int:
                 count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
                 # Count functions (definitions only, not calls)
         
-        if re.match(function_pattern, stripped):
-            # Exclude mis-matched control statements
-            if not any(stripped.startswith(k) for k in (control_keywords + ['switch'])):
-                #plain_logger.info(f"Function detected: {stripped}") # Show detected function for debugging
-                num_functions += 1
+        #if re.match(function_pattern, stripped):
+        #    # Exclude lines that contain control keywords (whole word)
+        #    # Necesarry error handling: stand along if() expressions should NOT be counted as functions!
+        #    if not any(re.match(rf'\w*\s*\b{k}\b\s*\w*', stripped) for k in control_keywords + ['switch']):
+        #        # Function detected
+        #        num_functions += 1
+        #        # print(f"Function detected: {stripped} -> Total functions: {num_functions}")
+                
     fallthroughs = detect_fallthroughs(code)
     #plain_logger.info("fallthroughs:", fallthroughs)
     return count + num_functions + fallthroughs # +1 for the default path

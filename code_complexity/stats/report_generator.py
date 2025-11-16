@@ -11,7 +11,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import statsmodels.api as sm
 from code_complexity.stats.data_loader import collect_metrics
-from code_complexity.gpu_delta import compute_gpu_delta
 from matplotlib.lines import Line2D
 # from code_complexity.metrics import halstead
 # from code_complexity.metrics.halstead import * NOTE: DANGEROUS TO IMPORT - overrides functions in main
@@ -19,11 +18,6 @@ from matplotlib.lines import Line2D
 # -------------------------------
 # Helper Functions
 # -------------------------------
-def compute_gpu_delta_for_file(file_path, language):
-    with open(file_path, 'r', encoding="utf-8", errors="ignore") as f:
-        code = f.read()
-    return compute_gpu_delta(code, language)
-
 def plot_to_image(elements, width, height):
     """
     Saves the current matplotlib figure into a BytesIO buffer

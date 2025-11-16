@@ -70,7 +70,7 @@ cpp_side_effect_functions = {
     'sscanf', 'gets', 'fgets', 'malloc', 'calloc', 'realloc', 'free', 
     'std::cout', 'cout', 'std::cerr', 'cerr', 'std::clog', 'clog',
     # Not Using '*' Heuristic since words can occur with or without std:: prefixation
-    'exit', 'abort', 'main',
+    'exit', 'abort',
     # NEW
     'perror', 'system', 'setenv', 'unsetenv', 'atexit', 'signal', 'fopen', 'freopen', 'fclose', 'fflush',
     'fwrite', 'fread', 'fseek', 'ftell', 'rewind', 'remove', 'rename', 'tmpfile', 'tmpnam',

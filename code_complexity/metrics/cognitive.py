@@ -36,17 +36,15 @@ def regex_compute_cognitive(code: str) -> int:
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
     # Control flow keywords (notice: no plain 'else')
-    control_keywords = ['if', 'for', 'while', 'switch', 'catch', 'do'] # switch with branches add 1
-    #logical_operators = ['&&', '||', '?', 'and', 'or']
+    control_keywords = ['if', 'for', 'while', 'switch', 'catch'] # 'do' and 'if else' implicit
+    # switch with branches add 1, 
     logical_ops_alpha = ['and', 'or']  # counted per occurrence
 
     complexity = 0
     nesting = 0
+    found_nesting_keyword = False # NEW
     for line in code.splitlines():
         stripped = line.strip()
-        if not stripped:
-            continue
-        
         # --- Control keywords ---
         for keyword in control_keywords: # Count control keywords
             matches = re.findall(rf'\b{keyword}\b', stripped) # Word boundaries to avoid false positives
@@ -63,23 +61,33 @@ def regex_compute_cognitive(code: str) -> int:
         
         # --- Logical operators ---
         complexity += count_logical_sequences(stripped, nesting)
-        complexity += stripped.count('?') * (1 + nesting)  # ':' is ignored
+        complexity += stripped.count('?') * (1 + nesting)  # Ternary operator: can't nest structures inside it
         for op in logical_ops_alpha:
             matches = re.findall(rf'\b{op}\b', stripped) # Word boundaries to avoid false positives
             complexity += len(matches) * (1 + nesting)
             
         nesting = max(0, nesting - stripped.count('}'))
         # Increase nesting ONLY if a nesting keyword and a brace are on this line.
-        found_nesting_keyword = False
-        for keyword in control_keywords:
+        #found_nesting_keyword = False
+        if (stripped != '{' and stripped != ""): # NEW
+            found_nesting_keyword = False # NEW
+        for keyword in control_keywords + ['->']:
             if re.search(rf'\b{keyword}\b', stripped): # Word boundaries to avoid false positives
                 found_nesting_keyword = True
                 break
-        if '?' in stripped:
-             found_nesting_keyword = True
-        if found_nesting_keyword and '{' in stripped:   
+        if found_nesting_keyword and '{' in stripped: # No nesting for if (n == 0) return 1.0;
             nesting += stripped.count('{')    
+            found_nesting_keyword = False # NEW
+            
     return complexity
+
+# WHAT IF BRACE IS ON ANOTHER LINE [x]
+# What if
+'''
+for ()
+    for ()
+'''
+ 
 
 '''
 Edge Cases:

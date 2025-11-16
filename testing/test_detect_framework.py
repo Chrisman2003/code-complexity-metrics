@@ -20,6 +20,6 @@ test_cases = [
 ]
 
 @pytest.mark.parametrize("code,expected", test_cases)
-def test_detect_parallel_framework(code, expected):
+def test_detect_framework(code, expected):
     detected = detect_parallel_framework(code)
     assert detected == expected, f"Detected: {detected}, Expected: {expected}"

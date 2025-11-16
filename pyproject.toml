@@ -1,6 +1,6 @@
 [project]
 name = "code-complexity-metrics"
-version = "0.1.0"
+version = "1.0.0"
 description = "Implementation and Comparison of Code Complexity Metrics to Assess Developer Productivity"
 authors = [
     { name="Christian Ispas", email="chrispas03@yahoo.dk" }

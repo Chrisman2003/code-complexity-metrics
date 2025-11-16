@@ -114,24 +114,30 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         patterns_to_apply = pattern_rules[lang]
     # Result: a list of regex patterns to apply
     # For all regex elements in pattern_rules are used    
+    
     for p_elem in patterns_to_apply:
         matches = re.findall(p_elem, code) # find all matches for this pattern
         if lang == "cpp":
+            # Subtract Framework functions from Operators in C++
+            operators = [op for op in operators if op not in dynamic_nonoperands]
             dynamic_nonoperands.update(matches) # add to dynamic non-operands
+            
         else:
             operators.extend(matches) # add to operators
             dynamic_nonoperands.update(matches) # add to dynamic non-operands
     
-    ## Clean up Operands
-    #full_patterns_to_apply = [
-    #    pat
-    #    for pattern_list in pattern_rules.values()
-    #    for pat in pattern_list
-    #]
-    #for p_elem in full_patterns_to_apply:   # Subtract ALL framework functions from operands 
-    #    matches = re.findall(p_elem, code)  # find all matches for this pattern
-    #    dynamic_nonoperands.update(matches) # add to dynamic non-operands
-            
+    # 1) Adjust Operands
+    func_def_pattern = r'\b(?:void|double|int|float|char|bool|auto|template<[^>]+>)\s+([A-Za-z_]\w*)\s*\('
+    func_def_names = re.findall(func_def_pattern, code)    
+    operands = [op for op in operands if op not in func_def_names]
+    operands.extend(func_def_names) # Operands solved
+    # 2) Adjust Operators
+    for func_name in func_def_names:
+        # Count how many times this function appears as a definition
+        if func_name in operators:
+            operators.remove(func_name)  # removes first occurrence only
+     
+     
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
     double_quotes = re.findall(r'"(?:\\.|[^"\\])*"', code, flags=re.DOTALL) # Multline Kernel String support
@@ -140,10 +146,10 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     operands.extend(single_quotes)
     
     operands = [op for op in operands if op not in full_subtracting_set] # Remove non-operands from operands
-    #print("Distinct Operators", set(operators))
-    #print("\n")
-    #print("Distinct Operands", set(operands))
-    #print("\n")
+    print("Operators", operators)
+    print("\n")
+    print("Operands", operands)
+    print("\n")
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
@@ -156,36 +162,6 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         'N2': N2,
     }
 
-def detect_parallel_framework(code: str, file_suffix: str = "") -> set[str]:
-    """
-    Automatically detect the parallelizing framework used in a source file.
-    Returns one or a multiple of {'cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
-                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
-                    'webgpu', 'boost', 'metal', 'thrust'}
-    """
-    lib_patterns = { # Assuming correct library declarations
-        "cuda": [r'#include\s*<cuda'],
-        "opencl": [r'#include\s*<CL/cl[^>]*>'],
-        "kokkos": [r'#include\s*<Kokkos'],
-        "openmp": [r'#include\s*[<"]omp'],
-        "adaptivecpp": [r'#include\s*<CL/sycl'],
-        "openacc": [r'#include\s*<openacc'],
-        "opengl_vulkan": [r'#include\s*<vulkan'],
-        "webgpu": [r'#include\s*<wgpu'],
-        "boost": [r'#include\s*"boost'],
-        "metal": [r'#include\s*<Metal'],
-        "thrust": [r'#include\s*[<"]thrust'],
-    }
-    if file_suffix == ".slang":
-        detected_languages = {"cpp", "slang"}
-    else:
-        detected_languages = {"cpp"}
-    
-    for lang, patterns in lib_patterns.items():
-        matches = re.findall(patterns[0], code)
-        if len(matches) > 0:
-            detected_languages.add(lang)
-    return detected_languages
 
 def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") -> tuple[str, str, set]:
     """Compute operator and operand regex patterns and the subtracting set for Halstead metrics.
@@ -218,6 +194,11 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
     escaped_symbols  = [re.escape(op) for op in sorted(symbol_ops, key=len, reverse=True)]
     # Combine patterns: keywords first, then symbols
     operator_pattern = r'|'.join(escaped_keywords + escaped_symbols)
+    
+    func_call_pattern = r'\b[A-Za-z_]\w*\s*(?=\()' # NEW
+    # func_call_pattern = r'(?<!\b(?:void|double|int|float|char|bool)\s)\b[A-Za-z_]\w*\s*(?=\()'
+    operator_pattern = f"{operator_pattern}|{func_call_pattern}" # NEW
+    
     # Operand pattern: identifiers or numeric literals
     operand_pattern = r'\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+\b' # Doesn't detect string literals
     # Set of non-operands to exclude from operand count

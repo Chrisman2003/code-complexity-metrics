@@ -15,7 +15,7 @@ test_files = [
 ]
 
 @pytest.mark.parametrize("filename", test_files)
-def test_keep_kernel_strings_and_code_opencl(filename):
+def test_tools(filename):
     """Ensure kernel code is preserved while unrelated strings are removed."""
     code = load_code(filename, TEST_FILES_DIR)
     cleaned = remove_string_literals(code)

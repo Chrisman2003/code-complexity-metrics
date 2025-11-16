@@ -4,6 +4,7 @@ from code_complexity.metrics.nesting_depth import *
 from code_complexity.metrics.cyclomatic import *
 from code_complexity.metrics.cognitive import *
 from code_complexity.metrics.halstead import *
+from code_complexity.metrics.utils import detect_parallel_framework
 from collections import Counter
 from pathlib import Path
 
@@ -22,7 +23,7 @@ def collect_metrics(root_path: str):
             code = f.read()
         sloc_val = compute_sloc(code)
         nesting = compute_nesting_depth(code)
-        cyclomatic_val = basic_compute_cyclomatic(code)
+        cyclomatic_val = regex_compute_cyclomatic(code)
         cognitive_val = regex_compute_cognitive(code)
         halstead_difficulty = difficulty(halstead_metrics_auto(code, Path(filepath).suffix))
         halstead_volume = volume(halstead_metrics_auto(code, Path(filepath).suffix))

@@ -7,6 +7,7 @@ Includes:
 """
 import re
 import os
+# from code_complexity.metrics.halstead import *
 
 def load_code(filename, TEST_FILES_DIR):
     """Loads the content of a code file.
@@ -19,6 +20,39 @@ def load_code(filename, TEST_FILES_DIR):
     """
     with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
         return f.read()
+    
+
+def detect_parallel_framework(code: str, file_suffix: str = "") -> set[str]:
+    """
+    Automatically detect the parallelizing framework used in a source file.
+    Returns one or a multiple of {'cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
+                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
+                    'webgpu', 'boost', 'metal', 'thrust'}
+    """
+    lib_patterns = { # Assuming correct library declarations
+        "cuda": [r'#include\s*<cuda'],
+        "opencl": [r'#include\s*<CL/cl[^>]*>'],
+        "kokkos": [r'#include\s*<Kokkos'],
+        "openmp": [r'#include\s*[<"]omp'],
+        "adaptivecpp": [r'#include\s*<CL/sycl'],
+        "openacc": [r'#include\s*<openacc'],
+        "opengl_vulkan": [r'#include\s*<vulkan'],
+        "webgpu": [r'#include\s*<wgpu'],
+        "boost": [r'#include\s*"boost'],
+        "metal": [r'#include\s*<Metal'],
+        "thrust": [r'#include\s*[<"]thrust'],
+    }
+    if file_suffix == ".slang":
+        detected_languages = {"cpp", "slang"}
+    else:
+        detected_languages = {"cpp"}
+    
+    for lang, patterns in lib_patterns.items():
+        matches = re.findall(patterns[0], code)
+        if len(matches) > 0:
+            detected_languages.add(lang)
+    return detected_languages    
+    
 
 def remove_cpp_comments(code: str) -> str:
     """
@@ -114,27 +148,6 @@ def remove_string_literals(code: str) -> str:
     )
     return cleaned_code
 
-def remove_string_literals_halstead_indexed(code: str) -> str:
-    """
-    Replace string literals with indexed placeholders s_0, s_1, ...
-    Preserve string literals containing '__kernel'.
-    """
-    counter = 0  # Counter for replacements
-
-    def replacer(match: re.Match) -> str:
-        nonlocal counter
-        s = match.group(0)
-        if "__kernel" in s:
-            return s
-        replacement = f's_{counter}'  # e.g., s_0, s_1, s_2...
-        counter += 1
-        return replacement
-
-    # Regex pattern for raw strings, normal strings, character literals
-    pattern = r'R"[\w]*\(.*?\)[\w]*"|"(\\.|[^"\\])*"|\'(\\.|[^\'\\])\''
-    cleaned_code = re.sub(pattern, replacer, code, flags=re.DOTALL)
-    return cleaned_code
-
 def remove_headers(code: str) -> str:
     """
     Remove all C/C++ style headers inclusions from the source code.
@@ -158,3 +171,55 @@ def remove_headers(code: str) -> str:
     # -> First remove headers and then string literals
     return code
 
+
+# --- OLD ---
+'''
+def enrich_metrics(base_metrics: dict) -> dict:
+    """Add derived Halstead metrics (vocabulary, size, volume, difficulty, effort, time)."""
+    enriched = dict(base_metrics)  # shallow copy
+    enriched["vocabulary"] = vocabulary(base_metrics)
+    enriched["size"] = size(base_metrics)
+    enriched["volume"] = volume(base_metrics)
+    enriched["difficulty"] = difficulty(base_metrics)
+    enriched["effort"] = effort(base_metrics)
+    enriched["time"] = time(base_metrics)
+    return enriched
+
+def compute_gpu_delta(code: str, language: str) -> dict:
+    """
+    Compute GPU delta metrics for a given code snippet in the specified language.
+
+    :param code: The source code to analyze.
+    :param language: The programming language of the code ('cuda', 'opencl', 'kokkos').
+    :return: A dictionary containing the GPU delta metrics (GPU - C++).
+    """
+    cpp_metrics = enrich_metrics(halstead_metrics_cpp(code))
+
+    if language == "cuda":
+        gpu_metrics = enrich_metrics(halstead_metrics_cuda(code))
+    elif language == "opencl":
+        gpu_metrics = enrich_metrics(halstead_metrics_opencl(code))
+    elif language == "kokkos":
+        gpu_metrics = enrich_metrics(halstead_metrics_kokkos(code))
+    elif language == "adaptivecpp":
+        gpu_metrics = enrich_metrics(halstead_metrics_adaptivecpp(code))
+    elif language == "openacc":
+        gpu_metrics = enrich_metrics(halstead_metrics_openacc(code))
+    elif language == "opengl_vulkan":
+        gpu_metrics = enrich_metrics(halstead_metrics_opengl_vulkan(code))
+    elif language == "webgpu":
+        gpu_metrics = enrich_metrics(halstead_metrics_webgpu(code))
+    elif language == "boost":
+        gpu_metrics = enrich_metrics(halstead_metrics_boost(code))
+    elif language == "metal":
+        gpu_metrics = enrich_metrics(halstead_metrics_metal(code))
+    elif language == "thrust":
+        gpu_metrics = enrich_metrics(halstead_metrics_thrust(code))
+    elif language == "auto":
+        gpu_metrics = enrich_metrics(halstead_metrics_auto(code))
+    elif language == "merged":
+        gpu_metrics = enrich_metrics(halstead_metrics_merged(code))
+    else:
+        raise ValueError(f"Unsupported language: {language}")
+
+'''

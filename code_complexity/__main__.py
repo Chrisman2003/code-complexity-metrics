@@ -92,7 +92,7 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
-    if cyc_name == "basic_compute_cyclomatic":
+    if cyc_name == "regex_compute_cyclomatic":
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
@@ -214,8 +214,8 @@ def main():
     }[args.lang]
     # Select Cyclomatic function based on method
     cyclomatic_func = {
-        "advanced": cyclomatic.compute_cyclomatic,
-        "basic": cyclomatic.basic_compute_cyclomatic
+        "advanced": cyclomatic.cfg_compute_cyclomatic,
+        "basic": cyclomatic.regex_compute_cyclomatic
     }[args.cyclomatic]
     # Select Cognitive function based on method
     cognitive_func = {
