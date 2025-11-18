@@ -10,7 +10,7 @@ TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "
 # Test cases: (filename)
 # -------------------------------
 test_files = [
-    "complex/opencl_edge_cases.cpp",
+    "opencl/opencl_edge_cases.cpp",
     # Add more edge-case files here if needed
 ]
 

@@ -1,18 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from code_complexity.stats.analysis import summarize
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import seaborn as sns
 import io
-from scipy.stats import ttest_ind, pearsonr, spearmanr
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-import statsmodels.api as sm
-from code_complexity.stats.data_loader import collect_metrics
 from matplotlib.lines import Line2D
-# from code_complexity.metrics import halstead
 # from code_complexity.metrics.halstead import * NOTE: DANGEROUS TO IMPORT - overrides functions in main
 
 # -------------------------------
@@ -57,7 +51,7 @@ def aggregate_framework_complexity(records):
     return list(totals.values())
 
 # -------------------------------
-# Basic Statistical Analysis: 3 Page Report
+# Basic Statistical Analysis
 # -------------------------------
 def generate_basic_report(records, output_path="complexity_report.pdf"):
     """
@@ -68,7 +62,7 @@ def generate_basic_report(records, output_path="complexity_report.pdf"):
     """
     df = pd.DataFrame(records)
     # Remove if present
-    for col in ("halstead_volume", "halstead_effort"):
+    for col in ("halstead_volume", "halstead_difficulty"):
         if col in df.columns:
             df = df.drop(columns=col)
     doc = SimpleDocTemplate(output_path)
@@ -113,7 +107,7 @@ def generate_basic_report(records, output_path="complexity_report.pdf"):
 
     # --- Boxplots + Histograms ---
     elements.append(Paragraph("Boxplots + Histograms", styles['Heading2']))
-    for metric in ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_difficulty']:
+    for metric in ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_effort']:
         _, axes = plt.subplots(ncols=2, figsize=(10, 4), dpi=400)
         axes[0].hist(df[metric], bins=20, color='lightblue', edgecolor='black')
         axes[0].set_title(f"Histogram of {metric}")
@@ -132,7 +126,7 @@ def generate_basic_report(records, output_path="complexity_report.pdf"):
 
 
 # -------------------------------
-# Advanced Statistical Analysis: 3 Page Report
+# Advanced Statistical Analysis
 # -------------------------------
 def generate_advanced_report(records, output_path="complexity_report.pdf"):
     """
@@ -162,7 +156,7 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
 
     # --- Pairplot ---
     elements.append(Paragraph("Pairwise Scatter Plot (Pairplot)", styles['Heading2']))
-    metrics = ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_difficulty']
+    metrics = ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_effort']
     sns.pairplot(df[metrics], diag_kind='hist', corner=True,
                  plot_kws={'color': 'orange'}, diag_kws={'color': 'orange'})
     plot_to_image(elements, width=425, height=425) # Buf IO Handle
@@ -222,5 +216,3 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     doc.build(elements)
     print(f"[INFO] Report saved to {output_path}")
 
-
-# TODO: Pure Addition of Halstead Difficulty and Volume may not be meaningful

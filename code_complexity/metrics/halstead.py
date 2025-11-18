@@ -81,7 +81,8 @@ pattern_rules = {
     -> Arbitrary quantification on occuences of namespace resolution (:: ... :: ... ::)
 """
 
-def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, lang: str, autolist: list[str] = []):
+def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, 
+                                   code_str: str, lang: str, autolist: list[str] = []):
     """Compute Halstead metrics for given code with parametrized operator and operand patterns.
 
     Args:
@@ -119,9 +120,8 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         matches = re.findall(p_elem, code) # find all matches for this pattern
         if lang == "cpp":
             # Subtract Framework functions from Operators in C++
-            operators = [op for op in operators if op not in dynamic_nonoperands]
+            operators = [op for op in operators if op not in matches]
             dynamic_nonoperands.update(matches) # add to dynamic non-operands
-            
         else:
             operators.extend(matches) # add to operators
             dynamic_nonoperands.update(matches) # add to dynamic non-operands
@@ -137,19 +137,19 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         if func_name in operators:
             operators.remove(func_name)  # removes first occurrence only
      
-     
-    # Combine with static subtracting set (C++ keywords, symbols, etc.)
-    full_subtracting_set = subtracting_set | dynamic_nonoperands
-    double_quotes = re.findall(r'"(?:\\.|[^"\\])*"', code, flags=re.DOTALL) # Multline Kernel String support
-    single_quotes = re.findall(r"'(?:\\.|[^'\\])+'", code, flags=re.DOTALL)  
+    # String Literals - Only Operands
+    double_quotes = re.findall(r'"(?:\\.|[^"\\])*"', code_str, flags=re.DOTALL) # Multline Kernel String support
+    single_quotes = re.findall(r"'(?:\\.|[^'\\])+'", code_str, flags=re.DOTALL)  
     operands.extend(double_quotes)
     operands.extend(single_quotes)
     
+    # Combine with static subtracting set (C++ keywords, symbols, etc.)
+    full_subtracting_set = subtracting_set | dynamic_nonoperands
     operands = [op for op in operands if op not in full_subtracting_set] # Remove non-operands from operands
-    print("Operators", operators)
-    print("\n")
-    print("Operands", operands)
-    print("\n")
+    #print("Operators", set(operators))
+    #print("\n")
+    #print("Operands", set(operands))
+    #print("\n")
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
@@ -179,25 +179,27 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
             - operand_pattern (str): Regex pattern for operands (identifiers and numbers).
             - subtracting_set (set): Set of tokens to exclude from operand count.
     """
-    merged_nonoperands = core_non_operands | additional_non_operands 
-    
+    print(lang)
     if lang == "cpp":
         operators = core_non_operands
     else:
-        operators = merged_nonoperands
+        operators = core_non_operands | additional_non_operands 
 
+    merged_nonoperands = core_non_operands | additional_non_operands 
+    print(operators)
     # Split into keyword-like (alphanumeric) and symbolic operators
     keyword_ops = {op for op in operators if re.match(r'^[A-Za-z_]\w*$', op)}
     symbol_ops = operators - keyword_ops
     # Escape keywords and symbols for regex
     escaped_keywords = [r'\b' + re.escape(op) + r'\b' for op in sorted(keyword_ops)] 
     escaped_symbols  = [re.escape(op) for op in sorted(symbol_ops, key=len, reverse=True)]
+    escaped_keywords = sorted(escaped_keywords, key=len, reverse=True)
+    escaped_symbols  = sorted(escaped_symbols, key=len, reverse=True)
     # Combine patterns: keywords first, then symbols
     operator_pattern = r'|'.join(escaped_keywords + escaped_symbols)
     
-    func_call_pattern = r'\b[A-Za-z_]\w*\s*(?=\()' # NEW
-    # func_call_pattern = r'(?<!\b(?:void|double|int|float|char|bool)\s)\b[A-Za-z_]\w*\s*(?=\()'
-    operator_pattern = f"{operator_pattern}|{func_call_pattern}" # NEW
+    func_call_pattern = r'(?<!::)\b[A-Za-z_]\w*\s*(?=\()' # Don't match namespace called functions Kokkos::
+    operator_pattern = f"{operator_pattern}|{func_call_pattern}"
     
     # Operand pattern: identifiers or numeric literals
     operand_pattern = r'\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+\b' # Doesn't detect string literals
@@ -205,14 +207,54 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
     subtracting_set = merged_nonoperands
     return operator_pattern, operand_pattern, subtracting_set
 
+def halstead_metrics(code: str, lang: str, file_suffix: str = "") -> dict:
+    "Compute Halstead metrics based on language flag"
+    # Mapping from framework name → its non-operands set
+    framework_non_operands_map = {
+        "cuda": cuda_non_operands,
+        "opencl": opencl_non_operands,
+        "kokkos": kokkos_non_operands,
+        "openmp": openmp_non_operands,
+        "adaptivecpp": adaptivecpp_non_operands,
+        "openacc": openacc_non_operands,
+        "opengl_vulkan": opengl_vulkan_non_operands,
+        "webgpu": webgpu_non_operands,
+        "boost": boost_non_operands,
+        "metal": metal_non_operands,
+        "thrust": thrust_non_operands,
+        "merged": merged_non_operands,
+    }
+    detected_langs = []
+    if lang == "cpp" or lang == "auto":
+        detected_langs = detect_parallel_framework(code, file_suffix)
+        # Start with standard C++ non-operands
+        auto_non_operands = cpp_non_operands.copy()
+        for detected in detected_langs: # can't use for lang in detected_langs -> update lang
+            # detected_langs {cpp,cuda} -> non-deterministic ordering such that last iteration
+            # could be any one of the 2 values
+            if detected != 'cpp' and detected in framework_non_operands_map:
+                auto_non_operands |= framework_non_operands_map[detected]
+    else:
+        auto_non_operands = framework_non_operands_map[lang]
+    
+    # Standard Code cleaning
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands, lang)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, lang, detected_langs)
+
+
+
+
+
+
 def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
     """Compute Halstead metrics for standard C++ code."""
     detected_langs = detect_parallel_framework(code, file_suffix)
     # Start with standard C++ non-operands
-    
-    #print("local cpp non operand state", cpp_non_operands)
     auto_non_operands = cpp_non_operands.copy()
-    # auto_non_operands = cpp_non_operands
     
     # Mapping from framework name → its non-operands set
     framework_non_operands_map = {
@@ -227,7 +269,6 @@ def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
         "boost": boost_non_operands,
         "metal": metal_non_operands,
         "thrust": thrust_non_operands,
-        "slang": slang_non_operands, # Header detection impossible
     }
     for lang in detected_langs:
         if lang != 'cpp' and lang in framework_non_operands_map:
@@ -235,111 +276,114 @@ def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
             
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands, "cpp")
     # Only for CPP subtract all possible merged non operands
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'cpp', detected_langs)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, "cpp", detected_langs)
 
 
 def halstead_metrics_cuda(code: str) -> dict:
     """Compute Halstead metrics for CUDA code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, cuda_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'cuda')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'cuda')
 
 
 def halstead_metrics_kokkos(code: str) -> dict:
     """Compute Halstead metrics for Kokkos code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, kokkos_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'kokkos')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'kokkos')
 
 
 def halstead_metrics_opencl(code: str) -> dict:
     """Compute Halstead metrics for OpenCL code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opencl_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'opencl')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'opencl')
 
 def halstead_metrics_openmp(code: str) -> dict:
     """Compute Halstead metrics for OpenMP code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, openmp_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'openmp')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'openmp')
 
 def halstead_metrics_adaptivecpp(code: str) -> dict:
     """Compute Halstead metrics for AdaptiveCPP code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, adaptivecpp_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'adaptivecpp')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'adaptivecpp')
 
 def halstead_metrics_openacc(code: str) -> dict:
     """Compute Halstead metrics for OpenACC code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, openacc_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'openacc')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'openacc')
 
 def halstead_metrics_opengl_vulkan(code: str) -> dict:
     """Compute Halstead metrics for OpenGL_Vulkan code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opengl_vulkan_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'opengl_vulkan')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'opengl_vulkan')
 
 def halstead_metrics_webgpu(code: str) -> dict:
     """Compute Halstead metrics for WebGPU code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, webgpu_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'webgpu')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'webgpu')
 
 def halstead_metrics_boost(code: str) -> dict:
     """Compute Halstead metrics for Boost code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, boost_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'boost')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'boost')
 
 def halstead_metrics_metal(code: str) -> dict:
     """Compute Halstead metrics for Metal code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, metal_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'metal')
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'metal')
 
 def halstead_metrics_thrust(code: str) -> dict:
     """Compute Halstead metrics for Thrust code."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, thrust_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'thrust')
-
-def halstead_metrics_slang(code: str) -> dict:
-    """Compute Halstead metrics for Slang code."""
-    code = remove_headers(code)
-    code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
-    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, slang_non_operands)
-    # Slang shader is not embedded in a C++ file
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'slang')
-
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'thrust')
 
 def halstead_metrics_auto(code: str, file_suffix: str = "") -> dict:
     """Compute Halstead metrics with automated language detection for a file (C++ and GPU extensions)."""
@@ -363,25 +407,29 @@ def halstead_metrics_auto(code: str, file_suffix: str = "") -> dict:
         "boost": boost_non_operands,
         "metal": metal_non_operands,
         "thrust": thrust_non_operands,
-        "slang": slang_non_operands, # Header detection impossible
     }
     # Add non-operands for all detected frameworks (except cpp, which is already included)
     for lang in detected_langs:
         if lang != 'cpp' and lang in framework_non_operands_map:
             auto_non_operands |= framework_non_operands_map[lang]
+    #print(detected_langs)
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'auto', detected_langs)
+    
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'auto', detected_langs)
 
 def halstead_metrics_merged(code: str) -> dict:
     """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
     code = remove_headers(code)
     code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
     operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, merged_non_operands)
-    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, 'merged')
+    
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'merged')
 
 
 # -------------------------------

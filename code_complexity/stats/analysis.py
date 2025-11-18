@@ -6,13 +6,13 @@ def summarize(records):
     summary = df.describe()
     
     # Base columns for correlation
-    base_cols = ["cognitive", "cyclomatic", "nesting", "sloc", "halstead_difficulty"]
+    base_cols = ["cognitive", "cyclomatic", "nesting", "sloc", "halstead_effort"]
     
     # Add optional halstead columns if they exist
     if "halstead_volume" in df.columns:
         base_cols.append("halstead_volume")
-    if "halstead_effort" in df.columns:
-        base_cols.append("halstead_effort")
+    if "halstead_difficulty" in df.columns:
+        base_cols.append("halstead_difficulty")
         
     # Compute correlations only for columns that exist in df
     correlations = df[[col for col in base_cols if col in df.columns]].corr()

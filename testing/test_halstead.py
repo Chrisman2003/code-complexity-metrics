@@ -14,45 +14,45 @@ test_cases = [
         "filename": "cpp/OLD_simple.cpp",
         "func": halstead_metrics_cpp,
         "expected": {
-            "n1": 23, "n2": 13, "N1": 58, "N2": 29,
-            "vocabulary": 36, "size": 87, "volume": 449.78,
-            "difficulty": 25.65, "effort": 11538.68, "time": 641.04
+            "n1": 22, "n2": 15, "N1": 57, "N2": 30,
+            "vocabulary": 37, "size": 87, "volume": 453.22,
+            "difficulty": 22.00, "effort": 9970.89, "time": 553.94
         }
     },
     {
-        "filename": "complex/complex.cpp",
+        "filename": "cpp/complex.cpp",
         "func": halstead_metrics_cpp,
         "expected": {
-            "n1": 60, "n2": 87, "N1": 885, "N2": 495,
-            "vocabulary": 147, "size": 1380, "volume": 9935.55,
-            "difficulty": 170.69, "effort": 1695895.23, "time": 94216.40
+            "n1": 89, "n2": 99, "N1": 952, "N2": 469,
+            "vocabulary": 188, "size": 1421, "volume": 10735.07,
+            "difficulty": 210.81, "effort": 2263093.88, "time": 125727.44
         }
     },
     {
-        "filename": "complex/complex_cuda.cu",
+        "filename": "cuda/complex_cuda.cu",
         "func": halstead_metrics_cuda,
         "expected": {
-            "n1": 39, "n2": 18, "N1": 275, "N2": 75,
-            "vocabulary": 57, "size": 350, "volume": 2041.51,
-            "difficulty": 81.25, "effort": 165872.81, "time": 9215.16
+            "n1": 38, "n2": 19, "N1": 280, "N2": 75,
+            "vocabulary": 57, "size": 355, "volume": 2070.68,
+            "difficulty": 75.00, "effort": 155300.70, "time": 8627.82
         }
     },
     {
-        "filename": "complex/complex_kokkos.cpp",
+        "filename": "kokkos/complex_kokkos.cpp",
         "func": halstead_metrics_kokkos,
         "expected": {
-            "n1": 25, "n2": 18, "N1": 127, "N2": 62,
-            "vocabulary": 43, "size": 189, "volume": 1025.56,
-            "difficulty": 43.06, "effort": 44156.23, "time": 2453.12
+            "n1": 27, "n2": 25, "N1": 135, "N2": 63,
+            "vocabulary": 52, "size": 198, "volume": 1128.69,
+            "difficulty": 34.02, "effort": 38397.93, "time": 2133.22
         }
     },
     {
-        "filename": "complex/complex_opencl.cpp",
+        "filename": "opencl/complex_opencl.cpp",
         "func": halstead_metrics_opencl,
         "expected": {
-            "n1": 53, "n2": 46, "N1": 329, "N2": 146,
-            "vocabulary": 99, "size": 475, "volume": 3148.94,
-            "difficulty": 84.11, "effort": 264853.61, "time": 14714.09
+            "n1": 57, "n2": 48, "N1": 346, "N2": 147,
+            "vocabulary": 105, "size": 493, "volume": 3310.12,
+            "difficulty": 87.28, "effort": 288911.68, "time": 16050.65
         }
     },
 ]

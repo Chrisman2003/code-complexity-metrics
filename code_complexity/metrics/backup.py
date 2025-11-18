@@ -494,3 +494,182 @@ Edge Cases (OpenMP):
 # Don't want full Function recognitition, since we want CASE-SPECIFIC Parallelizing Framework Construct
 # Analysis. Full Function recognition, would analyze ALL functions regardless of parallelizing framework
 
+import re
+from code_complexity.metrics.utils import *
+import logging
+logger = logging.getLogger("code_complexity")
+
+def count_logical_sequences(line: str, nesting: int) -> int:
+    """Count sequences of symbolic logical operators in a line for Cognitive Complexity."""
+    complexity = 0
+    prev_op = None
+    for match in re.finditer(r'&&|\|\|', line): # Find all logical operators
+        op = match.group() # Current operator
+        if op != prev_op: # Only count if different from previous -> Sequence Chain Counting
+            complexity += 1 + nesting  # one increment per sequence, weighted by nesting
+            prev_op = op
+    return complexity
+
+
+def regex_compute_cognitive(code: str) -> int:
+    """Compute a Cognitive Complexity score using regex-based analysis.
+    This function approximates cognitive complexity without using an AST.
+    It counts flow-breaking constructs and nesting based on braces.
+    Cognitive Complexity is about mental effort to understand, not just paths.
+    Note that this is not a simplified implementation, unlike cyclomatic complexity 
+    no control flow graph is needed. An AST-based approach might in some cases, however, 
+    be more accurate.
+    
+    Args:
+        code (str): C++ source code as a string.
+
+    Returns:
+        int: Cognitive Complexity score for the source code.
+    """   
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code = remove_string_literals(code)
+    # Control flow keywords (notice: no plain 'else')
+    control_keywords = ['if', 'for', 'while', 'switch', 'catch'] # 'do' and 'if else' implicit
+    # switch with branches add 1, 
+    logical_ops_alpha = ['and', 'or']  # counted per occurrence
+
+    complexity = 0
+    nesting = 0
+    found_nesting_keyword = False # NEW
+    for line in code.splitlines():
+        stripped = line.strip()
+        # --- Control keywords ---
+        for keyword in control_keywords: # Count control keywords
+            matches = re.findall(rf'\b{keyword}\b', stripped) # Word boundaries to avoid false positives
+            complexity += len(matches) * (1 + nesting)
+            
+        # --- Jump statements ---
+        if re.search(r'\bgoto\b\s+\w+', stripped):
+            complexity += 1 + nesting
+        if re.search(r'\bbreak\b\s+\w+', stripped) or re.search(r'\bbreak\s+\d+', stripped):
+            complexity += 1 + nesting
+        if re.search(r'\bcontinue\b\s+\w+', stripped) or re.search(r'\bcontinue\s+\d+', stripped):
+            complexity += 1 + nesting
+        # -> Non-Parametrized Constructs aren't being matched
+        
+        # --- Logical operators ---
+        complexity += count_logical_sequences(stripped, nesting)
+        complexity += stripped.count('?') * (1 + nesting)  # Ternary operator: can't nest structures inside it
+        for op in logical_ops_alpha:
+            matches = re.findall(rf'\b{op}\b', stripped) # Word boundaries to avoid false positives
+            complexity += len(matches) * (1 + nesting)
+            
+        nesting = max(0, nesting - stripped.count('}'))
+        # Increase nesting ONLY if a nesting keyword and a brace are on this line.
+        #found_nesting_keyword = False
+        if (stripped != '{' and stripped != ""): # NEW
+            found_nesting_keyword = False # NEW
+        for keyword in control_keywords + ['->']:
+            if re.search(rf'\b{keyword}\b', stripped): # Word boundaries to avoid false positives
+                found_nesting_keyword = True
+                break
+        if found_nesting_keyword and '{' in stripped: # No nesting for if (n == 0) return 1.0;
+            nesting += stripped.count('{')    
+            found_nesting_keyword = False # NEW
+            
+    return complexity
+
+'''
+for ()
+    for ()
+'''
+ 
+
+'''
+Edge Cases:
+    [x] 1) Misalignment of Nesting and Keywords
+        if (condition) // 'if' is found here, scored with current 'nesting'
+        {              // Nesting level actually increases here for the block
+            //...
+        }
+        -> Only Brace encompassed blocks is penalized with corresponding nesting
+    [] 2) Ignoring Non-Brace Scope
+        for (int i = 0; i < 10; ++i)
+            if (i % 2 == 0) return; // 'if' is nested, but 'nesting' remains 0.
+    [x] 3) Over-Penalizing Logical Operators: The metric applies the full nesting penalty to logical operators
+    [x] 4) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives.
+    [x] 5) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity.
+    
+    [x] 6) Nesting Depth overcounting with function braces 
+            -> Nesting only increases when a control keyword and a brace are on the same line.
+    [x] 7) Cognitive Complexity unlike Cyclomatic Complexity starts at 0 not 1!
+    [x] 8) Null-Coalescing Operators -> Doesn't exist in C++
+    [x] 9) Switch statements: 'cases' don't add complexity, only the switch statement itself [SonarQube specification]
+    
+    [x] 10) Sequences of like-boolean operators increment complexity, not the operators themselves
+    
+    [] 11) Fundamental increment for recursion (considered a “meta-loop”)
+        -> Direct recursion → +1 per function | Indirect recursion (cycles) → +1 per function in the cycle.
+        -> Nesting still applies for any control flow inside the function.
+    [x] 12) goto, break and continue statements only contribute to complexity when parametrized
+    [] 13) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
+    do increment the nesting level when nested inside other method-like structures:
+'''
+
+'''
+Example that might break nesting [I might have solved it now]:
+if (x > 0)
+{ // Nesting increases here, not on the if line
+    // 
+}
+The current implementation will score the if on the wrong nesting level if the { is on the next line.
+'''
+
+
+# --- OLD ---
+'''
+def enrich_metrics(base_metrics: dict) -> dict:
+    """Add derived Halstead metrics (vocabulary, size, volume, difficulty, effort, time)."""
+    enriched = dict(base_metrics)  # shallow copy
+    enriched["vocabulary"] = vocabulary(base_metrics)
+    enriched["size"] = size(base_metrics)
+    enriched["volume"] = volume(base_metrics)
+    enriched["difficulty"] = difficulty(base_metrics)
+    enriched["effort"] = effort(base_metrics)
+    enriched["time"] = time(base_metrics)
+    return enriched
+
+def compute_gpu_delta(code: str, language: str) -> dict:
+    """
+    Compute GPU delta metrics for a given code snippet in the specified language.
+
+    :param code: The source code to analyze.
+    :param language: The programming language of the code ('cuda', 'opencl', 'kokkos').
+    :return: A dictionary containing the GPU delta metrics (GPU - C++).
+    """
+    cpp_metrics = enrich_metrics(halstead_metrics_cpp(code))
+
+    if language == "cuda":
+        gpu_metrics = enrich_metrics(halstead_metrics_cuda(code))
+    elif language == "opencl":
+        gpu_metrics = enrich_metrics(halstead_metrics_opencl(code))
+    elif language == "kokkos":
+        gpu_metrics = enrich_metrics(halstead_metrics_kokkos(code))
+    elif language == "adaptivecpp":
+        gpu_metrics = enrich_metrics(halstead_metrics_adaptivecpp(code))
+    elif language == "openacc":
+        gpu_metrics = enrich_metrics(halstead_metrics_openacc(code))
+    elif language == "opengl_vulkan":
+        gpu_metrics = enrich_metrics(halstead_metrics_opengl_vulkan(code))
+    elif language == "webgpu":
+        gpu_metrics = enrich_metrics(halstead_metrics_webgpu(code))
+    elif language == "boost":
+        gpu_metrics = enrich_metrics(halstead_metrics_boost(code))
+    elif language == "metal":
+        gpu_metrics = enrich_metrics(halstead_metrics_metal(code))
+    elif language == "thrust":
+        gpu_metrics = enrich_metrics(halstead_metrics_thrust(code))
+    elif language == "auto":
+        gpu_metrics = enrich_metrics(halstead_metrics_auto(code))
+    elif language == "merged":
+        gpu_metrics = enrich_metrics(halstead_metrics_merged(code))
+    else:
+        raise ValueError(f"Unsupported language: {language}")
+
+'''

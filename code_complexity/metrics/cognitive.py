@@ -1,6 +1,4 @@
 import re
-from clang import cindex
-from clang.cindex import CursorKind
 from code_complexity.metrics.utils import *
 import logging
 logger = logging.getLogger("code_complexity")
@@ -68,21 +66,18 @@ def regex_compute_cognitive(code: str) -> int:
             
         nesting = max(0, nesting - stripped.count('}'))
         # Increase nesting ONLY if a nesting keyword and a brace are on this line.
-        #found_nesting_keyword = False
-        if (stripped != '{' and stripped != ""): # NEW
-            found_nesting_keyword = False # NEW
+        if (stripped != '{' and stripped != ""):
+            found_nesting_keyword = False
         for keyword in control_keywords + ['->']:
             if re.search(rf'\b{keyword}\b', stripped): # Word boundaries to avoid false positives
                 found_nesting_keyword = True
                 break
         if found_nesting_keyword and '{' in stripped: # No nesting for if (n == 0) return 1.0;
             nesting += stripped.count('{')    
-            found_nesting_keyword = False # NEW
+            found_nesting_keyword = False
             
     return complexity
 
-# WHAT IF BRACE IS ON ANOTHER LINE [x]
-# What if
 '''
 for ()
     for ()

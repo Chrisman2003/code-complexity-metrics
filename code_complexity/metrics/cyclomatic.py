@@ -16,7 +16,6 @@ plain_handler.setFormatter(logging.Formatter("%(message)s"))
 plain_logger.addHandler(plain_handler)
 plain_logger.setLevel(logging.INFO)
 
-
 # -----------------------------------------------------------------------------
 # Cyclomatic Complexity Analysis for C++ Code
 # -----------------------------------------------------------------------------
@@ -164,15 +163,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             # Add edges from the current node to its successors.
             successors = [int(s[1:]) for s in succ_match.group(2).split()]
             for succ in successors:
-                cfg.add_edge(current_node, succ)
-        #if succ_match and current_node is not None:
-        #    # Extract all successor B-numbers, ignoring punctuation
-        #    succ_blocks = re.findall(r'B(\d+)', succ_match.group(2))
-        #    successors = [int(x) for x in succ_blocks]
-        #    for succ in successors:
-        #        cfg.add_edge(current_node, succ)
-        
-        
+                cfg.add_edge(current_node, succ)     
     return function_cfgs
 
 def cfg_compute_cyclomatic(code: str, filename: str) -> int:

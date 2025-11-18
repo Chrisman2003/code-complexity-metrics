@@ -12,8 +12,8 @@ TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "
 test_cases = [
     ("cpp/OLD_simple.cpp", 3),
     ("cpp/edge.cpp", 4),
-    ("complex/complex.cpp", 38),
-    ("complex/hyper_complex.cpp", 90),
+    ("cpp/complex.cpp", 38),
+    ("cpp/hyper_complex.cpp", 90),
 ]
 
 @pytest.mark.parametrize("filename,expected", test_cases)

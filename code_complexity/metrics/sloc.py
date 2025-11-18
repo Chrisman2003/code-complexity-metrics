@@ -11,12 +11,11 @@ def compute_sloc(code: str) -> int:
     Returns:
         int: Number of source lines of code (SLOC).
     """
-    # Remove all Header Calling Instances
+    # Remove comments, non-kernel string literals, Header calls
     code = remove_headers(code)
-    # Remove all comments
     code = remove_cpp_comments(code)
-    # Remove all string literals except kernel strings
     code = remove_string_literals(code)
+
     # Count all non-empty lines
     lines = code.splitlines()
     return sum(1 for line in lines if line.strip())

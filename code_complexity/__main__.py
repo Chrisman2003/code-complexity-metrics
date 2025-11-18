@@ -5,7 +5,7 @@ import logging
 import inspect
 import sys
 from pathlib import Path
-from code_complexity.metrics import clang_parallel, cyclomatic, sloc, halstead, cognitive, nesting_depth
+from code_complexity.metrics import cyclomatic, sloc, halstead, cognitive, nesting_depth
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.stats.analysis import summarize
 from code_complexity.stats.report_generator import *
@@ -69,7 +69,7 @@ def stat_report(root_dir: str, report_func):
 # -------------------------------
 # Analyze a single code file
 # -------------------------------
-def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=None):
+def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
     """Analyze complexity metrics of a single source code file.
 
     Args:
@@ -87,24 +87,22 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
     except Exception as e:
         metrics_logger.error("Failed to read file %s: %s", file_path, e)
         return
-    cyc_name = cyclomatic_func.__name__ # accounting for different parametrization of the 2 functions
-    cog_name = cognitive_func.__name__ # accounting for different parametrization of the 2 functions
     # Compute metrics with timing
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
-    if cyc_name == "regex_compute_cyclomatic":
+    cognitive_complexity, cognitive_time = timed(cognitive.regex_compute_cognitive, code)
+    
+    if cyclomatic_func.__name__ == "regex_compute_cyclomatic":
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
-    if cog_name == "regex_compute_cognitive":
-        cognitive_complexity, cognitive_time = timed(cognitive_func, code) 
-    else:
-        cognitive_complexity, cognitive_time = timed(cognitive_func, file_path)
-    if halstead_func.__name__ == "halstead_metrics_auto" or halstead_func.__name__ == "halstead_metrics_cpp":
-        file_suffix = Path(file_path).suffix
-        halstead_metrics, halstead_time = timed(halstead_func, code, file_suffix)
-    else: 
-        halstead_metrics, halstead_time = timed(halstead_func, code)
+        
+    #if halstead_func.__name__ == "halstead_metrics_auto" or halstead_func.__name__ == "halstead_metrics_cpp":
+    #    file_suffix = Path(file_path).suffix
+    #    halstead_metrics, halstead_time = timed(halstead_func, code, file_suffix)
+    #else: 
+    #    halstead_metrics, halstead_time = timed(halstead_func, code)
+    halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_func , Path(file_path).suffix)
 
     # Log results
     metrics_logger.info("Analyzing file: %s", file_path)
@@ -143,7 +141,7 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, cognitive_func,
 # -------------------------------
 # Analyze all files in a directory
 # -------------------------------
-def analyze_directory(directory_path: str, halstead_func, cyclomatic_func, cognitive_func,gpu_baseline_func=None):
+def analyze_directory(directory_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
     """Recursively analyze all source code files in a directory.
 
     Args:
@@ -155,7 +153,7 @@ def analyze_directory(directory_path: str, halstead_func, cyclomatic_func, cogni
         for file_name in files:
             if file_name.endswith((".cpp", ".cxx", ".cc", ".cu", ".cl", ".hpp", ".h")):
                 file_path = os.path.join(root, file_name)
-                analyze_code(file_path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+                analyze_code(file_path, halstead_func, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
 
 # -------------------------------
 # Main CLI
@@ -172,7 +170,7 @@ def main():
     parser.add_argument("path", help="Path to the code file or directory to analyze")
     parser.add_argument("--lang", choices=[
         "cpp", "cuda", "opencl", "kokkos", "openmp","adaptivecpp", "openacc",
-        "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "slang", "auto", "merged"], 
+        "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "merged", "auto"], 
     default="cpp", help="Language extension for Halstead metrics")
     parser.add_argument("--report", choices=["basic", "advanced"], default=None,
                     help="Run basic/advanced statistical analysis pipeline after computing metrics")
@@ -182,8 +180,6 @@ def main():
                         help="Enable debug logging")
     parser.add_argument("--cyclomatic", choices=["advanced"], default="basic",
                         help="Cyclomatic complexity calculation method")
-    parser.add_argument("--cognitive", choices=["advanced"], default="regex",
-                        help="Cognitive complexity calculation method")
     args = parser.parse_args()
     # Enable debug logging if verbose
     if args.verbose:
@@ -195,42 +191,37 @@ def main():
         return
 
     # Select Halstead function based on language
-    halstead_func = {
-        "cpp": halstead.halstead_metrics_cpp,
-        "cuda": halstead.halstead_metrics_cuda,
-        "opencl": halstead.halstead_metrics_opencl,
-        "kokkos": halstead.halstead_metrics_kokkos,
-        "openmp": halstead.halstead_metrics_openmp,
-        "adaptivecpp": halstead.halstead_metrics_adaptivecpp,
-        "openacc": halstead.halstead_metrics_openacc,
-        "opengl_vulkan": halstead.halstead_metrics_opengl_vulkan,
-        "webgpu": halstead.halstead_metrics_webgpu,
-        "boost": halstead.halstead_metrics_boost,
-        "metal": halstead.halstead_metrics_metal,
-        "thrust": halstead.halstead_metrics_thrust,
-        "slang": halstead.halstead_metrics_slang,
-        "auto": halstead.halstead_metrics_auto,
-        "merged": halstead.halstead_metrics_merged
-    }[args.lang]
+    #halstead_func = {
+    #    "cpp": halstead.halstead_metrics_cpp,
+    #    "cuda": halstead.halstead_metrics_cuda,
+    #    "opencl": halstead.halstead_metrics_opencl,
+    #    "kokkos": halstead.halstead_metrics_kokkos,
+    #    "openmp": halstead.halstead_metrics_openmp,
+    #    "adaptivecpp": halstead.halstead_metrics_adaptivecpp,
+    #    "openacc": halstead.halstead_metrics_openacc,
+    #    "opengl_vulkan": halstead.halstead_metrics_opengl_vulkan,
+    #    "webgpu": halstead.halstead_metrics_webgpu,
+    #    "boost": halstead.halstead_metrics_boost,
+    #    "metal": halstead.halstead_metrics_metal,
+    #    "thrust": halstead.halstead_metrics_thrust,
+    #    "merged": halstead.halstead_metrics_merged,
+    #    "auto": halstead.halstead_metrics_auto,
+    #}[args.lang]
+    
     # Select Cyclomatic function based on method
     cyclomatic_func = {
         "advanced": cyclomatic.cfg_compute_cyclomatic,
         "basic": cyclomatic.regex_compute_cyclomatic
     }[args.cyclomatic]
-    # Select Cognitive function based on method
-    cognitive_func = {
-        "advanced": clang_parallel.compute_cognitive_complexity_file,
-        "regex": cognitive.regex_compute_cognitive
-    }[args.cognitive]
     # Determine baseline for GPU delta
     gpu_baseline_func = halstead.halstead_metrics_cpp if (args.gpu_delta and args.lang != "cpp") else None
         
     # Analyze file or directory
     if args.report == None:
         if os.path.isfile(args.path):
-            analyze_code(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+            analyze_code(args.path, args.lang, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
         elif os.path.isdir(args.path):
-            analyze_directory(args.path, halstead_func, cyclomatic_func, cognitive_func, gpu_baseline_func=gpu_baseline_func)
+            analyze_directory(args.path, args.lang, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
         else:
             metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
     # Stat Analysis

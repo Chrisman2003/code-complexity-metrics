@@ -11,9 +11,6 @@ Parallelizing Frameworks:
 9) Boost
 10) Metal
 11) Thrust
-[Future]
-
-12) Slang: shading language
 '''
 # ------------------------------
 # 1 Standard C++ keywords
@@ -428,144 +425,7 @@ thrust_side_effect_functions = {
 }
 
 # ------------------------------
-# 13 Slang shading language keywords & types
-# ------------------------------
-slang_keywords = {
-    'interface', 'assoc', 'import', 'module', 'requires', 'where',
-    'extension', 'this', 'inout', 'ref', 'let',
-
-    # HLSL-compatible (Slang supports these)
-    'cbuffer', 'tbuffer', 'SamplerState', 'SamplerComparisonState',
-    'struct', 'class', 'enum',
-
-    # Shader entry
-    'compute', 'fragment', 'vertex', 'raygeneration', 'closesthit',
-    'anyhit', 'miss', 'intersection', 'callable',
-
-    # Layout qualifiers / parameter blocks
-    'ConstantBuffer', 'ParameterBlock', 'ShaderRecordBuffer', 'groupshared',
-
-    # Templates / generics
-    '__generic', '__subscript', '__init', '__target_intrinsic',
-}
-
-slang_types = {
-    # Scalars
-    'int', 'uint', 'float', 'double', 'half', 'bool',
-
-    # Vector types
-    'float2', 'float3', 'float4',
-    'int2', 'int3', 'int4',
-    'uint2', 'uint3', 'uint4',
-    'double2', 'double3', 'double4',
-    'half2', 'half3', 'half4',
-
-    # Matrices
-    'float2x2', 'float3x3', 'float4x4',
-    'double2x2', 'double3x3', 'double4x4',
-
-    # GPU resource types
-    'Texture1D', 'Texture2D', 'Texture3D', 'TextureCube',
-    'Texture1DArray', 'Texture2DArray', 'TextureCubeArray',
-    'RWTexture1D', 'RWTexture2D', 'RWTexture3D',
-
-    'Buffer', 'RWBuffer', 'StructuredBuffer', 'RWStructuredBuffer',
-    'ByteAddressBuffer', 'RWByteAddressBuffer',
-
-    # Acceleration structures
-    'RaytracingAccelerationStructure',
-
-    # Samplers
-    'SamplerState', 'SamplerComparisonState',
-
-    # Special Slang constructs
-    'ParameterBlock', 'ConstantBuffer', 'ShaderStruct', 'Payload',
-}
-
-slang_modifiers = {
-    'static', 'const', 'nointerpolation', 'precise',
-    'uniform', 'inline', 'unroll', 'loop', 'branch',
-    'flatten', 'forceinline', 'numthreads',
-
-    # Slang-specific
-    '__exported', '__transparent', '__specialize',
-    '__subscript', '__subscriptMutable', '__generic',
-    '__intrinsic', '__builtin', '__target_intrinsic',
-}
-
-slang_semantics = {
-    'SV_Position', 'SV_Target', 'SV_DispatchThreadID', 'SV_GroupID',
-    'SV_GroupThreadID', 'SV_GroupIndex', 'SV_InstanceID', 'SV_PrimitiveID',
-    'SV_SampleIndex', 'SV_VertexID', 'SV_IsFrontFace',
-
-    # Ray tracing
-    'SV_RayDirection', 'SV_RayTMin', 'SV_RayTCurrent',
-    'SV_RayPayload', 'SV_GeometryIndex', 'SV_HitKind',
-}
-
-slang_intrinsics = {
-    # Math
-    'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
-    'exp', 'log', 'sqrt', 'abs', 'floor', 'ceil',
-    'clamp', 'lerp', 'normalize', 'cross', 'dot',
-    'min', 'max', 'pow', 'rcp', 'saturate',
-
-    # Matrix transforms
-    'mul', 'transpose', 'determinant',
-
-    # Wave ops
-    'WaveActiveSum', 'WaveActiveMin', 'WaveActiveMax',
-    'WavePrefixSum', 'WaveReadLaneAt', 'WaveGetLaneIndex',
-
-    # Texture operations
-    'Sample', 'SampleLevel', 'Load', 'GatherRed', 'Gather',
-
-    # Ray tracing intrinsics (DXR / Vulkan RT)
-    'TraceRay', 'ReportHit', 'IgnoreHit', 'AcceptHitAndEndSearch',
-}
-
-slang_operators = {
-    '+', '-', '*', '/', '%', '=', '==', '!=', '<=', '>=', '<', '>',
-    '&&', '||', '!', '~', '&', '|', '^',
-    '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '|=', '^=',
-    '<<', '>>', '++', '--', '->', '.', '::', ',', ':', ';', '?',
-    '(', ')', '{', '}', '[', ']',
-    # Slang generics
-    '<', '>',  # (parsed separately from operators, but included)
-}
-
-slang_side_effect_functions = {
-    # Resource writes
-    'InterlockedAdd', 'InterlockedMin', 'InterlockedMax',
-    'InterlockedExchange', 'InterlockedCompareExchange',
-
-    # UAV / RW structured buffer writes
-    'RWTexture2D.Store', 'RWTexture3D.Store',
-    'RWStructuredBuffer.Append', 'RWStructuredBuffer.Consume',
-
-    # Dispatch & tracing side effects
-    'TraceRay', 'ReportHit', 'IgnoreHit',
-
-    # Debug
-    'printf', 'abort',
-}
-
-
-
-# ------------------------------
-# 14 Merged Subsets per type for Component Analysis of Halstead metrics
-# ------------------------------
-# TODO
-merged_control = cpp_control
-merged_types = cpp_types | cuda_types | opencl_types | kokkos_classes
-merged_modifiers = cpp_modifiers | cuda_storage_qualifiers | opencl_storage_qualifiers | kokkos_macros
-merged_operators = cpp_operators | cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
-merged_functions = cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
-merged_parallel = cuda_atomic | cuda_synchronization | opencl_functions | kokkos_parallel
-# TODO
-
-# ------------------------------
-# 15 Merged Sets of Non-Operands by Language Extension
+# 14 Merged Sets of Non-Operands by Language Extension
 # ------------------------------
 cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp_side_effect_functions
 cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions
@@ -579,7 +439,6 @@ webgpu_non_operands = webgpu_classes | webgpu_functions | webgpu_constants | web
 boost_non_operands = boost_classes | boost_functions | boost_macros
 metal_non_operands = metal_storage | metal_classes | metal_functions | metal_constants
 thrust_non_operands = thrust_classes | thrust_functions | thrust_macros | thrust_side_effect_functions
-slang_non_operands = slang_keywords | slang_types | slang_modifiers | slang_semantics | slang_intrinsics | slang_operators | slang_side_effect_functions
 
 merged_non_operands = (
     cpp_non_operands
@@ -594,7 +453,6 @@ merged_non_operands = (
     | boost_non_operands
     | metal_non_operands
     | thrust_non_operands
-    | slang_non_operands
 )
 
 '''

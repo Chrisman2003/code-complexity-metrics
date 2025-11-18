@@ -5,7 +5,6 @@ from code_complexity.metrics.cyclomatic import *
 from code_complexity.metrics.cognitive import *
 from code_complexity.metrics.halstead import *
 from code_complexity.metrics.utils import detect_parallel_framework
-from collections import Counter
 from pathlib import Path
 
 '''
@@ -27,6 +26,7 @@ def collect_metrics(root_path: str):
         cognitive_val = regex_compute_cognitive(code)
         halstead_difficulty = difficulty(halstead_metrics_auto(code, Path(filepath).suffix))
         halstead_volume = volume(halstead_metrics_auto(code, Path(filepath).suffix))
+        halstead_effort = effort(halstead_metrics_auto(code, Path(filepath).suffix))
         
         # Base Halstead metrics (C++ reference)
         halstead_base = halstead_metrics_cpp(code, Path(filepath).suffix)
@@ -49,7 +49,6 @@ def collect_metrics(root_path: str):
             'boost': halstead_metrics_boost,
             'metal': halstead_metrics_metal,
             'thrust': halstead_metrics_thrust,
-            'slang': halstead_metrics_slang,
         }
 
         # Compute GPU-native Halstead complexities
@@ -71,6 +70,7 @@ def collect_metrics(root_path: str):
             # Halstead Metric
             "halstead_difficulty": halstead_difficulty,
             "halstead_volume": halstead_volume,
+            "halstead_effort": halstead_effort,
             "gpu_complexity": gpu_complexity,
         }
     # Handle single file
