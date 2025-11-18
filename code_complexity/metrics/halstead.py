@@ -226,7 +226,7 @@ def halstead_metrics(code: str, lang: str, file_suffix: str = "") -> dict:
     }
     detected_langs = []
     if lang == "cpp" or lang == "auto":
-        detected_langs = detect_parallel_framework(code, file_suffix)
+        detected_langs = detect_parallel_framework(code)
         # Start with standard C++ non-operands
         auto_non_operands = cpp_non_operands.copy()
         for detected in detected_langs: # can't use for lang in detected_langs -> update lang

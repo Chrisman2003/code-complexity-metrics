@@ -12,7 +12,7 @@ TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "
 test_cases = [
     {
         "filename": "cpp/OLD_simple.cpp",
-        "func": halstead_metrics_cpp,
+        "lang": "cpp",
         "expected": {
             "n1": 22, "n2": 15, "N1": 57, "N2": 30,
             "vocabulary": 37, "size": 87, "volume": 453.22,
@@ -21,7 +21,7 @@ test_cases = [
     },
     {
         "filename": "cpp/complex.cpp",
-        "func": halstead_metrics_cpp,
+        "lang": "cpp",
         "expected": {
             "n1": 89, "n2": 99, "N1": 952, "N2": 469,
             "vocabulary": 188, "size": 1421, "volume": 10735.07,
@@ -30,7 +30,7 @@ test_cases = [
     },
     {
         "filename": "cuda/complex_cuda.cu",
-        "func": halstead_metrics_cuda,
+        "lang": "cuda",
         "expected": {
             "n1": 38, "n2": 19, "N1": 280, "N2": 75,
             "vocabulary": 57, "size": 355, "volume": 2070.68,
@@ -39,7 +39,7 @@ test_cases = [
     },
     {
         "filename": "kokkos/complex_kokkos.cpp",
-        "func": halstead_metrics_kokkos,
+        "lang": "kokkos",
         "expected": {
             "n1": 27, "n2": 25, "N1": 135, "N2": 63,
             "vocabulary": 52, "size": 198, "volume": 1128.69,
@@ -48,7 +48,7 @@ test_cases = [
     },
     {
         "filename": "opencl/complex_opencl.cpp",
-        "func": halstead_metrics_opencl,
+        "lang": "opencl",
         "expected": {
             "n1": 57, "n2": 48, "N1": 346, "N2": 147,
             "vocabulary": 105, "size": 493, "volume": 3310.12,
@@ -61,7 +61,7 @@ test_cases = [
 def test_halstead_metrics(case):
     """Parametrized test for Halstead metrics across languages and files."""
     code = load_code(case["filename"], TEST_FILES_DIR)
-    metrics = case["func"](code)
+    metrics = halstead_metrics(code, lang=case["lang"])
     expected = case["expected"]
     # Assertions for basic counts
     assert metrics['n1'] == expected['n1'], f"{case['filename']} n1 mismatch"

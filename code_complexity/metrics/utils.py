@@ -21,7 +21,7 @@ def load_code(filename, TEST_FILES_DIR):
         return f.read()
     
 
-def detect_parallel_framework(code: str, file_suffix: str = "") -> set[str]:
+def detect_parallel_framework(code: str) -> set[str]:
     """
     Automatically detect the parallelizing framework used in a source file.
     Returns one or a multiple of {'cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
