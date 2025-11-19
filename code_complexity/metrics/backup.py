@@ -673,3 +673,285 @@ def compute_gpu_delta(code: str, language: str) -> dict:
         raise ValueError(f"Unsupported language: {language}")
 
 '''
+
+def halstead_metrics_cpp(code: str, file_suffix:str = "") -> dict:
+    """Compute Halstead metrics for standard C++ code."""
+    detected_langs = detect_parallel_framework(code, file_suffix)
+    # Start with standard C++ non-operands
+    auto_non_operands = cpp_non_operands.copy()
+    
+    # Mapping from framework name → its non-operands set
+    framework_non_operands_map = {
+        "cuda": cuda_non_operands,
+        "opencl": opencl_non_operands,
+        "kokkos": kokkos_non_operands,
+        "openmp": openmp_non_operands,
+        "adaptivecpp": adaptivecpp_non_operands,
+        "openacc": openacc_non_operands,
+        "opengl_vulkan": opengl_vulkan_non_operands,
+        "webgpu": webgpu_non_operands,
+        "boost": boost_non_operands,
+        "metal": metal_non_operands,
+        "thrust": thrust_non_operands,
+    }
+    for lang in detected_langs:
+        if lang != 'cpp' and lang in framework_non_operands_map:
+            auto_non_operands |= framework_non_operands_map[lang]
+            
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands, "cpp")
+    # Only for CPP subtract all possible merged non operands
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, "cpp", detected_langs)
+
+
+def halstead_metrics_cuda(code: str) -> dict:
+    """Compute Halstead metrics for CUDA code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, cuda_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'cuda')
+
+
+def halstead_metrics_kokkos(code: str) -> dict:
+    """Compute Halstead metrics for Kokkos code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, kokkos_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'kokkos')
+
+
+def halstead_metrics_opencl(code: str) -> dict:
+    """Compute Halstead metrics for OpenCL code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opencl_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'opencl')
+
+def halstead_metrics_openmp(code: str) -> dict:
+    """Compute Halstead metrics for OpenMP code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, openmp_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'openmp')
+
+def halstead_metrics_adaptivecpp(code: str) -> dict:
+    """Compute Halstead metrics for AdaptiveCPP code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, adaptivecpp_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'adaptivecpp')
+
+def halstead_metrics_openacc(code: str) -> dict:
+    """Compute Halstead metrics for OpenACC code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, openacc_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'openacc')
+
+def halstead_metrics_opengl_vulkan(code: str) -> dict:
+    """Compute Halstead metrics for OpenGL_Vulkan code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, opengl_vulkan_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'opengl_vulkan')
+
+def halstead_metrics_webgpu(code: str) -> dict:
+    """Compute Halstead metrics for WebGPU code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, webgpu_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'webgpu')
+
+def halstead_metrics_boost(code: str) -> dict:
+    """Compute Halstead metrics for Boost code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, boost_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'boost')
+
+def halstead_metrics_metal(code: str) -> dict:
+    """Compute Halstead metrics for Metal code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, metal_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'metal')
+
+def halstead_metrics_thrust(code: str) -> dict:
+    """Compute Halstead metrics for Thrust code."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, thrust_non_operands)
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'thrust')
+
+def halstead_metrics_auto(code: str, file_suffix: str = "") -> dict:
+    """Compute Halstead metrics with automated language detection for a file (C++ and GPU extensions)."""
+    # Example Alleviating edge case
+    # Kokkos counts "Kokkos:parallel_for" solely, but with the merged collection
+    # The matching pattern "parallel_for" from adaptive cpp would likewise be matched, which is incorrect for exclusive Kokkos
+    
+    detected_langs = detect_parallel_framework(code, file_suffix)
+    # Start with standard C++ non-operands
+    auto_non_operands = cpp_non_operands.copy()
+    # Mapping from framework name → its non-operands set
+    framework_non_operands_map = {
+        "cuda": cuda_non_operands,
+        "opencl": opencl_non_operands,
+        "kokkos": kokkos_non_operands,
+        "openmp": openmp_non_operands,
+        "adaptivecpp": adaptivecpp_non_operands,
+        "openacc": openacc_non_operands,
+        "opengl_vulkan": opengl_vulkan_non_operands,
+        "webgpu": webgpu_non_operands,
+        "boost": boost_non_operands,
+        "metal": metal_non_operands,
+        "thrust": thrust_non_operands,
+    }
+    # Add non-operands for all detected frameworks (except cpp, which is already included)
+    for lang in detected_langs:
+        if lang != 'cpp' and lang in framework_non_operands_map:
+            auto_non_operands |= framework_non_operands_map[lang]
+    #print(detected_langs)
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, auto_non_operands)
+    
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'auto', detected_langs)
+
+def halstead_metrics_merged(code: str) -> dict:
+    """Compute Halstead metrics for a merged set of languages (C++ + GPU extensions)."""
+    code = remove_headers(code)
+    code = remove_cpp_comments(code)
+    code_str = code # Strings are immutable
+    code = remove_string_literals(code)
+    operator_pattern, operand_pattern, subtracting_set = compute_sets(cpp_non_operands, merged_non_operands)
+    
+    return halstead_metrics_parametrized(code, operator_pattern, operand_pattern, subtracting_set, code_str, 'merged')
+
+import os
+from code_complexity.metrics.sloc import *
+from code_complexity.metrics.nesting_depth import *
+from code_complexity.metrics.cyclomatic import *
+from code_complexity.metrics.cognitive import *
+from code_complexity.metrics.halstead import *
+from code_complexity.metrics.utils import detect_parallel_framework
+from pathlib import Path
+
+'''
+✅ Ranked from most to least accurate for total file complexity:
+1) E — Effort
+2) D — Difficulty
+3) V — Volume
+'''
+def collect_metrics(root_path: str):
+    """Scan a file or directory and compute complexity metrics."""
+    records = []
+
+    def analyze_file(filepath):
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            code = f.read()
+        sloc_val = compute_sloc(code)
+        nesting = compute_nesting_depth(code)
+        cyclomatic_val = regex_compute_cyclomatic(code)
+        cognitive_val = regex_compute_cognitive(code)
+        halstead_difficulty = difficulty(halstead_metrics_auto(code, Path(filepath).suffix))
+        halstead_volume = volume(halstead_metrics_auto(code, Path(filepath).suffix))
+        halstead_effort = effort(halstead_metrics_auto(code, Path(filepath).suffix))
+        
+        # Base Halstead metrics (C++ reference)
+        halstead_base = halstead_metrics_cpp(code, Path(filepath).suffix)
+        halstead_difficulty_base = difficulty(halstead_base)
+        halstead_volume_base = volume(halstead_base)
+        
+        # Detect languages/frameworks
+        languages = detect_parallel_framework(code, Path(filepath).suffix)
+        # Mapping of language/framework to metric function
+        lang_to_fn = {
+            'cpp': halstead_metrics_cpp,
+            'cuda': halstead_metrics_cuda,
+            'kokkos': halstead_metrics_kokkos,
+            'opencl': halstead_metrics_opencl,
+            'openmp': halstead_metrics_openmp,
+            'adaptivecpp': halstead_metrics_adaptivecpp,
+            'openacc': halstead_metrics_openacc,
+            'opengl_vulkan': halstead_metrics_opengl_vulkan,
+            'webgpu': halstead_metrics_webgpu,
+            'boost': halstead_metrics_boost,
+            'metal': halstead_metrics_metal,
+            'thrust': halstead_metrics_thrust,
+        }
+
+        # Compute GPU-native Halstead complexities
+        gpu_complexity = {}
+        for lang in languages:
+            if lang in lang_to_fn and lang != 'cpp':  # skip base C++
+                halstead_lang = lang_to_fn[lang](code)
+                gpu_complexity[lang] = {
+                    "difficulty": difficulty(halstead_lang) - halstead_difficulty_base,
+                    "volume": volume(halstead_lang) - halstead_volume_base,
+                }
+        
+        return {
+            "file": filepath,
+            "sloc": sloc_val,
+            "nesting": nesting,
+            "cognitive": cognitive_val,
+            "cyclomatic": cyclomatic_val,
+            # Halstead Metric
+            "halstead_difficulty": halstead_difficulty,
+            "halstead_volume": halstead_volume,
+            "halstead_effort": halstead_effort,
+            "gpu_complexity": gpu_complexity,
+        }
+    # Handle single file
+    if os.path.isfile(root_path) and root_path.endswith((".cpp", ".cu", ".slang")):
+        records.append(analyze_file(root_path))
+    # Handle directory
+    elif os.path.isdir(root_path):
+        for subdir, _, files in os.walk(root_path):
+            for file in files:
+                if file.endswith((".cpp", ".cu", ".slang")):
+                    filepath = os.path.join(subdir, file)
+                    records.append(analyze_file(filepath))
+    return records
+
+'''
+    "file": "example.cu",
+    "sloc": 120,
+    "nesting": 3,
+    "cognitive": 15,
+    "cyclomatic": 8,
+    "halstead_difficulty": 20,
+    "halstead_volume": 1500,
+    "gpu_complexity": {
+        "cuda": {"difficulty": 10, "volume": 600},
+        "openmp": {"difficulty": 5, "volume": 100}
+    }
+'''

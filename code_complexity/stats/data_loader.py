@@ -24,38 +24,24 @@ def collect_metrics(root_path: str):
         nesting = compute_nesting_depth(code)
         cyclomatic_val = regex_compute_cyclomatic(code)
         cognitive_val = regex_compute_cognitive(code)
-        halstead_difficulty = difficulty(halstead_metrics_auto(code, Path(filepath).suffix))
-        halstead_volume = volume(halstead_metrics_auto(code, Path(filepath).suffix))
-        halstead_effort = effort(halstead_metrics_auto(code, Path(filepath).suffix))
+        halstead_difficulty = difficulty(halstead_metrics(code, "auto"))
+        halstead_volume = volume(halstead_metrics(code, "auto"))
+        halstead_effort = effort(halstead_metrics(code, "auto"))
         
         # Base Halstead metrics (C++ reference)
-        halstead_base = halstead_metrics_cpp(code, Path(filepath).suffix)
+        halstead_base = halstead_metrics(code, "cpp")
         halstead_difficulty_base = difficulty(halstead_base)
         halstead_volume_base = volume(halstead_base)
         
         # Detect languages/frameworks
-        languages = detect_parallel_framework(code, Path(filepath).suffix)
-        # Mapping of language/framework to metric function
-        lang_to_fn = {
-            'cpp': halstead_metrics_cpp,
-            'cuda': halstead_metrics_cuda,
-            'kokkos': halstead_metrics_kokkos,
-            'opencl': halstead_metrics_opencl,
-            'openmp': halstead_metrics_openmp,
-            'adaptivecpp': halstead_metrics_adaptivecpp,
-            'openacc': halstead_metrics_openacc,
-            'opengl_vulkan': halstead_metrics_opengl_vulkan,
-            'webgpu': halstead_metrics_webgpu,
-            'boost': halstead_metrics_boost,
-            'metal': halstead_metrics_metal,
-            'thrust': halstead_metrics_thrust,
-        }
-
+        languages = detect_parallel_framework(code)
         # Compute GPU-native Halstead complexities
         gpu_complexity = {}
         for lang in languages:
-            if lang in lang_to_fn and lang != 'cpp':  # skip base C++
-                halstead_lang = lang_to_fn[lang](code)
+            if lang != "cpp":
+            #if lang in lang_to_fn and lang != 'cpp':  # skip base C++
+                halstead_lang = halstead_metrics(code, lang)
+                #halstead_lang = lang_to_fn[lang](code)
                 gpu_complexity[lang] = {
                     "difficulty": difficulty(halstead_lang) - halstead_difficulty_base,
                     "volume": volume(halstead_lang) - halstead_volume_base,
@@ -67,7 +53,6 @@ def collect_metrics(root_path: str):
             "nesting": nesting,
             "cognitive": cognitive_val,
             "cyclomatic": cyclomatic_val,
-            # Halstead Metric
             "halstead_difficulty": halstead_difficulty,
             "halstead_volume": halstead_volume,
             "halstead_effort": halstead_effort,
