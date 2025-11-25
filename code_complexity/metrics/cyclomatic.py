@@ -5,12 +5,13 @@ import tempfile
 import os
 from code_complexity.metrics.shared import *
 import logging
+import sys
 
 # -------------------------------
 # Logging setup
 # -------------------------------
 plain_logger = logging.getLogger("plain")
-plain_handler = logging.StreamHandler()
+plain_handler = logging.StreamHandler(sys.stdout)
 plain_handler.setFormatter(logging.Formatter("%(message)s"))
 plain_logger.addHandler(plain_handler)
 plain_logger.setLevel(logging.INFO)
@@ -96,7 +97,8 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
         are directed graphs (`nx.DiGraph`) representing the function's control-flow.
     """
     
-    """ REGEX EXPLANATION
+    r""" 
+    REGEX EXPLANATION
     Matches nodes that are formatted like "[B<number> (OPTIONAL_LABEL)]".
     Example matches: "[B12]", "[B7 (LOOP)]"
     ------------------------
@@ -109,9 +111,12 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     -      [A-Z]+  → Match one or more uppercase letters (the label)
     -      \)      → Match literal ')'
     -  ?           → Make the entire non-capturing group optional
-    -  \]          → Match literal ']' """
+    -  \]          → Match literal ']' 
+    """
     node_pattern = re.compile(r'\[B(\d+)(?: \([A-Z]+\))?\]')
-    """ REGEX EXPLANATION:
+
+    r""" 
+    REGEX EXPLANATION:
     This regex matches lines that list successor nodes in a format like:
     "Succs (2): 3, 4, 5"
     -------------------------------
@@ -122,7 +127,8 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     -  \)         → Match literal ')'
     -  :          → Match literal colon ':'
     -  \s         → Match a space
-    -  (.+)       → Capture the rest of the line (comma-separated successor node numbers) into group 2 """
+    -  (.+)       → Capture the rest of the line (comma-separated successor node numbers) into group 2 
+    """
     succ_pattern = re.compile(r'Succs \((\d+)\): (.+)')
     
     function_cfgs = {}
@@ -227,7 +233,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
         #with open(cfg_file_path, "w", encoding="utf-8") as f:
         #    f.write(output)
         #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
-        #plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
+        plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -279,6 +285,7 @@ def basic_compute_cyclomatic(code: str) -> int:
         code (str): Source code as a string. The code should be plain text; 
             comments and string literals are removed internally before analysis.
     """
+    code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
     control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
@@ -361,4 +368,9 @@ Edge Cases:
 -> label: 
 -> if (x > 0) 
 -> } if (x > 0)
+'''
+
+# TODO
+'''
+Cyclomati Function Recognition: still not 100%
 '''

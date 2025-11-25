@@ -6,15 +6,17 @@ def compute_sloc(code: str) -> int:
     Counts all non-empty lines that remain after stripping comments and (non-kernel) string literals.
 
     Args:
-        code (str): Full C/C++/OpenCL source code.
+        code (str): Full C++ extended source code.
 
     Returns:
         int: Number of source lines of code (SLOC).
     """
+    # Remove all Header Calling Instances
+    code = remove_headers(code)
     # Remove all comments
-    code_no_comments = remove_cpp_comments(code)
+    code = remove_cpp_comments(code)
     # Remove all string literals except kernel strings
-    code_cleaned = remove_string_literals(code_no_comments)
+    code = remove_string_literals(code)
     # Count all non-empty lines
-    lines = code_cleaned.splitlines()
+    lines = code.splitlines()
     return sum(1 for line in lines if line.strip())

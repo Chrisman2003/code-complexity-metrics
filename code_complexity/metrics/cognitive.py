@@ -32,6 +32,7 @@ def regex_compute_cognitive(code: str) -> int:
     Returns:
         int: Cognitive Complexity score for the source code.
     """   
+    code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
     # Control flow keywords (notice: no plain 'else')

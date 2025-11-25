@@ -1,19 +1,12 @@
-int sort (int x[ ], int n)
+int square(int n) {
+    return n * n;
+}
 
-{
-    int i, j, save, im1;
-    /*This function sorts array x in ascending order */
-    if (n< 2) return 1;
-    for (i=2; i< =n; i++)
-    {
-        im1=i-1;
-        for (j=1; j< =im1; j++)
-            if (x[i] < x[j])
-            {
-                Save = x[i];
-                x[i] = x[j];
-                x[j] = save;
-            }
-    }
-    return 0;
+int process(int x) {
+    int y = 0;
+    if (x > 0)
+        y = square(x);
+    else
+        y = -1;
+    return y;
 }

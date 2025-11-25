@@ -14,12 +14,12 @@ int main() {
             b(i) = i*i;
         });
 
-        Kokkos::parallel_for("ComputeC", N, KOKKOS_LAMBDA(int i){
+        Kokkos::parallel_for("ComputeC for", N, KOKKOS_LAMBDA(int i){
             c(i) = a(i) + b(i);
         });
 
         int sum = 0;
-        Kokkos::parallel_reduce("SumC", N, KOKKOS_LAMBDA(int i, int& local_sum){
+        Kokkos::parallel_reduce('C', N, KOKKOS_LAMBDA(int i, int& local_sum){
             local_sum += c(i);
         }, sum);
 

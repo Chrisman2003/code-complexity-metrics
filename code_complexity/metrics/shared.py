@@ -71,6 +71,9 @@ def remove_string_literals(code: str) -> str:
 
     Returns:
         str: Code with non-kernel string literals replaced by empty strings, kernel strings preserved.
+        
+    Edge Case:
+        - string literal before __kernel is preserved
     """
     def replacer(match: re.Match) -> str:
         s = match.group(0)
@@ -90,3 +93,26 @@ def remove_string_literals(code: str) -> str:
         flags=re.DOTALL
     )
     return cleaned_code
+
+def remove_headers(code: str) -> str:
+    """
+    Remove all C/C++ style headers inclusions from the source code.
+
+    This functions removes header inclusion calls wrapped in the 
+    formats: <...> and "..."
+    The removal is performed with regular expressions
+
+    Args:
+        code (str): A string containing C/C++ source code.
+
+    Returns:
+        str: The source code with all header inclusions removed.
+
+    Edge Cases:
+    """
+    code = re.sub(r'#\s*include\s*<[^>]*>', '', code)  # removes #include <...>
+    code = re.sub(r'#\s*include\s*"[^"]*"', '', code)  # removes #include "..."
+    # Edge Cases #include "" and #include <>
+    # -> Incorrect Program Behaviour
+    # -> First remove headers and then string literals
+    return code
