@@ -1,29 +1,25 @@
+# -----------------------------------------------------------------------------
+# Cyclomatic Complexity computation utilities for C++ code
+# -----------------------------------------------------------------------------
+# Includes:
+# - Precise CFG-based complexity calculation using Clang's static analyzer
+# - Heuristic keyword-based fallback method for fast estimation
+# - Automatic include-path discovery for Clang compatibility
+# - Robust CFG reconstruction from Clang’s DumpCFG output
+# - Optional detection of switch fallthroughs and logical-operation costs
+#
+# Note:
+# This module provides both a high-accuracy, graph-based analysis (via Clang)
+# and a lightweight regex method for environments where Clang is unavailable.
+# CFG extraction depends on compiler behavior and may differ across toolchains.
+# -----------------------------------------------------------------------------
 import networkx as nx
 import subprocess
 import re
 import tempfile
 import os
 from code_complexity.metrics.utils import *
-import logging
-import sys
 
-# -------------------------------
-# Logging setup
-# -------------------------------
-plain_logger = logging.getLogger("plain")
-plain_handler = logging.StreamHandler(sys.stdout)
-plain_handler.setFormatter(logging.Formatter("%(message)s"))
-plain_logger.addHandler(plain_handler)
-plain_logger.setLevel(logging.INFO)
-
-# -----------------------------------------------------------------------------
-# Cyclomatic Complexity Analysis for C++ Code
-# -----------------------------------------------------------------------------
-# This module computes the McCabe cyclomatic complexity (V(G) = E − N + 2P)
-# for C++ code using Clang's static analyzer for precise CFG extraction,
-# as well as a simpler heuristic method based on control-flow keywords.
-# -----------------------------------------------------------------------------
-    
 def get_clang_include_flags() -> list[str]:
     """Construct Clang-compatible include flags for system headers.
 
@@ -227,12 +223,8 @@ def cfg_compute_cyclomatic(code: str, filename: str) -> int:
 
         output = process.stdout + "\n" + process.stderr
         
-        # Save CFG to a file
-        #cfg_file_path = os.path.join(original_dir, "clang_cfg_dump.txt")
-        #with open(cfg_file_path, "w", encoding="utf-8") as f:
-        #    f.write(output)
-        #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
-        #plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
+        # Log CFG to terminal
+        plain_logger.debug("Clang CFG dump:\n%s", output)
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -248,7 +240,7 @@ def cfg_compute_cyclomatic(code: str, filename: str) -> int:
             edges = func_cfg.number_of_edges()
             nodes = func_cfg.number_of_nodes()
             cyclomatic_complexity = edges - nodes + 2 * 1  # P = 1 per function.
-            plain_logger.info(f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}")
+            plain_logger.debug(f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}")
             total_complexity += cyclomatic_complexity
         return total_complexity
     finally:
@@ -260,13 +252,25 @@ def cfg_compute_cyclomatic(code: str, filename: str) -> int:
                 pass
 
 def detect_fallthroughs(code: str) -> int:
+    """Detects fallthroughs in C-style switch statements in the given code.
+
+    A fallthrough occurs when a `case` in a `switch` statement does not end
+    with a `break;` (or equivalent control transfer) and execution continues
+    into the next case.
+
+    Args:
+        code (str): A string containing C++ source code.
+
+    Returns:
+        int: The number of fallthroughs detected in the code.
+    """
+    
     fallthroughs = 0
     switch_blocks = re.findall(r'\bswitch\b\s*\([^)]*\)\s*\{([^}]*)\}', code, re.DOTALL)
     for block in switch_blocks:
         # Split each switch block into case segments
         cases = re.split(r'\bcase\b|\bdefault\b', block)
         # Skip first segment (before first case)
-        #print(cases)
         for seg in cases[1:-1]:
             # Only count if segment lacks 'break;'
             if 'break;' not in seg:
@@ -312,7 +316,7 @@ def regex_compute_cyclomatic(code: str) -> int:
         # Exclude false positives: lines that are control statements
         if not any(re.search(rf'\b{k}\b\s*\(', func_str) for k in control_keywords + ['switch']):
             num_functions += 1
-            #print(f"Function detected: {func_str.strip()} -> Total functions: {num_functions}")
+            plain_logger.debug("Function detected: %s -> Total functions: %d", func_str.strip(), num_functions)
             
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
@@ -339,30 +343,35 @@ def regex_compute_cyclomatic(code: str) -> int:
         #        # print(f"Function detected: {stripped} -> Total functions: {num_functions}")
                 
     fallthroughs = detect_fallthroughs(code)
-    #plain_logger.info("fallthroughs:", fallthroughs)
+    plain_logger.debug("Fallthroughs: %s", fallthroughs)
     return count + num_functions + fallthroughs # +1 for the default path
 
 # Edge Case: Boolean Operators for CFG Method Version
 
 '''
-Edge Cases:
-    1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
-    2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
-       prevent false positives for keywords like 'or' or 'and'.
-####3) The `else` keyword is not counted separately because it does not create 
-       an independent path; `else if` is counted via its `if`.
-       
-####4) `switch` statements do not add complexity themselves; only `case` and 
-       `default` labels are counted.
-       
-    5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
-    6) Alphabetic logical operators `and`, `or` are counted only when they 
-       appear as standalone words, not as substrings of other identifiers.
+EDGE CASE DOCUMENTATION:
+
+HANDLED:
+1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
+2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
+prevent false positives for keywords like 'or' or 'and'.
+3) The `else` keyword is not counted separately because it does not create 
+an independent path; `else if` is counted via its `if`.       
+4) `switch` statements do not add complexity themselves; only `case` and 
+`default` labels are counted.   
+5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
+6) Alphabetic logical operators `and`, `or` are counted only when they 
+appear as standalone words, not as substrings of other identifiers.
 ##  7) Multi-line constructs may not be perfectly accounted for in this heuristic.
     8) If `code` is `None`, it is treated as an empty string (CC = 1).    
     9) Fall-Through Switch-Case Statements
     10) Clang doesn't produce CFG components on non-instantiated templates
+
+NOT HANDLED:
+1) Perfect Function Counting
 '''
+
+
 
 '''
 Edge Cases for Commenting:
@@ -384,9 +393,4 @@ Edge Cases:
 -> label: 
 -> if (x > 0) 
 -> } if (x > 0)
-'''
-
-# TODO
-'''
-Cyclomatic Function Recognition: still not 100%
 '''

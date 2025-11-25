@@ -1,3 +1,10 @@
+# -----------------------------------------------------------------------------
+# Cognitive Complexity Tests for C++ Source Files
+# -----------------------------------------------------------------------------
+# Parametrized pytest module to verify cognitive complexity
+# computation for multiple C++ sample files. Reports mismatches between
+# detected and expected values.
+# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.utils import load_code
@@ -18,7 +25,21 @@ test_cases = [
 
 @pytest.mark.parametrize("filename,expected", test_cases)
 def test_cognitive_complexity(filename, expected):
-    """Parametrized test for cognitive complexity."""
+    """
+    Test cognitive complexity computation for multiple C++ source files.
+
+    This is a parametrized pytest function that checks whether the
+    `regex_compute_cognitive` function correctly computes the cognitive
+    complexity for a set of test files.
+
+    Args:
+        filename (str): Relative path to the C++ source file under test.
+        expected (int): Expected cognitive complexity value for the file.
+
+    Raises:
+        AssertionError: If the computed cognitive complexity does not match
+                        the expected value.
+    """
     code = load_code(filename, TEST_FILES_DIR)
     detected = regex_compute_cognitive(code)
     assert detected == expected, f"File {filename}: detected {detected}, expected {expected}"

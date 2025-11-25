@@ -1,3 +1,14 @@
+# -----------------------------------------------------------------------------
+# String Literal Removal Tests for C++/OpenCL Source Files
+# -----------------------------------------------------------------------------
+# This pytest module verifies the functionality of `remove_string_literals`,
+# ensuring that only unrelated string literals are removed from source code.
+#
+# Includes:
+# - Parametrized tests for multiple edge-case files.
+# - Checks preservation of kernel functions and tricky escapes.
+# -----------------------------------------------------------------------------
+
 import os
 import pytest
 from code_complexity.metrics.cyclomatic import remove_string_literals
@@ -16,7 +27,22 @@ test_files = [
 
 @pytest.mark.parametrize("filename", test_files)
 def test_tools(filename):
-    """Ensure kernel code is preserved while unrelated strings are removed."""
+    """Tests removal of unrelated string literals while preserving kernel code.
+
+    This function loads a source file, applies `remove_string_literals` to
+    remove non-code string literals, and asserts that:
+
+    - Kernel functions (e.g., "__kernel void add") are preserved.
+    - Unrelated strings are removed.
+    - Tricky escape sequences and relevant keywords are retained.
+
+    Args:
+        filename (str): Path to the source file relative to the test samples directory.
+
+    Raises:
+        AssertionError: If kernel functions are removed, unrelated strings remain,
+                        or expected tricky sequences are not preserved.
+    """
     code = load_code(filename, TEST_FILES_DIR)
     cleaned = remove_string_literals(code)
 

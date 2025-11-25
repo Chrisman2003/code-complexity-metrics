@@ -1,11 +1,4 @@
 ## complex
-- **complex.cpp** – C++ code with multiple features to test code complexity metrics.
-- **complex_cuda.cu** – CUDA implementation of complex computations.
-- **complex_kokkos.cpp** – Kokkos-based parallel version of complex C++ code.
-- **complex_opencl.cpp** – OpenCL version of the complex C++ sample.
-- **complex_opencl2.cpp** – Alternative OpenCL implementation with slight variations.
-- **hyper_complex.cpp** – Very complex C++ sample with nested structures and advanced logic.
-- **opencl_edge_cases.cpp** – OpenCL code designed to test edge cases in parsing or execution.
 
 ## cpp
 - **OLD_simple.cpp** – Old, simple C++ example, a basic starting point.
@@ -15,6 +8,9 @@
 - **isolated.cpp** – Small, self-contained C++ snippet for isolated testing.
 - **new.cpp** – Newer C++ example with modern constructs.
 - **new2.cpp** – Another modern C++ example similar to `new.cpp`.
+- **complex_cuda.cu** – CUDA implementation of complex computations.
+- **complex.cpp** – C++ code with multiple features to test code complexity metrics.
+- **hyper_complex.cpp** – Very complex C++ sample with nested structures and advanced logic.
 
 ## cuda
 - **advanced.cu** – CUDA code with more advanced operations than basic examples.
@@ -29,3 +25,9 @@
 ## kokkos
 - **advanced.cpp** – Advanced C++ example using Kokkos for parallelism.
 - **advanced2.cpp** – Another advanced Kokkos sample with different patterns.
+- **complex_kokkos.cpp** – Kokkos-based parallel version of complex C++ code.
+
+## opencl
+- **complex_opencl.cpp** – OpenCL version of the complex C++ sample.
+- **complex_opencl2.cpp** – Alternative OpenCL implementation with slight variations.
+- **opencl_edge_cases.cpp** – OpenCL code designed to test edge cases in parsing or execution.

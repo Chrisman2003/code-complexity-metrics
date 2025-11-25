@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+# Halstead Metrics Test Suite for C++/CUDA/Kokkos/OpenCL Source Files
+# -----------------------------------------------------------------------------
+# This pytest module verifies the correctness of Halstead complexity metrics
+# computation across multiple languages and sample files. Metrics tested
+# include:
+# - Basic counts: n1, n2, N1, N2
+# - Derived metrics: vocabulary, size, volume, difficulty, effort, time
+#
+# Includes:
+# - Parametrized tests for multiple files and languages.
+# - Rounds floating-point metrics to 2 decimals for assertions.
+# - Provides detailed assertion messages for mismatches.
+# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.halstead import *
@@ -59,7 +73,23 @@ test_cases = [
 
 @pytest.mark.parametrize("case", test_cases)
 def test_halstead_metrics(case):
-    """Parametrized test for Halstead metrics across languages and files."""
+    """Tests Halstead metrics computation for multiple source files and languages.
+
+    This function loads a source file, computes its Halstead metrics using
+    `halstead_metrics`, and verifies both basic counts and derived metrics
+    against expected values. 
+
+    Args:
+        case (dict): A dictionary containing:
+            - "filename" (str): Path to the source file relative to the test samples directory.
+            - "lang" (str): Programming language or framework (e.g., 'cpp', 'cuda').
+            - "expected" (dict): Expected Halstead metrics with keys:
+                'n1', 'n2', 'N1', 'N2', 'vocabulary', 'size', 'volume',
+                'difficulty', 'effort', 'time'.
+
+    Raises:
+        AssertionError: If any computed metric does not match the expected value.
+    """
     code = load_code(case["filename"], TEST_FILES_DIR)
     metrics = halstead_metrics(code, lang=case["lang"])
     expected = case["expected"]

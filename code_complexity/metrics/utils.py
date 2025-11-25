@@ -1,12 +1,45 @@
-"""
-Common utility functions used across the repository.
-
-Includes:
-- File I/O helpers
-- String manipulation
-"""
+# -----------------------------------------------------------------------------
+# Common Utility Functions for C++ and GPU-Extended Code Analysis
+# -----------------------------------------------------------------------------
+# Includes:
+# - File I/O helpers for loading source code from specified directories
+# - Parallel framework detection (C++, CUDA, OpenCL, Kokkos, OpenMP, SYCL, OpenACC, Vulkan/OpenGL, WebGPU, Boost, Metal, Thrust)
+# - Source code preprocessing utilities:
+#     * Removal of C++ headers (#include <...>, #include "...")
+#     * Removal of C++-style comments (block /* */ and single-line //)
+#     * Selective removal of string literals while preserving OpenCL __kernel strings
+#
+# Note:
+# These functions provide a foundation for metrics computation (Halstead, cyclomatic, SLOC, etc.)
+# by ensuring that non-executable text and library-specific constructs do not interfere.
+# Preprocessing order is important: headers and comments should be removed before analyzing
+# string literals to prevent false positives.
+# -----------------------------------------------------------------------------
 import re
 import os
+import logging
+import sys
+
+"""
+LOGGING Metrics
+"""
+metrics_logger = logging.getLogger("metrics")
+metrics_handler = logging.StreamHandler(sys.stdout) 
+metrics_handler.setFormatter(logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
+))
+metrics_logger.addHandler(metrics_handler)
+metrics_logger.setLevel(logging.INFO)
+
+"""
+LOGGING Values
+"""
+plain_logger = logging.getLogger("plain")
+plain_handler = logging.StreamHandler(sys.stdout)
+plain_handler.setFormatter(logging.Formatter("%(message)s"))
+plain_logger.addHandler(plain_handler)
+plain_logger.setLevel(logging.INFO)
+
 
 def load_code(filename, TEST_FILES_DIR):
     """Loads the content of a code file.
@@ -22,11 +55,20 @@ def load_code(filename, TEST_FILES_DIR):
     
 
 def detect_parallel_framework(code: str) -> set[str]:
-    """
-    Automatically detect the parallelizing framework used in a source file.
-    Returns one or a multiple of {'cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 
-                    'adaptivecpp', 'openacc', 'opengl_vulkan', 
-                    'webgpu', 'boost', 'metal', 'thrust'}
+    """Detects the parallelizing frameworks used in a source code file.
+
+    This function scans the source code for library includes corresponding to common 
+    parallel programming frameworks and returns a set of detected languages.
+    "cpp" is always included as a base language.
+
+    Args:
+        code (str): The source code as a string.
+
+    Returns:
+        set[str]: A set of strings representing the detected frameworks. Possible
+                  values include:
+                  {"cpp", "cuda", "opencl", "kokkos", "openmp", "adaptivecpp",
+                   "openacc", "opengl_vulkan", "webgpu", "boost", "metal", "thrust"}.
     """
     lib_patterns = { # Assuming correct library declarations
         "cuda": [r'#include\s*<cuda'],
@@ -47,6 +89,7 @@ def detect_parallel_framework(code: str) -> set[str]:
         matches = re.findall(patterns[0], code)
         if len(matches) > 0:
             detected_languages.add(lang)
+    plain_logger.debug("Detected Languages: %s", detected_languages)
     return detected_languages    
     
 
@@ -75,11 +118,6 @@ def remove_cpp_comments(code: str) -> str:
     code_no_comments = re.sub(r'//.*', '', code_no_block) # Remove single line comments
     return code_no_comments
 
-'''
-__kernel Qualifier: This is an OpenCL C language keyword/qualifier. 
-Its purpose is to tell the OpenCL compiler (at runtime) which function 
-in the source string is the actual parallel entry point to be executed on the device.
-'''
 def remove_string_literals(code: str) -> str:
     """Preserve all host-side code and any string literal containing '__kernel', removing all other string literals.
 

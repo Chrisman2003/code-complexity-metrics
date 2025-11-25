@@ -1,20 +1,23 @@
-'''
-Parallelizing Frameworks: 
-1) CUDA
-2) OpenCL
-3) Kokkos
-4) OpenMP 
-5) AdaptiveCPP
-6) OpenACC
-7) OpenGlVulkan 
-8) WebGPU
-9) Boost
-10) Metal
-11) Thrust
-'''
+# -----------------------------------------------------------------------------
+# Automated Suffixation & Non-Operand Pattern Definitions for C++ and GPU Frameworks
+# -----------------------------------------------------------------------------
+# Includes:
+# - Regex patterns for function calls, operators, and special constructs across:
+#   CUDA, OpenCL, Kokkos, OpenMP, OpenACC, SYCL (AdaptiveCPP), Metal, WebGPU, Boost, OpenGL/Vulkan
+# - Comprehensive sets of C++ keywords, types, modifiers, operators, and side-effect functions
+# - Language-specific non-operands to support accurate Halstead metric computation
+# - Support for namespace resolution (::) and framework-specific multi-level suffix patterns
+# - Edge-case handling for overlapping keywords across frameworks and string literal / library constructs
+#
+# Note:
+# This module provides a deterministic, pattern-based approach to token identification for C++ and 
+# its parallel/GPU extensions.
+# Sets of non-operands are merged per framework to prevent accidental counting of keywords or types
+# as operands in Halstead analysis. Libraries should be removed before analysis to avoid false positives.
+# -----------------------------------------------------------------------------
 
 # ------------------------------
-# Automated Suffixation completion
+# 0) Automated Suffixation completion
 # ------------------------------
 # Substring Suffix Extension Patterns with Respect to the Kleene Operator (*)
 # Trailing Commas for Maintainability and minimizing potential errors
@@ -520,17 +523,17 @@ thrust_side_effect_functions = {
 # 13 Merged Sets of Non-Operands by Language Extension
 # ------------------------------
 cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp_side_effect_functions
-cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types #| cuda_side_effect_functions
-opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memory_flags | opencl_types #| opencl_side_effect_functions
+cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions
+opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memory_flags | opencl_types | opencl_side_effect_functions
 kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions # Namespace functions must be kept
-openmp_non_operands = openmp_pragmas | openmp_clauses #| openmp_functions | openmp_constants
-adaptivecpp_non_operands = adaptivecpp_macros #| adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions
-openacc_non_operands = openacc_clauses | openacc_pragmas #| openacc_functions | openacc_constants
-opengl_vulkan_non_operands = opengl_vulkan_keywords# | opengl_vulkan_functions | opengl_vulkan_constants | opengl_vulkan_macros
-webgpu_non_operands = webgpu_classes #| webgpu_functions | webgpu_constants | webgpu_macros
-boost_non_operands = boost_macros #| boost_classes | boost_functions
-metal_non_operands = metal_storage | metal_functions #| metal_classes | metal_constants
-thrust_non_operands = set() #thrust_classes | thrust_functions | thrust_macros | thrust_side_effect_functions
+openmp_non_operands = openmp_pragmas | openmp_clauses | openmp_functions | openmp_constants
+adaptivecpp_non_operands = adaptivecpp_macros | adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions
+openacc_non_operands = openacc_clauses | openacc_pragmas | openacc_functions | openacc_constants
+opengl_vulkan_non_operands = opengl_vulkan_keywords | opengl_vulkan_functions | opengl_vulkan_constants | opengl_vulkan_macros
+webgpu_non_operands = webgpu_classes | webgpu_functions | webgpu_constants | webgpu_macros
+boost_non_operands = boost_macros | boost_classes | boost_functions
+metal_non_operands = metal_storage | metal_functions | metal_classes | metal_constants
+thrust_non_operands = thrust_classes | thrust_functions | thrust_macros | thrust_side_effect_functions
 
 merged_non_operands = (
     cpp_non_operands
@@ -548,9 +551,11 @@ merged_non_operands = (
 )
 
 '''
-CRUCIAL Edge Case:
+EDGE CASE DOCUMENTATION:
+
+HANDLED: 
 Some parallelizing frameworks contain communal keywords.
-Therefore for the merging of non-operands sets with respect to CPP and the given parallelizing framework,
+Therefore for the merging of non-operand sets with respect to CPP and the given parallelizing framework,
 one needs to ensure that duplicates are allowed across parallelizing frameworks, just not within the
 frameworks themselves -> so as to simplify the implementation.
 Sets anyway don't allow duplicates, so this is inherently guaranteed. 
@@ -566,27 +571,3 @@ Structure:
 
 "Edge Case: remove libraries before analysis"
 
-
-'''
-Libraries:
-1) CUDA: #include <cuda_runtime.hpp>
-2) KOKKOS: #include <Kokkos_Core.hpp>
-3) VULKAN/OPENGL: #include <vulkan/vulkan.hpp>
-   #include <vulkan/vulkan_raii.hpp>
-   #include <glm/glm.hpp> 
-4) ADAPTIVECPP: #include <CL/sycl.hpp>
-   #include <sycl/sycl.hpp>
-5) THRUST: #include <thrust/device_vector.h>
-   #include <thrust/reduce.h>
-6) OPENACC: #include <openacc.h>
-7) OPENCL: #include <CL/cl.hpp>
-   #include "opencl_eval.hpp"
-   #include "opencl_init.hpp"
-   #include "opencl_sum.hpp"
-8) OPENMP: #include "omp.h"
-9) SLANG: #include "shader/eval.hpp"
-   #include "shader/eval.cuh"
-10) WEBGPU: #include <wgpu/wgpu.h>
-11) BOOST: #include "boost/compute.hpp"
-12) METAL: #include <Metal/Metal.hpp>
-'''

@@ -1,3 +1,24 @@
+# -----------------------------------------------------------------------------
+# PDF Reporting for Code Complexity Metrics
+# -----------------------------------------------------------------------------
+# This module provides functions to generate PDF reports from code complexity 
+# metrics collected from source files. Reports include descriptive statistics, 
+# correlations, visualizations, and GPU framework-specific analyses.
+#
+# Includes:
+# - Converts metric data into structured tables using ReportLab.
+# - Generates heatmaps, pairwise scatter plots, histograms, and boxplots with matplotlib/seaborn.
+# - Aggregates GPU-native Halstead metrics by detected frameworks (CUDA, OpenMP, etc.).
+# - Bubble plots visualize framework-specific complexity with SLOC mapped to circle size.
+# - Supports both basic and advanced reports:
+#     - Basic: descriptive stats, correlation tables, heatmaps, and plots per metric
+#     - Advanced: includes pairplots and aggregated GPU framework analysis
+#
+# Note:
+# - Works with structured records as lists of dictionaries.
+# - Images from matplotlib figures are embedded in the PDF using in-memory buffers.
+# - Optional metrics (e.g., Halstead volume/difficulty) are handled gracefully.
+# -----------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
 from code_complexity.stats.analysis import summarize
@@ -7,15 +28,20 @@ from reportlab.lib import colors
 import seaborn as sns
 import io
 from matplotlib.lines import Line2D
+from code_complexity.metrics.utils import plain_logger
 # from code_complexity.metrics.halstead import * NOTE: DANGEROUS TO IMPORT - overrides functions in main
 
-# -------------------------------
-# Helper Functions
-# -------------------------------
 def plot_to_image(elements, width, height):
     """
-    Saves the current matplotlib figure into a BytesIO buffer
-    and appends it as a ReportLab Image to the PDF elements list.
+    Convert the current matplotlib figure to an image and append it to a PDF.
+
+    Args:
+        elements (list): ReportLab flowable list to append the image to.
+        width (float): Width of the image in the PDF.
+        height (float): Height of the image in the PDF.
+
+    Returns:
+        None
     """
     buf = io.BytesIO()
     plt.tight_layout()
@@ -26,10 +52,21 @@ def plot_to_image(elements, width, height):
 
 def aggregate_framework_complexity(records):
     """
-    Aggregate GPU complexity metrics across all files,
-    grouped by framework (excluding cpp).
-    Returns a list of dicts with one row per framework.
-    """    
+    Aggregate GPU framework complexity across all files.
+
+    Groups GPU-related Halstead metrics by framework (excluding C++) and
+    sums SLOC, Halstead volume, and Halstead difficulty for each framework.
+
+    Args:
+        records (list[dict]): List of per-file metric dictionaries.
+
+    Returns:
+        list[dict]: One dictionary per framework containing:
+            - "Framework": framework name
+            - "SLOC": total SLOC for files using the framework
+            - "Halstead_Volume": summed volume delta
+            - "Halstead_Difficulty": summed difficulty delta
+    """
     totals = {}
     for rec in records:
         gpu_data = rec.get("gpu_complexity", {})
@@ -50,15 +87,21 @@ def aggregate_framework_complexity(records):
             totals[fw]["Halstead_Difficulty"] += vals.get("difficulty", 0.0)
     return list(totals.values())
 
-# -------------------------------
-# Basic Statistical Analysis
-# -------------------------------
 def generate_basic_report(records, output_path="complexity_report.pdf"):
     """
-    Generate a PDF report with:
-    1. Descriptive statistics
-    2. Correlation analysis
-    3. Histograms and Boxplots
+    Generate a basic PDF report containing descriptive statistics, correlations, and plots.
+
+    The report includes:
+        1. Descriptive statistics table
+        2. Correlation matrix and heatmap
+        3. Histograms and boxplots for key metrics
+
+    Args:
+        records (list[dict]): List of per-file complexity metric records.
+        output_path (str): File path for the generated PDF report.
+
+    Returns:
+        None
     """
     df = pd.DataFrame(records)
     # Remove if present
@@ -122,19 +165,23 @@ def generate_basic_report(records, output_path="complexity_report.pdf"):
     
     # --- Build PDF ---
     doc.build(elements)
-    print(f"[INFO] Report saved to {output_path}")
+    plain_logger.info("Report saved to %s", output_path)
 
-
-# -------------------------------
-# Advanced Statistical Analysis
-# -------------------------------
 def generate_advanced_report(records, output_path="complexity_report.pdf"):
     """
-    Generate a PDF report with:
-    1. Descriptive statistics
-    2. Pairwise plot
-    3. Framework analysis
-    4. T tests
+    Generate an advanced PDF report with descriptive stats, pairwise plots, and GPU framework analysis.
+
+    The report includes:
+        1. Descriptive statistics table
+        2. Pairwise scatter plots (pairplot) of key metrics
+        3. Aggregated GPU framework Halstead complexity table and bubble plot
+
+    Args:
+        records (list[dict]): List of per-file complexity metric records.
+        output_path (str): Path to save the generated PDF report.
+
+    Returns:
+        None
     """
     df = pd.DataFrame(records)
     doc = SimpleDocTemplate(output_path)
@@ -166,7 +213,7 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
         "GPU-Framework Native Halstead Complexity",
         styles['Heading2']
     ))
-    print(records)
+    plain_logger.debug(records)
     df_fw = pd.DataFrame(aggregate_framework_complexity(records))
     # Table
     df_fw_display = df_fw.drop(columns=['n1', 'n2'], errors='ignore')
@@ -183,7 +230,7 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     # Plot Bubbles
     for fw in df_fw["Framework"]: # fw is a framework name
         fw_row = df_fw[df_fw["Framework"] == fw] # Select Row based on a predicate
-        print(fw_row)
+        plain_logger.info(fw_row)
         plt.scatter(
             fw_row["Halstead_Difficulty"],
             fw_row["Halstead_Volume"],
@@ -214,5 +261,5 @@ def generate_advanced_report(records, output_path="complexity_report.pdf"):
     
     # --- Build PDF ---
     doc.build(elements)
-    print(f"[INFO] Report saved to {output_path}")
+    plain_logger.info("Report saved to %s", output_path)
 

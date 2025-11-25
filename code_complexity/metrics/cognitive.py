@@ -1,10 +1,35 @@
+# -----------------------------------------------------------------------------
+# Cognitive Complexity computation utilities for C++ code
+# -----------------------------------------------------------------------------
+# Includes:
+# - Detection and scoring of control-flow constructs
+# - Nesting-aware complexity accumulation
+# - Logical-operator sequence counting (per SonarQube's sequence-chain rules)
+#
+# Note:
+# This is a fast, non-AST implementation. It follows the conceptual definition
+# of Cognitive Complexity but may differ from a full parser in rare edge cases.
+# -----------------------------------------------------------------------------
 import re
 from code_complexity.metrics.utils import *
-import logging
-logger = logging.getLogger("code_complexity")
 
 def count_logical_sequences(line: str, nesting: int) -> int:
-    """Count sequences of symbolic logical operators in a line for Cognitive Complexity."""
+    """Counts logical operator sequences for Cognitive Complexity.
+
+    This function scans a line of code and detects occurrences of the logical
+    operators ``&&`` and ``||``. It increments complexity when a logical
+    operator begins a *new* sequence (i.e., it differs from the previous
+    operator encountered). Each sequence contributes a base cost of 1 plus an
+    additional weight equal to the current nesting level.
+
+    Args:
+        line (str): A single line of source code to analyze.
+        nesting (int): The current nesting depth that increases the weight of
+            each new logical sequence.
+
+    Returns:
+        int: The computed logical-sequence contribution to Cognitive Complexity.
+    """
     complexity = 0
     prev_op = None
     for match in re.finditer(r'&&|\|\|', line): # Find all logical operators
@@ -14,18 +39,15 @@ def count_logical_sequences(line: str, nesting: int) -> int:
             prev_op = op
     return complexity
 
-
 def regex_compute_cognitive(code: str) -> int:
-    """Compute a Cognitive Complexity score using regex-based analysis.
-    This function approximates cognitive complexity without using an AST.
-    It counts flow-breaking constructs and nesting based on braces.
-    Cognitive Complexity is about mental effort to understand, not just paths.
-    Note that this is not a simplified implementation, unlike cyclomatic complexity 
-    no control flow graph is needed. An AST-based approach might in some cases, however, 
-    be more accurate.
+    """Compute Cognitive Complexity (SonarQube Specification) score using regex-based analysis.
+
+    This function scans lines of code and detects occurrences of control-flow
+    structures, jump statements, logical operators, and nesting changes, using
+    the scoring rules described in SonarQube's Cognitive Complexity specification.
     
     Args:
-        code (str): C++ source code as a string.
+        code (str): A string containing C++ source code.
 
     Returns:
         int: Cognitive Complexity score for the source code.
@@ -78,42 +100,39 @@ def regex_compute_cognitive(code: str) -> int:
             
     return complexity
 
-'''
-for ()
-    for ()
-'''
- 
+''' 
+EDGE CASE DOCUMENTATION:
 
+HANDLED:
+1) Misalignment of Nesting and Keywords
+if (condition) // 'if' is found here, scored with current 'nesting'
+{              // Nesting level actually increases here for the block
+    //...
+}
+2) Over-Penalizing Logical Operators: The metric applies the full nesting penalty to logical operators
+3) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives.
+4) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity.
+5) Nesting only increases from control key words (Unlike Nesting Depth purely with '{' and '}' tokens)
+6) Cognitive Complexity unlike Cyclomatic Complexity starts at 0 not 1!
+7) Null-Coalescing Operators -> Doesn't exist in C++
+8) Switch statements: 'cases' don't add complexity, only the switch statement itself [SonarQube specification]
+9) Sequences of like-boolean operators increment complexity, not the operators themselves
+10) goto, break and continue statements only contribute to complexity when parametrized
+
+NOT HANDLED:
+1) Ignoring Non-Brace Scope
+    for (int i = 0; i < 10; ++i)
+        if (i % 2 == 0) return; // 'if' is nested, but 'nesting' remains 0.            
+2) Nesting without '{' and '}' tokens
+3) Fundamental increment for recursion (considered a “meta-loop”)
+-> Direct recursion → +1 per function | Indirect recursion (cycles) → +1 per function in the cycle.
+-> Nesting still applies for any control flow inside the function.
+4) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
+do increment the nesting level when nested inside other method-like structures:
 '''
-Edge Cases:
-    [x] 1) Misalignment of Nesting and Keywords
-        if (condition) // 'if' is found here, scored with current 'nesting'
-        {              // Nesting level actually increases here for the block
-            //...
-        }
-        -> Only Brace encompassed blocks is penalized with corresponding nesting
-    [] 2) Ignoring Non-Brace Scope
-        for (int i = 0; i < 10; ++i)
-            if (i % 2 == 0) return; // 'if' is nested, but 'nesting' remains 0.
-    [x] 3) Over-Penalizing Logical Operators: The metric applies the full nesting penalty to logical operators
-    [x] 4) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives.
-    [x] 5) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity.
-    
-    [x] 6) Nesting Depth overcounting with function braces 
-            -> Nesting only increases when a control keyword and a brace are on the same line.
-    [x] 7) Cognitive Complexity unlike Cyclomatic Complexity starts at 0 not 1!
-    [x] 8) Null-Coalescing Operators -> Doesn't exist in C++
-    [x] 9) Switch statements: 'cases' don't add complexity, only the switch statement itself [SonarQube specification]
-    
-    [x] 10) Sequences of like-boolean operators increment complexity, not the operators themselves
-    
-    [] 11) Fundamental increment for recursion (considered a “meta-loop”)
-        -> Direct recursion → +1 per function | Indirect recursion (cycles) → +1 per function in the cycle.
-        -> Nesting still applies for any control flow inside the function.
-    [x] 12) goto, break and continue statements only contribute to complexity when parametrized
-    [] 13) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
-    do increment the nesting level when nested inside other method-like structures:
-'''
+
+
+
 
 '''
 Example that might break nesting [I might have solved it now]:

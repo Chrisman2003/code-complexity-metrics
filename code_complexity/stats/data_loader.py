@@ -1,3 +1,25 @@
+# -----------------------------------------------------------------------------
+# Code Complexity Metrics Collection for Source Files
+# -----------------------------------------------------------------------------
+# This module provides functions to scan C++/CUDA source files or directories
+# and compute a variety of complexity metrics per file.
+#
+# Includes:
+# - Source Lines of Code (SLOC)
+# - Nesting Depth
+# - Cyclomatic Complexity (regex-based)
+# - Cognitive Complexity (regex-based)
+# - Halstead Metrics:
+#   - Difficulty
+#   - Volume
+#   - Effort
+# - GPU-native complexity deltas for detected frameworks (CUDA, OpenMP, etc.)
+#
+# Note:
+# - Works with structured records represented as dictionaries.
+# - Files with unsupported encodings are read with UTF-8, ignoring errors.
+# - Designed for robustness: missing optional metrics do not break processing.
+# -----------------------------------------------------------------------------
 import os
 from code_complexity.metrics.sloc import *
 from code_complexity.metrics.nesting_depth import *
@@ -7,14 +29,17 @@ from code_complexity.metrics.halstead import *
 from code_complexity.metrics.utils import detect_parallel_framework
 from pathlib import Path
 
-'''
-✅ Ranked from most to least accurate for total file complexity:
-1) E — Effort
-2) D — Difficulty
-3) V — Volume
-'''
+
 def collect_metrics(root_path: str):
-    """Scan a file or directory and compute complexity metrics."""
+    """
+    Scan a file or directory and compute complexity metrics.
+
+    Args:
+        root_path (str): Path to a file or directory.
+
+    Returns:
+        list[dict]: List of metric dictionaries for each processed file.
+    """
     records = []
 
     def analyze_file(filepath):
@@ -59,13 +84,13 @@ def collect_metrics(root_path: str):
             "gpu_complexity": gpu_complexity,
         }
     # Handle single file
-    if os.path.isfile(root_path) and root_path.endswith((".cpp", ".cu", ".slang")):
+    if os.path.isfile(root_path) and root_path.endswith((".cpp", ".cu")):
         records.append(analyze_file(root_path))
     # Handle directory
     elif os.path.isdir(root_path):
         for subdir, _, files in os.walk(root_path):
             for file in files:
-                if file.endswith((".cpp", ".cu", ".slang")):
+                if file.endswith((".cpp", ".cu")):
                     filepath = os.path.join(subdir, file)
                     records.append(analyze_file(filepath))
     return records

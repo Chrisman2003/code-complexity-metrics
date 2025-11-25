@@ -1,29 +1,32 @@
+# -----------------------------------------------------------------------------
+# Code Complexity Analysis CLI
+# -----------------------------------------------------------------------------
+# This module provides a command-line interface for analyzing source code
+# complexity metrics across multiple languages and frameworks.
+# Includes:
+# - Computing multiple code complexity metrics per file:
+#   - Source Lines of Code (SLOC)
+#   - Nesting Depth
+#   - Cyclomatic Complexity (regex or CFG-based)
+#   - Cognitive Complexity
+#   - Halstead Metrics (with optional GPU delta comparison)
+# - Recursively analyzes directories or single files.
+# - Generates statistical reports (basic or advanced) as PDF.
+# - Timed execution for each metric to profile performance.
+# Usage:
+#   code-metrics <path> [--lang LANG] [--report basic|advanced] [--gpu-delta] [-v]
+# -----------------------------------------------------------------------------
+
 import argparse
 import os
 import time
-import logging
-import inspect
-import sys
-from pathlib import Path
 from code_complexity.metrics import cyclomatic, sloc, halstead, cognitive, nesting_depth
+from code_complexity.metrics.utils import metrics_logger, plain_logger
 from code_complexity.stats.data_loader import collect_metrics
 from code_complexity.stats.analysis import summarize
 from code_complexity.stats.report_generator import *
+import logging
 
-# -------------------------------
-# Logging setup
-# -------------------------------
-metrics_logger = logging.getLogger("metrics")
-metrics_handler = logging.StreamHandler(sys.stdout) 
-metrics_handler.setFormatter(logging.Formatter(
-    "%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
-))
-metrics_logger.addHandler(metrics_handler)
-metrics_logger.setLevel(logging.INFO)
-
-# -------------------------------
-# Timed execution wrapper
-# -------------------------------
 def timed(func, *args, **kwargs):
     """Run a function and measure its execution time.
 
@@ -41,10 +44,29 @@ def timed(func, *args, **kwargs):
     end = time.perf_counter()
     return result, end-start
 
-# -------------------------------
-# Statistical Analysis
-# -------------------------------
 def stat_report(root_dir: str, report_func):
+    """Generates a statistical report of code complexity metrics for a given directory.
+
+    This function collects code complexity metrics from the specified directory,
+    summarizes them, computes correlations, and generates a report as a PDF file.
+    It supports either a basic or advanced reporting pipeline, depending on the
+    provided `report_func`.
+
+    Args:
+        root_dir (str): Path to the root directory containing source code files to analyze.
+        report_func (callable): Function to generate the report. Should be either
+            `generate_basic_report` or `generate_advanced_report`.
+
+    Logs:
+        Info-level messages are logged at each major step of the pipeline, including:
+        - Start of the analysis.
+        - Number of records collected.
+        - Summaries and correlations.
+        - Report generation and completion.
+
+    Output:
+        A PDF report named "complexity_report.pdf" is generated in the current working directory.
+    """
     if report_func == generate_basic_report:
         metrics_logger.info("📊 Running basic statistical analysis pipeline...")
     else:
@@ -66,16 +88,13 @@ def stat_report(root_dir: str, report_func):
         generate_advanced_report(records, output_path="complexity_report.pdf")
     metrics_logger.info("✅ Report saved as complexity_report.pdf")
 
-# -------------------------------
-# Analyze a single code file
-# -------------------------------
-def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
+def analyze_code(file_path: str, halstead_lang, cyclomatic_func, gpu_delta_enabled):
     """Analyze complexity metrics of a single source code file.
 
     Args:
         file_path (str): Path to the source code file.
         halstead_func (callable): Function to compute Halstead metrics.
-        gpu_baseline_func (callable, optional): Function to compute baseline GPU metrics. Defaults to None.
+        gpu_delta_enabled (boolean): Flag whether to compute delta in Halstead Metrics
 
     Logs:
         INFO level metrics for SLOC, Nesting Depth, Cyclomatic complexity, Halstead metrics,
@@ -91,19 +110,12 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_fu
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
     cognitive_complexity, cognitive_time = timed(cognitive.regex_compute_cognitive, code)
-    
+    halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_lang)
     if cyclomatic_func.__name__ == "regex_compute_cyclomatic":
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
-        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
-        
-    #if halstead_func.__name__ == "halstead_metrics_auto" or halstead_func.__name__ == "halstead_metrics_cpp":
-    #    file_suffix = Path(file_path).suffix
-    #    halstead_metrics, halstead_time = timed(halstead_func, code, file_suffix)
-    #else: 
-    #    halstead_metrics, halstead_time = timed(halstead_func, code)
-    halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_func , Path(file_path).suffix)
-
+        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)        
+    
     # Log results
     metrics_logger.info("Analyzing file: %s", file_path)
     metrics_logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
@@ -124,8 +136,8 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_fu
     metrics_logger.info("[Halstead runtime: %.4fs]", halstead_time)
 
     # Compute GPU delta metrics if requested
-    if gpu_baseline_func:
-        baseline_metrics, _ = timed(gpu_baseline_func, code)
+    if gpu_delta_enabled:
+        baseline_metrics, _ = timed(halstead.halstead_metrics, code, "cpp")
         delta = {k: halstead_metrics[k] - baseline_metrics[k] for k in halstead_metrics}
         metrics_logger.info("GPU Delta Metrics (GPU - C++ baseline):")
         for k, v in delta.items():
@@ -138,33 +150,27 @@ def analyze_code(file_path: str, halstead_func, cyclomatic_func, gpu_baseline_fu
         metrics_logger.info("  Time delta: %.2fs", halstead.time(halstead_metrics) - halstead.time(baseline_metrics))
     metrics_logger.info("-" * 40)
 
-# -------------------------------
-# Analyze all files in a directory
-# -------------------------------
-def analyze_directory(directory_path: str, halstead_func, cyclomatic_func, gpu_baseline_func=None):
+def analyze_directory(directory_path: str, halstead_lang, cyclomatic_func, gpu_delta_enabled):
     """Recursively analyze all source code files in a directory.
 
     Args:
         directory_path (str): Path to the directory.
         halstead_func (callable): Function to compute Halstead metrics.
-        gpu_baseline_func (callable, optional): Function to compute baseline GPU metrics. Defaults to None.
+        gpu_delta_enabled (boolean): Flag whether to compute delta in Halstead Metrics
     """
     for root, _, files in os.walk(directory_path):
         for file_name in files:
             if file_name.endswith((".cpp", ".cxx", ".cc", ".cu", ".cl", ".hpp", ".h")):
                 file_path = os.path.join(root, file_name)
-                analyze_code(file_path, halstead_func, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
+                analyze_code(file_path, halstead_lang, cyclomatic_func, gpu_delta_enabled)
 
-# -------------------------------
-# Main CLI
-# -------------------------------
 def main():
     """Command-line interface for analyzing code complexity metrics.
 
     Accepts a file or directory path and optional arguments:
         --lang: Language for Halstead metrics
         --gpu-delta: Compare GPU constructs vs C++ baseline
-        --verbose: Enable debug logging
+        --verbose: Detailed debug logging
     """
     parser = argparse.ArgumentParser(description="Analyze code complexity metrics for a file or directory.")
     parser.add_argument("path", help="Path to the code file or directory to analyze")
@@ -172,56 +178,44 @@ def main():
         "cpp", "cuda", "opencl", "kokkos", "openmp","adaptivecpp", "openacc",
         "opengl_vulkan", "webgpu", "boost", "metal", "thrust", "merged", "auto"], 
     default="cpp", help="Language extension for Halstead metrics")
+    parser.add_argument("--cyclomatic", choices=["advanced"], default="basic",
+                    help="Cyclomatic complexity calculation method")
     parser.add_argument("--report", choices=["basic", "advanced"], default=None,
                     help="Run basic/advanced statistical analysis pipeline after computing metrics")
     parser.add_argument("--gpu-delta", action="store_true",
-                        help="Compute added complexity of GPU constructs vs C++ baseline")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Enable debug logging")
-    parser.add_argument("--cyclomatic", choices=["advanced"], default="basic",
-                        help="Cyclomatic complexity calculation method")
+                    help="Compute added complexity of GPU constructs vs C++ baseline")
+    parser.add_argument("--verbose", action="store_true",
+                    help="Detailed debug logging") # Mostly relevant: Halstead, Cyclomatic
     args = parser.parse_args()
+    
     # Enable debug logging if verbose
     if args.verbose:
-        metrics_logger.setLevel(logging.DEBUG)
+        plain_logger.setLevel(logging.DEBUG)
 
     # Validate path
     if not os.path.exists(args.path):
         metrics_logger.error("Path does not exist: %s", args.path)
         return
-
-    # Select Halstead function based on language
-    #halstead_func = {
-    #    "cpp": halstead.halstead_metrics_cpp,
-    #    "cuda": halstead.halstead_metrics_cuda,
-    #    "opencl": halstead.halstead_metrics_opencl,
-    #    "kokkos": halstead.halstead_metrics_kokkos,
-    #    "openmp": halstead.halstead_metrics_openmp,
-    #    "adaptivecpp": halstead.halstead_metrics_adaptivecpp,
-    #    "openacc": halstead.halstead_metrics_openacc,
-    #    "opengl_vulkan": halstead.halstead_metrics_opengl_vulkan,
-    #    "webgpu": halstead.halstead_metrics_webgpu,
-    #    "boost": halstead.halstead_metrics_boost,
-    #    "metal": halstead.halstead_metrics_metal,
-    #    "thrust": halstead.halstead_metrics_thrust,
-    #    "merged": halstead.halstead_metrics_merged,
-    #    "auto": halstead.halstead_metrics_auto,
-    #}[args.lang]
     
     # Select Cyclomatic function based on method
     cyclomatic_func = {
         "advanced": cyclomatic.cfg_compute_cyclomatic,
         "basic": cyclomatic.regex_compute_cyclomatic
     }[args.cyclomatic]
+    
     # Determine baseline for GPU delta
-    gpu_baseline_func = halstead.halstead_metrics_cpp if (args.gpu_delta and args.lang != "cpp") else None
-        
+    if args.gpu_delta and args.lang != "cpp":
+        gpu_delta_enabled = True
+    else:
+        gpu_delta_enabled = False
+    
+    halstead_lang = args.lang
     # Analyze file or directory
     if args.report == None:
         if os.path.isfile(args.path):
-            analyze_code(args.path, args.lang, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
+            analyze_code(args.path, halstead_lang, cyclomatic_func, gpu_delta_enabled)
         elif os.path.isdir(args.path):
-            analyze_directory(args.path, args.lang, cyclomatic_func, gpu_baseline_func=gpu_baseline_func)
+            analyze_directory(args.path, halstead_lang, cyclomatic_func, gpu_delta_enabled)
         else:
             metrics_logger.error("Path is neither a file nor a directory: %s", args.path)
     # Stat Analysis

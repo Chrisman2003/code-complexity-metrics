@@ -1,3 +1,10 @@
+# -----------------------------------------------------------------------------
+# Nesting Depth Complexity Tests for C++ Source Files
+# -----------------------------------------------------------------------------
+# Parametrized pytest module to verify nesting depth complexity
+# computation for multiple C++ sample files. Reports mismatches between
+# detected and expected values.
+# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.nesting_depth import compute_nesting_depth
@@ -18,7 +25,19 @@ test_cases = [
 
 @pytest.mark.parametrize("filename,expected_depth", test_cases)
 def test_nesting_depth(filename, expected_depth):
-    """Parametrized test for nesting depth across multiple C++ files."""
+    """Tests computation of nesting depth complexity for C++ source files.
+
+    This function loads a C++ source file, computes its nesting depth code
+    complexity using `compute_nesting_depth`, and verifies that the
+    detected depth matches the expected value.
+
+    Args:
+        filename (str): Path to the C++ source file relative to the test samples directory.
+        expected_depth (int): Expected nesting depth complexity of the source file.
+
+    Raises:
+        AssertionError: If the detected nesting depth does not match the expected value.
+    """
     code = load_code(filename, TEST_FILES_DIR)
     detected_depth = compute_nesting_depth(code)
     assert detected_depth == expected_depth, (

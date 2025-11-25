@@ -1,8 +1,24 @@
+# -----------------------------------------------------------------------------
+# Halstead Complexity computation utilities for C++ and GPU-extended code
+# -----------------------------------------------------------------------------
+# Includes:
+# - Parametrized token extraction for operators and operands via regex
+# - Support for multiple languages and parallel computing frameworks:
+#   C++, CUDA, OpenCL, Kokkos, OpenMP, OpenACC, Metal, WebGPU, Boost, OpenGL/Vulkan
+# - Automatic handling of framework-specific keywords, functions, and symbols
+# - Derived Halstead metrics: vocabulary, program length, volume, difficulty, effort, and time
+#
+# Note:
+# This module provides pattern-based tokenization rather than whitespace-based parsing to correctly handle 
+# C++ syntax and its GPU extensions (e.g. "a+b" and "a + b"). Function definitions, calls, literals, and 
+# framework-specific constructs are distinguished for precise metric computation. Subtraction sets ensure 
+# deterministic operand counting by excluding non-operands. Regex-based extraction ensures robustness across
+# code formatting and multi-line constructs.
+# -----------------------------------------------------------------------------
 import re
 import math
 from code_complexity.metrics.language_tokens import *
 from code_complexity.metrics.utils import *
-from code_complexity.metrics.cyclomatic import plain_logger
 
 def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_pattern: str, subtracting_set: set, 
                                    code_str: str, lang: str, autolist: list[str] = []):
@@ -61,7 +77,7 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
             operators.remove(func_name)  # removes first occurrence only
      
     # String Literals - Only Operands
-    double_quotes = re.findall(r'"(?:\\.|[^"\\])*"', code_str, flags=re.DOTALL) # Multline Kernel String support
+    double_quotes = re.findall(r'"(?:\\.|[^"\\])*"', code_str, flags=re.DOTALL) 
     single_quotes = re.findall(r"'(?:\\.|[^'\\])+'", code_str, flags=re.DOTALL)  
     operands.extend(double_quotes)
     operands.extend(single_quotes)
@@ -69,22 +85,18 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
     # Combine with static subtracting set (C++ keywords, symbols, etc.)
     full_subtracting_set = subtracting_set | dynamic_nonoperands
     operands = [op for op in operands if op not in full_subtracting_set] # Remove non-operands from operands
-    #print("Distinct Operators", set(operators))
-    #print("\n")
-    #print("Distinct Operands", set(operands))
-    #print("\n")
+    plain_logger.debug("Distinct Operators: %s", set(operators))
+    plain_logger.debug("Distinct Operands: %s", set(operands))
     n1 = len(set(operators))
     n2 = len(set(operands))
     N1 = len(operators)
     N2 = len(operands)
-
     return {
         'n1': n1,
         'n2': n2,
         'N1': N1,
         'N2': N2,
     }
-
 
 def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") -> tuple[str, str, set]:
     """Compute operator and operand regex patterns and the subtracting set for Halstead metrics.
@@ -180,7 +192,6 @@ def vocabulary(metrics: dict) -> int:
     """
     return metrics['n1'] + metrics['n2']
 
-
 def size(metrics: dict) -> int:
     """Compute Halstead program length (N = N1 + N2).
 
@@ -192,7 +203,6 @@ def size(metrics: dict) -> int:
     """
     return metrics['N1'] + metrics['N2']
 
-
 def volume(metrics: dict) -> float:
     """Compute Halstead volume (V = N * log2(n)).
 
@@ -203,7 +213,6 @@ def volume(metrics: dict) -> float:
         float: Program volume.
     """
     return size(metrics) * math.log2(vocabulary(metrics))
-
 
 def difficulty(metrics: dict) -> float:
     """Compute Halstead difficulty (D = (n1 / 2) * (N2 / n2)).
@@ -218,7 +227,6 @@ def difficulty(metrics: dict) -> float:
         return 0.0
     return (metrics['n1'] / 2) * (metrics['N2'] / metrics['n2'])
 
-
 def effort(metrics: dict) -> float:
     """Compute Halstead effort (E = D * V).
 
@@ -229,7 +237,6 @@ def effort(metrics: dict) -> float:
         float: Program effort.
     """
     return difficulty(metrics) * volume(metrics)
-
 
 def time(metrics: dict) -> float:
     """Compute Halstead estimated time to implement (T = E / 18).
@@ -243,27 +250,6 @@ def time(metrics: dict) -> float:
     return effort(metrics) / 18
 
 
-'''
----------------------------------------------------------------
-Summary: Why tokenization is not done by whitespace
----------------------------------------------------------------
-This analyzer extracts tokens (operators and operands) using
-regular expressions rather than splitting on whitespace.   
-Reasons:
-1. Code tokens in C++ (and its GPU extensions like CUDA, OpenCL,
-   Kokkos, etc.) are not reliably separated by spaces.
-      Example: "a+b" and "a + b" should yield the same tokens.
-2. Operators, punctuation, and symbols (e.g. "==", "->", "::", "{", "}")
-   can appear without surrounding whitespace.
-3. Comments and string literals must be ignored — they are removed
-   before regex extraction.
-4. Regex-based matching (via re.findall) provides non-overlapping
-   tokens directly, ensuring consistent parsing regardless of spacing. 
-Therefore:
-Tokenization is pattern-based, not whitespace-based, to correctly
-identify syntactic elements across multiple C++-like languages.
----------------------------------------------------------------
-'''
 
 """
 Edge Cases (General):
@@ -275,6 +261,7 @@ Edge Cases (General):
 **) Function definitions (Operands), but Function invocations (Operators), this would mean the sets n1 and n2
 are not strictly disjoint.
 **) Constructs: which are neither operators nor operands
+4) Use library header for auto language detection -> and only after remove all library headers
 """
 
 """
