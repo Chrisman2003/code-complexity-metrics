@@ -106,35 +106,35 @@ def analyze_code(file_path: str, halstead_lang, cyclomatic_func, gpu_delta_enabl
         metrics_logger.error("Failed to read file %s: %s", file_path, e)
         return
     # Compute metrics with timing
-    plain_logger.debug("SLOC")
+    plain_logger.debug("SLOC Complexity - Summary")
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
     plain_logger.debug("\n")
     
-    plain_logger.debug("Nesting Depth")
+    plain_logger.debug("Nesting Depth Complexity - Summary")
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
     plain_logger.debug("\n")
     
-    plain_logger.debug("Cyclomatic Complexity")
+    plain_logger.debug("Cyclomatic Complexity - Summary")
     if cyclomatic_func.__name__ == "regex_compute_cyclomatic":
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
     plain_logger.debug("\n")
     
-    plain_logger.debug("Cognitive Complexity")
+    plain_logger.debug("Cognitive Complexity - Summary")
     cognitive_complexity, cognitive_time = timed(cognitive.regex_compute_cognitive, code)
     plain_logger.debug("\n")
     
-    plain_logger.debug("Halstead Metrics")
+    plain_logger.debug("Halstead Complexity - Summary")
     halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_lang)
     plain_logger.debug("\n")
     # Log results
     metrics_logger.info("Analyzing file: %s", file_path)
-    metrics_logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)
-    metrics_logger.info("Nesting Depth: %d  [runtime: %.4fs]", nesting_count, nesting_time)
+    metrics_logger.info("SLOC Complexity: %d  [runtime: %.4fs]", sloc_count, sloc_time)
+    metrics_logger.info("Nesting Depth Complexity: %d  [runtime: %.4fs]", nesting_count, nesting_time)
     metrics_logger.info("Cyclomatic Complexity: %d  [runtime: %.4fs]", cyclomatic_complexity, cyclomatic_time)
     metrics_logger.info("Cognitive Complexity: %d  [runtime: %.4fs]", cognitive_complexity, cognitive_time) 
-    metrics_logger.info("Halstead Metrics:")
+    metrics_logger.info("Halstead Complexity:")
     for k, v in halstead_metrics.items():
         if k == 'op_dict':
             continue

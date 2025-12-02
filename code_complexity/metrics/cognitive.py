@@ -55,6 +55,11 @@ def regex_compute_cognitive(code: str) -> int:
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
+    control_flow_total = 0
+    logical_total = 0
+    jumps_total = 0
+    ternary_total = 0 
+    
     # Control flow keywords (notice: no plain 'else')
     control_keywords = ['if', 'for', 'while', 'switch', 'catch'] # 'do' and 'if else' implicit
     # switch with branches add 1, 
@@ -68,20 +73,35 @@ def regex_compute_cognitive(code: str) -> int:
         # --- Control keywords ---
         for keyword in control_keywords: # Count control keywords
             matches = re.findall(rf'\b{keyword}\b', stripped) # Word boundaries to avoid false positives
-            complexity += len(matches) * (1 + nesting)
+            add = len(matches) * (1 + nesting)
+            complexity += add
+            control_flow_total += add
             
         # --- Jump statements ---
         if re.search(r'\bgoto\b\s+\w+', stripped):
-            complexity += 1 + nesting
+            add = 1 + nesting
+            complexity += add
+            jumps_total += add
         if re.search(r'\bbreak\b\s+\w+', stripped) or re.search(r'\bbreak\s+\d+', stripped):
-            complexity += 1 + nesting
+            add = 1 + nesting
+            complexity += add
+            jumps_total += add
         if re.search(r'\bcontinue\b\s+\w+', stripped) or re.search(r'\bcontinue\s+\d+', stripped):
-            complexity += 1 + nesting
+            add = 1 + nesting
+            complexity += add
+            jumps_total += add
         # -> Non-Parametrized Constructs aren't being matched
         
         # --- Logical operators ---
-        complexity += count_logical_sequences(stripped, nesting)
-        complexity += stripped.count('?') * (1 + nesting)  # Ternary operator: can't nest structures inside it
+        add = count_logical_sequences(stripped, nesting)
+        complexity += add
+        logical_total += add
+        
+        # --- Ternary operator ---
+        add = stripped.count('?') * (1 + nesting)
+        complexity += add
+        ternary_total += add
+        
         for op in logical_ops_alpha:
             matches = re.findall(rf'\b{op}\b', stripped) # Word boundaries to avoid false positives
             complexity += len(matches) * (1 + nesting)
@@ -97,7 +117,12 @@ def regex_compute_cognitive(code: str) -> int:
         if found_nesting_keyword and '{' in stripped: # No nesting for if (n == 0) return 1.0;
             nesting += stripped.count('{')    
             found_nesting_keyword = False
-            
+    plain_logger.debug(
+        f"Control Flow = {control_flow_total}\n"
+        f"Jumps = {jumps_total}\n"
+        f"Logical Ops = {logical_total}\n"
+        f"Ternary = {ternary_total}"
+    )
     return complexity
 
 ''' 
