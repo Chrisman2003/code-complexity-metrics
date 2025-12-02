@@ -343,7 +343,6 @@ def regex_compute_cyclomatic(code: str) -> int:
         #        # print(f"Function detected: {stripped} -> Total functions: {num_functions}")
                 
     fallthroughs = detect_fallthroughs(code)
-    plain_logger.debug("Fallthroughs: %s", fallthroughs)
     return count + num_functions + fallthroughs # +1 for the default path
 
 # Edge Case: Boolean Operators for CFG Method Version

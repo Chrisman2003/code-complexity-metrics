@@ -16,7 +16,6 @@
 # Usage:
 #   code-metrics <path> [--lang LANG] [--report basic|advanced] [--gpu-delta] [-v]
 # -----------------------------------------------------------------------------
-
 import argparse
 import os
 import time
@@ -107,15 +106,28 @@ def analyze_code(file_path: str, halstead_lang, cyclomatic_func, gpu_delta_enabl
         metrics_logger.error("Failed to read file %s: %s", file_path, e)
         return
     # Compute metrics with timing
+    plain_logger.debug("SLOC")
     sloc_count, sloc_time = timed(sloc.compute_sloc, code)
+    plain_logger.debug("\n")
+    
+    plain_logger.debug("Nesting Depth")
     nesting_count, nesting_time = timed(nesting_depth.compute_nesting_depth, code)
-    cognitive_complexity, cognitive_time = timed(cognitive.regex_compute_cognitive, code)
-    halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_lang)
+    plain_logger.debug("\n")
+    
+    plain_logger.debug("Cyclomatic Complexity")
     if cyclomatic_func.__name__ == "regex_compute_cyclomatic":
         cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code)
     else:
-        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)        
+        cyclomatic_complexity, cyclomatic_time = timed(cyclomatic_func, code, file_path)
+    plain_logger.debug("\n")
     
+    plain_logger.debug("Cognitive Complexity")
+    cognitive_complexity, cognitive_time = timed(cognitive.regex_compute_cognitive, code)
+    plain_logger.debug("\n")
+    
+    plain_logger.debug("Halstead Metrics")
+    halstead_metrics, halstead_time = timed(halstead.halstead_metrics, code, halstead_lang)
+    plain_logger.debug("\n")
     # Log results
     metrics_logger.info("Analyzing file: %s", file_path)
     metrics_logger.info("SLOC: %d  [runtime: %.4fs]", sloc_count, sloc_time)

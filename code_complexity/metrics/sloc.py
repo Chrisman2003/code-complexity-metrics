@@ -23,10 +23,43 @@ def compute_sloc(code: str) -> int:
         int: Number of source lines of code (SLOC).
     """
     # Remove comments, non-kernel string literals, Header calls
+    plain_logger.debug(f"Initial code size: {len(code.splitlines())} lines")
+    
+    # Before/after header removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_headers(code)
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"Header removal reduced lines by: {before - after}")
+    
+    # Before/after comment removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_cpp_comments(code)
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"Comment removal reduced lines by: {before - after}")
+    
+    # Before/after string literal removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_string_literals(code)
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"String literal reduced lines by: {before - after}")
+    
+    #code = remove_headers(code)
+    #code = remove_cpp_comments(code)
+    #code = remove_string_literals(code)
 
-    # Count all non-empty lines
+    # Count all non-empty lines (original and those from removeals)
     lines = code.splitlines()
     return sum(1 for line in lines if line.strip())
+
+
+"""EDGE CASE:
+String literals:
+
+const char* msg = "line1
+line2
+line3";
+Without removal, this counts as 3 lines.
+
+With removal, it becomes:
+const char* msg = ;
+"""

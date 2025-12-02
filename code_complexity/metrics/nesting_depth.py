@@ -30,10 +30,17 @@ def compute_nesting_depth(code: str) -> int:
 
     max_depth = 0
     current_depth = 0
+    line_num = 1
 
     for char in code:
+        if char == '\n':
+            line_num += 1
         if char == '{':
             current_depth += 1
+            if current_depth > max_depth:
+                plain_logger.debug(
+                f"New max nesting depth {current_depth} reached at line {line_num}"
+            )
             max_depth = max(max_depth, current_depth)
         elif char == '}':
             current_depth = max(0, current_depth - 1)
