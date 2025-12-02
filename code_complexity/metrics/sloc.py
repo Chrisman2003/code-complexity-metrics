@@ -42,12 +42,8 @@ def compute_sloc(code: str) -> int:
     code = remove_string_literals(code)
     after = sum(1 for line in code.splitlines() if line.strip())
     plain_logger.debug(f"String literal reduced lines by: {before - after}")
-    
-    #code = remove_headers(code)
-    #code = remove_cpp_comments(code)
-    #code = remove_string_literals(code)
 
-    # Count all non-empty lines (original and those from removeals)
+    # Count all non-empty lines (original and those from removals)
     lines = code.splitlines()
     return sum(1 for line in lines if line.strip())
 

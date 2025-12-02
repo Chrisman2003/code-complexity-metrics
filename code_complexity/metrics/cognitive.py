@@ -56,8 +56,8 @@ def regex_compute_cognitive(code: str) -> int:
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
     control_flow_total = 0
-    logical_total = 0
     jumps_total = 0
+    logical_total = 0
     ternary_total = 0 
     
     # Control flow keywords (notice: no plain 'else')

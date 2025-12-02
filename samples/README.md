@@ -1,4 +1,7 @@
-## complex
+## Directory of sample files used for pytests, metric verification, and thesis result analysis
+Some of the files are auto-generated to analyze for metric complexity. This is in correspondence with the objective thesis claim of solely verifying manual correctness for the files in the subdirectory `thesis_testing/manual`. Pytests run on other sample files are verified with the cited GPT-model in the thesis text. This GPT-model is likewise used to actually create files to analyze under a certain language/framework. For files in a given parallel framework, files from the linked GitHub repositories may be used to PRIME the GPT engine before it is used to auto-generate further files within the parallel framework to test.
+
+NOTE: not all files (especially those of manual testing) are semantically correct. This is due to code complexity metrics being a tool for static code analysis. Other than the Clang Cyclomatic complexity implementation, no other code complexity implementation requires semantically correct files.
 
 ## cpp
 - **OLD_simple.cpp** – Old, simple C++ example, a basic starting point.
@@ -31,3 +34,10 @@
 - **complex_opencl.cpp** – OpenCL version of the complex C++ sample.
 - **complex_opencl2.cpp** – Alternative OpenCL implementation with slight variations.
 - **opencl_edge_cases.cpp** – OpenCL code designed to test edge cases in parsing or execution.
+
+## thesis_testing
+- manual - this subdirectory represents all of the files for the Thesis text, which were used for manual demonstrations in order to verify correctness of code complexity metric implementations.
+- ANALYSIS_REPOSITORY - this subdirectory contains the sets of files, which were used for evaluating algorithmic and framework complexity correspondingly. The algorithms in question are a: polyhedral gravity model, n-body simulation, matrix multiplication and vector addition.
+Sources [Implementations]:
+-> https://github.com/schuhmaj/performance-portability-benchmark (last accessed: 15 November 2025)
+-> https://github.com/schuhmaj/polyhedral-gravity-model-parallel (last accessed: 15 November 2025)

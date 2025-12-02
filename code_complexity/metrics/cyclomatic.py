@@ -143,7 +143,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             cfg = nx.DiGraph()
             function_cfgs[current_function] = cfg
             current_node = None
-            continue 
+            continue
         
         node_match = node_pattern.search(line)
         succ_match = succ_pattern.search(line)
@@ -266,6 +266,24 @@ def detect_fallthroughs(code: str) -> int:
     """
     
     fallthroughs = 0
+    # 
+    # \bswitch\b       → matches the word 'switch' as a whole word
+    # \s*              → allows optional whitespace between 'switch' and '('
+    # \([^)]*\)        → matches the parentheses containing the switch condition (anything except ')')
+    # \s*              → optional whitespace after the parentheses
+    # \{([^}]*)\}      → matches the block inside braces { ... } and captures it in group 1
+    # re.DOTALL        → allows '.' to match newline characters so multiline blocks are captured
+    r""" 
+    REGEX EXPLANATION:
+    Find all switch statement blocks in the code
+    -------------------------------
+    \bswitch\b       → matches the word 'switch' as a whole word
+    \s*              → allows optional whitespace between 'switch' and '('
+    \([^)]*\)        → matches the parentheses containing the switch condition (anything except ')')
+    \s*              → optional whitespace after the parentheses
+    \{([^}]*)\}      → matches the block inside braces { ... } and captures it in group 1
+    re.DOTALL        → allows '.' to match newline characters so multiline blocks are captured
+    """   
     switch_blocks = re.findall(r'\bswitch\b\s*\([^)]*\)\s*\{([^}]*)\}', code, re.DOTALL)
     for block in switch_blocks:
         # Split each switch block into case segments
