@@ -1,20 +1,3 @@
-# -----------------------------------------------------------------------------
-# Common Utility Functions for C++ and GPU-Extended Code Analysis
-# -----------------------------------------------------------------------------
-# Includes:
-# - File I/O helpers for loading source code from specified directories
-# - Parallel framework detection (C++, CUDA, OpenCL, Kokkos, OpenMP, SYCL, OpenACC, Vulkan/OpenGL, WebGPU, Boost, Metal, Thrust)
-# - Source code preprocessing utilities:
-#     * Removal of C++ headers (#include <...>, #include "...")
-#     * Removal of C++-style comments (block /* */ and single-line //)
-#     * Selective removal of string literals while preserving OpenCL __kernel strings
-#
-# Note:
-# These functions provide a foundation for metrics computation (Halstead, cyclomatic, SLOC, etc.)
-# by ensuring that non-executable text and library-specific constructs do not interfere.
-# Preprocessing order is important: headers and comments should be removed before analyzing
-# string literals to prevent false positives.
-# -----------------------------------------------------------------------------
 import re
 import os
 import logging
@@ -46,6 +29,7 @@ def load_code(filename, TEST_FILES_DIR):
 
     Args:
         filename (str): Name of the file to load from TEST_FILES_DIR.
+        TEST_FILES_DIR (str): Directory path where test files are located.
 
     Returns:
         str: The content of the file as a string.

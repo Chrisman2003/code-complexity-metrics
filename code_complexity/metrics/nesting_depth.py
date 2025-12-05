@@ -1,18 +1,7 @@
-# -----------------------------------------------------------------------------
-# Nesting Depth Analysis for C++ and OpenCL Code
-# -----------------------------------------------------------------------------
-# Includes:
-# - Maximum scope nesting computation based on curly braces
-# - Works for C++ and GPU-extended code (OpenCL, CUDA, SYCL, etc.)
-#
-# Note:
-# This module computes the maximum nesting depth of a code block, which is
-# useful for understanding code complexity and potential maintainability issues.
-# -----------------------------------------------------------------------------
 from code_complexity.metrics.utils import *
 
 def compute_nesting_depth(code: str) -> int:
-    """Compute the maximum nesting depth for C++/OpenCL code.
+    """Compute the maximum nesting depth for C++ code.
 
     This function removes comments and string literals before
     counting curly braces to determine the maximum depth of nested scopes.

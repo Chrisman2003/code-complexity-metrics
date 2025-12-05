@@ -1,10 +1,3 @@
-# -----------------------------------------------------------------------------
-# Cognitive Complexity Tests for C++ Source Files
-# -----------------------------------------------------------------------------
-# Parametrized pytest module to verify cognitive complexity
-# computation for multiple C++ sample files. Reports mismatches between
-# detected and expected values.
-# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.utils import load_code

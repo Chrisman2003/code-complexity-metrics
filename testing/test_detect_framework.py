@@ -1,10 +1,3 @@
-# -----------------------------------------------------------------------------
-# Parallel Framework Detection Tests for C++ Source Files
-# -----------------------------------------------------------------------------
-# Pytest module to verify the correct detection of GPU/parallel frameworks
-# (CUDA, OpenCL, SYCL, OpenACC, OpenMP, Vulkan/OpenGL) in C++ code samples.
-# Each test checks whether detected frameworks match the expected set.
-# -----------------------------------------------------------------------------
 import pytest
 from code_complexity.metrics.halstead import detect_parallel_framework
 

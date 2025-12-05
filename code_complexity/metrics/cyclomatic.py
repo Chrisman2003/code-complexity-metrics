@@ -1,18 +1,3 @@
-# -----------------------------------------------------------------------------
-# Cyclomatic Complexity computation utilities for C++ code
-# -----------------------------------------------------------------------------
-# Includes:
-# - Precise CFG-based complexity calculation using Clang's static analyzer
-# - Heuristic keyword-based fallback method for fast estimation
-# - Automatic include-path discovery for Clang compatibility
-# - Robust CFG reconstruction from Clang’s DumpCFG output
-# - Optional detection of switch fallthroughs and logical-operation costs
-#
-# Note:
-# This module provides both a high-accuracy, graph-based analysis (via Clang)
-# and a lightweight regex method for environments where Clang is unavailable.
-# CFG extraction depends on compiler behavior and may differ across toolchains.
-# -----------------------------------------------------------------------------
 import networkx as nx
 import subprocess
 import re
@@ -252,7 +237,7 @@ def cfg_compute_cyclomatic(code: str, filename: str) -> int:
                 pass
 
 def detect_fallthroughs(code: str) -> int:
-    """Detects fallthroughs in C-style switch statements in the given code.
+    """Detects fallthroughs in C++-style switch statements in the given code.
 
     A fallthrough occurs when a `case` in a `switch` statement does not end
     with a `break;` (or equivalent control transfer) and execution continues
@@ -297,10 +282,9 @@ def detect_fallthroughs(code: str) -> int:
 
 def regex_compute_cyclomatic(code: str) -> int:
     """
-    Compute a simplified cyclomatic complexity estimate using heuristics.
+    Compute a non-cfg cyclomatic complexity estimate using heuristics.
     
-    Accepts either the source text via `code` or a path via `filename`.
-    If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
+    Accepts the source text via `code` and counts control flow constructs.
 
     Args:
         code (str): Source code as a string. The code should be plain text; 

@@ -1,20 +1,10 @@
-# -----------------------------------------------------------------------------
-# Source Lines of Code (SLOC) Computation for C++ and GPU-Extended Code
-# -----------------------------------------------------------------------------
-# Includes:
-# - Counts all non-empty source lines after removing comments and string literals
-# - Works for C++ and GPU-extended languages (CUDA, OpenCL, SYCL, OpenMP, etc.)
-#
-# Note:
-# This module provides an accurate SLOC metric by ignoring non-executable text.
-# Only lines containing actual executing code contribute to the count.
-# -----------------------------------------------------------------------------
 from code_complexity.metrics.utils import *
 
 def compute_sloc(code: str) -> int:
-    """Compute Source Lines of Code (SLOC) after removing comments and string literals.
+    """Compute Source Lines of Code (SLOC) after removing comments, headers and string literals.
 
-    Counts all non-empty lines that remain after stripping comments and (non-kernel) string literals.
+    Counts all non-empty lines that remain after stripping comments, headers and (non-kernel) string literals.
+    Only lines containing actual executing code contribute to the count.
 
     Args:
         code (str): Full C++ extended source code.

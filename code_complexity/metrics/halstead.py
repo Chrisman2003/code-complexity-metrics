@@ -1,20 +1,3 @@
-# -----------------------------------------------------------------------------
-# Halstead Complexity computation utilities for C++ and GPU-extended code
-# -----------------------------------------------------------------------------
-# Includes:
-# - Parametrized token extraction for operators and operands via regex
-# - Support for multiple languages and parallel computing frameworks:
-#   C++, CUDA, OpenCL, Kokkos, OpenMP, OpenACC, Metal, WebGPU, Boost, OpenGL/Vulkan
-# - Automatic handling of framework-specific keywords, functions, and symbols
-# - Derived Halstead metrics: vocabulary, program length, volume, difficulty, effort, and time
-#
-# Note:
-# This module provides pattern-based tokenization rather than whitespace-based parsing to correctly handle 
-# C++ syntax and its GPU extensions (e.g. "a+b" and "a + b"). Function definitions, calls, literals, and 
-# framework-specific constructs are distinguished for precise metric computation. Subtraction sets ensure 
-# deterministic operand counting by excluding non-operands. Regex-based extraction ensures robustness across
-# code formatting and multi-line constructs.
-# -----------------------------------------------------------------------------
 import re
 import math
 from code_complexity.metrics.language_tokens import *
@@ -29,6 +12,9 @@ def halstead_metrics_parametrized(code: str, operator_pattern: str, operand_patt
         operator_pattern (str): Regex pattern to match operators.
         operand_pattern (str): Regex pattern to match operands.
         subtracting_set (set): Set of tokens to exclude from operands.
+        code_str (str): Original source code string (for string literal extraction).
+        lang (str): Language/framework identifier for specific handling.
+        autolist (list[str], optional): List of detected languages/frameworks for 'auto'
 
     Returns:
         dict: Dictionary containing Halstead counts:
@@ -107,6 +93,7 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
     Args:
         core_non_operands (set): Base set of non-operand keywords (e.g., C++ keywords).
         additional_non_operands (set): Extension-specific non-operand keywords (CUDA, OpenCL, Kokkos, etc.).
+        lang (str): Language/framework identifier to determine which sets to use.
 
     Returns:
         tuple: A tuple containing:
@@ -141,7 +128,27 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
     return operator_pattern, operand_pattern, subtracting_set
 
 def halstead_metrics(code: str, lang: str) -> dict:
-    "Compute Halstead metrics based on language flag"
+    """Compute Halstead metrics for a given source code based on the language or framework.
+
+    This function selects the appropriate set of non-operands (keywords, constants, 
+    framework-specific functions, etc.) depending on the language or detected parallel 
+    frameworks. It then delegates to the parametrized Halstead computation functions.
+    NOTE: For --lang cpp, correct library headers are vital to recognize parallel constructs to remove 
+    from the operand set.
+    
+    Args:
+        code (str): The source code to analyze.
+        lang (str): Programming language or framework name. Supported values include:
+            'cpp', 'cuda', 'opencl', 'kokkos', 'openmp', 'adaptivecpp', 'openacc',
+            'opengl_vulkan', 'webgpu', 'boost', 'metal', 'thrust', 'merged', 'auto'.
+
+    Returns:
+        dict: Dictionary containing Halstead counts:
+            - 'n1': Number of distinct operators
+            - 'n2': Number of distinct operands
+            - 'N1': Total number of operators
+            - 'N2': Total number of operands
+    """
     # Mapping from framework name → its non-operands set
     framework_non_operands_map = {
         "cuda": cuda_non_operands,
@@ -250,8 +257,10 @@ def time(metrics: dict) -> float:
     return effort(metrics) / 18
 
 
-
 """
+This module uses pattern-based tokenization rather than whitespace-based parsing to correctly handle 
+C++ syntax and its GPU extensions (e.g. "a+b" and "a + b").
+
 Edge Cases (General):
 1) String Literals are counted as singular operand instances
 2) Library calls have to be stripped
@@ -269,7 +278,3 @@ Edge Cases (OpenMP):
 1) allocateOpenMp<...>()	    - Should be counted as an Operator (function call)
 2) GravityEvaluableBase(...)	- Should be counted as an Operator (constructor call)
 """
-
-# Don't want full Function recognitition, since we want CASE-SPECIFIC Parallelizing Framework Construct
-# Analysis. Full Function recognition, would analyze ALL functions regardless of parallelizing framework
-

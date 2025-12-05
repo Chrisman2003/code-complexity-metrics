@@ -1,21 +1,3 @@
-# -----------------------------------------------------------------------------
-# Code Complexity Analysis CLI
-# -----------------------------------------------------------------------------
-# This module provides a command-line interface for analyzing source code
-# complexity metrics across multiple languages and frameworks.
-# Includes:
-# - Computing multiple code complexity metrics per file:
-#   - Source Lines of Code (SLOC)
-#   - Nesting Depth
-#   - Cyclomatic Complexity (regex or CFG-based)
-#   - Cognitive Complexity
-#   - Halstead Metrics (with optional GPU delta comparison)
-# - Recursively analyzes directories or single files.
-# - Generates statistical reports (basic or advanced) as PDF.
-# - Timed execution for each metric to profile performance.
-# Usage:
-#   code-metrics <path> [--lang LANG] [--report basic|advanced] [--gpu-delta] [-v]
-# -----------------------------------------------------------------------------
 import argparse
 import os
 import time
@@ -92,7 +74,8 @@ def analyze_code(file_path: str, halstead_lang, cyclomatic_func, gpu_delta_enabl
 
     Args:
         file_path (str): Path to the source code file.
-        halstead_func (callable): Function to compute Halstead metrics.
+        halstead_lang (str): Language extension for Halstead metrics.
+        cyclomatic_func (callable): Function to compute Cyclomatic complexity.
         gpu_delta_enabled (boolean): Flag whether to compute delta in Halstead Metrics
 
     Logs:
@@ -167,7 +150,8 @@ def analyze_directory(directory_path: str, halstead_lang, cyclomatic_func, gpu_d
 
     Args:
         directory_path (str): Path to the directory.
-        halstead_func (callable): Function to compute Halstead metrics.
+        halstead_lang (str): Language extension for Halstead metrics.
+        cyclomatic_func (callable): Function to compute Cyclomatic complexity.
         gpu_delta_enabled (boolean): Flag whether to compute delta in Halstead Metrics
     """
     for root, _, files in os.walk(directory_path):
@@ -178,6 +162,7 @@ def analyze_directory(directory_path: str, halstead_lang, cyclomatic_func, gpu_d
 
 def main():
     """Command-line interface for analyzing code complexity metrics.
+    Usage: code-metrics <path> [--lang LANG] [--report basic|advanced] [--gpu-delta] [--verbose] [-h|--help]
 
     Accepts a file or directory path and optional arguments:
         --lang: Language for Halstead metrics

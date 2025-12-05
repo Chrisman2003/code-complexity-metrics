@@ -1,10 +1,3 @@
-# -----------------------------------------------------------------------------
-# Nesting Depth Complexity Tests for C++ Source Files
-# -----------------------------------------------------------------------------
-# Parametrized pytest module to verify nesting depth complexity
-# computation for multiple C++ sample files. Reports mismatches between
-# detected and expected values.
-# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.nesting_depth import compute_nesting_depth

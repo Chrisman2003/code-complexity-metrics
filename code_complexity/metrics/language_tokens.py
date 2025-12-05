@@ -1,33 +1,16 @@
-# -----------------------------------------------------------------------------
-# Automated Suffixation & Non-Operand Pattern Definitions for C++ and GPU Frameworks
-# -----------------------------------------------------------------------------
-# Includes:
-# - Regex patterns for function calls, operators, and special constructs across:
-#   CUDA, OpenCL, Kokkos, OpenMP, OpenACC, SYCL (AdaptiveCPP), Metal, WebGPU, Boost, OpenGL/Vulkan
-# - Comprehensive sets of C++ keywords, types, modifiers, operators, and side-effect functions
-# - Language-specific non-operands to support accurate Halstead metric computation
-# - Support for namespace resolution (::) and framework-specific multi-level suffix patterns
-# - Edge-case handling for overlapping keywords across frameworks and string literal / library constructs
-#
-# Note:
-# This module provides a deterministic, pattern-based approach to token identification for C++ and 
-# its parallel/GPU extensions.
-# Sets of non-operands are merged per framework to prevent accidental counting of keywords or types
-# as operands in Halstead analysis. Libraries should be removed before analysis to avoid false positives.
-# -----------------------------------------------------------------------------
-
 # ------------------------------
 # 0) Automated Suffixation completion
 # ------------------------------
 # Substring Suffix Extension Patterns with Respect to the Kleene Operator (*)
 # Trailing Commas for Maintainability and minimizing potential errors
-# TODO: which languages require :: multiple chaining
 pattern_rules = {
+    # All constructs with the prefixes below are matched. This includes enum error types like "cudaSuccess".
+    # The idea behind this is to represent a given parallel framework with an operator-oriented lens.
     'cuda': [
         r'\b__\w+__\b',                  # CUDA qualifiers like __global__, __device__
         r'\bcuda[A-Z]\w*\b',             # CUDA runtime APIs like cudaMalloc, cudaMemcpy
         r'\batomic[A-Z]\w*\b',           # CUDA atomic intrinsics
-    ], # TODO: xif (error != cudaSuccess) {
+    ],
     'opencl': [
         r'\bcl[A-Z]\w*\b',               # clCreateBuffer, clEnqueueNDRangeKernel
         r'\bget_(?:global|local|group)_id\b',  # non-capturing group
@@ -47,7 +30,6 @@ pattern_rules = {
         r'\bsingle_task\b',
         r'\bnd_range\b',
         r'\bnd_item\b',
-        # TODO: Matched Operator {'#pragma acc parallel loop\n        for '}
     ],
     'openacc': [
         r'\bacc_\w+\b',                  # OpenACC runtime functions like acc_malloc
@@ -70,9 +52,6 @@ pattern_rules = {
     'boost': [
         r'\bboost::compute::\w+\b',      # all Boost.Compute classes & functions
         r'\bBOOST_COMPUTE_FUNCTION\b',   # macro
-        # TODO: Edge Case:     
-        # - namespace compute = boost::compute;
-        # - compute::device gpu = compute::system::default_device();
     ],
     'metal': [
         r'\bMTL\w+\b',                   # Metal classes / types
@@ -87,14 +66,7 @@ pattern_rules = {
         r'\bTHRUST_[A-Z0-9_]+\b',        # macros
         r'\bthrust(?:::\w+)+\b',         # nested namespaces like thrust::system::cuda
     ], 
-    # TODO: non-function constructs detected as functions
-    # TODO: edge case - variables named with these prefixations
-    # --> HOWEVER, when parall. framework not used, variable naming is RELAXED!
 }
-"""
-    Actual important edge case [after deadline - TODO]:
-    -> Arbitrary quantification on occuences of namespace resolution (:: ... :: ... ::)
-"""
 
 # ------------------------------
 # 1 Standard C++ keywords
@@ -550,24 +522,48 @@ merged_non_operands = (
     | thrust_non_operands
 )
 
-'''
+"""
 EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) Not all function recognition is delegated to the suffixation patterns above. This is because:
+- Some functions may be overloaded or templated, and hence may not follow a strict naming convention
+- Some functions do not present a canonical suffix form 
+- A base vocabulary minimizes false negatives
+This may lead to rare double counting by counting on the invocation vk::QueueFlagBits
+-> vk::Queue 
+-> vk::QueueFlagBits
+However this is an acceptable trade-off to ensure high recall of function recognition.
+2) For pragma languages the '#pragma' keyword is treated as an operator itself since it behaves like a 
+control directive.
+Therefore '#pragma omp parallel for' is tokenized as:
+-> '#pragma omp parallel for'  (#pragma operator)
+-> 'omp parallel for' (actual function operator)
 
 HANDLED: 
-Some parallelizing frameworks contain communal keywords.
+1) Some parallelizing frameworks contain communal keywords.
 Therefore for the merging of non-operand sets with respect to CPP and the given parallelizing framework,
 one needs to ensure that duplicates are allowed across parallelizing frameworks, just not within the
 frameworks themselves -> so as to simplify the implementation.
 Sets anyway don't allow duplicates, so this is inherently guaranteed. 
 -> E.g. 
 Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and opencl_non_operands,"
-
 Structure:
 -> Base CPP 
 --> Parallizing Framework 1 (CUDA)    | Intersecting Overlap
 --> Parallizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
 --> Parallizing Framework 3 (Kokkos)  | or between 2 given frameworks
-'''
 
-"Edge Case: remove libraries before analysis"
+NOT HANDLED:
+1) Variables named with framework prefixations (However, this is bad code practice)
+2) For the languages webgpu and metal, in code string kernels are handled as singular operands.
+-> Only for OpenCL are the actual Kernel strings analyzed for operators and operands.
+-> Only OpenCL kernel strings are analyzed for operators and operands because OpenCL embeds full C-like kernel programs
+directly inside host language string literals. These strings contain valid program logic that corresponds to Halstead's 
+definition of operators and operands.
+-> In contrast, Metal (MSL) and WebGPU (WGSL) shader sources are separate languages with different syntactic rules that
+cannot be reliably tokenized using C/C++ operator and operand patterns.
+--> In Short OpenCL has a more C-like kernel language embedded in strings compared to the Metal and WebGPU 
+semi-distinct shader languages.
+"""
+
 

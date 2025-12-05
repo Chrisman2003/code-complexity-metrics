@@ -1,14 +1,3 @@
-# -----------------------------------------------------------------------------
-# String Literal Removal Tests for C++/OpenCL Source Files
-# -----------------------------------------------------------------------------
-# This pytest module verifies the functionality of `remove_string_literals`,
-# ensuring that only unrelated string literals are removed from source code.
-#
-# Includes:
-# - Parametrized tests for multiple edge-case files.
-# - Checks preservation of kernel functions and tricky escapes.
-# -----------------------------------------------------------------------------
-
 import os
 import pytest
 from code_complexity.metrics.cyclomatic import remove_string_literals
@@ -21,7 +10,7 @@ TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "
 # Test cases: (filename)
 # -------------------------------
 test_files = [
-    "opencl/opencl_edge_cases.cpp",
+    "opencl/edge_cases.cpp",
     # Add more edge-case files here if needed
 ]
 

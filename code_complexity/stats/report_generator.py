@@ -1,24 +1,3 @@
-# -----------------------------------------------------------------------------
-# PDF Reporting for Code Complexity Metrics
-# -----------------------------------------------------------------------------
-# This module provides functions to generate PDF reports from code complexity 
-# metrics collected from source files. Reports include descriptive statistics, 
-# correlations, visualizations, and GPU framework-specific analyses.
-#
-# Includes:
-# - Converts metric data into structured tables using ReportLab.
-# - Generates heatmaps, pairwise scatter plots, histograms, and boxplots with matplotlib/seaborn.
-# - Aggregates GPU-native Halstead metrics by detected frameworks (CUDA, OpenMP, etc.).
-# - Bubble plots visualize framework-specific complexity with SLOC mapped to circle size.
-# - Supports both basic and advanced reports:
-#     - Basic: descriptive stats, correlation tables, heatmaps, and plots per metric
-#     - Advanced: includes pairplots and aggregated GPU framework analysis
-#
-# Note:
-# - Works with structured records as lists of dictionaries.
-# - Images from matplotlib figures are embedded in the PDF using in-memory buffers.
-# - Optional metrics (e.g., Halstead volume/difficulty) are handled gracefully.
-# -----------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
 from code_complexity.stats.analysis import summarize

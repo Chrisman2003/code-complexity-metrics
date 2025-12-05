@@ -1,17 +1,3 @@
-# -----------------------------------------------------------------------------
-# Halstead Metrics Test Suite for C++/CUDA/Kokkos/OpenCL Source Files
-# -----------------------------------------------------------------------------
-# This pytest module verifies the correctness of Halstead complexity metrics
-# computation across multiple languages and sample files. Metrics tested
-# include:
-# - Basic counts: n1, n2, N1, N2
-# - Derived metrics: vocabulary, size, volume, difficulty, effort, time
-#
-# Includes:
-# - Parametrized tests for multiple files and languages.
-# - Rounds floating-point metrics to 2 decimals for assertions.
-# - Provides detailed assertion messages for mismatches.
-# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.halstead import *
@@ -43,7 +29,7 @@ test_cases = [
         }
     },
     {
-        "filename": "cuda/complex_cuda.cu",
+        "filename": "cuda/complex.cu",
         "lang": "cuda",
         "expected": {
             "n1": 38, "n2": 19, "N1": 280, "N2": 75,
@@ -52,7 +38,7 @@ test_cases = [
         }
     },
     {
-        "filename": "kokkos/complex_kokkos.cpp",
+        "filename": "kokkos/complex.cpp",
         "lang": "kokkos",
         "expected": {
             "n1": 27, "n2": 25, "N1": 135, "N2": 63,
@@ -61,7 +47,7 @@ test_cases = [
         }
     },
     {
-        "filename": "opencl/complex_opencl.cpp",
+        "filename": "opencl/complex.cpp",
         "lang": "opencl",
         "expected": {
             "n1": 57, "n2": 48, "N1": 346, "N2": 147,
@@ -69,6 +55,85 @@ test_cases = [
             "difficulty": 87.28, "effort": 288911.68, "time": 16050.65
         }
     },
+        {
+        "filename": "adaptive_cpp/complex.cpp",
+        "lang": "adaptivecpp",
+        "expected": {
+            "n1": 119, "n2": 185, "N1": 1747, "N2": 915,
+            "vocabulary": 304, "size": 2662, "volume": 21955.98,
+            "difficulty": 294.28, "effort": 6461289.77, "time": 358960.54
+        }
+    },
+    # Boost
+    {
+        "filename": "boost/complex.cpp",
+        "lang": "boost",
+        "expected": {
+            "n1": 86, "n2": 133, "N1": 940, "N2": 566,
+            "vocabulary": 219, "size": 1506, "volume": 11708.83,
+            "difficulty": 182.99, "effort": 2142627.73, "time": 119034.87
+        }
+    },
+    # Metal
+    {
+        "filename": "metal/complex.cpp",
+        "lang": "metal",
+        "expected": {
+            "n1": 70, "n2": 68, "N1": 426, "N2": 194,
+            "vocabulary": 138, "size": 620, "volume": 4407.29,
+            "difficulty": 99.85, "effort": 440080.39, "time": 24448.91
+        }
+    },
+    # OpenACC
+    {
+        "filename": "openacc/complex.cpp",
+        "lang": "openacc",
+        "expected": {
+            "n1": 79, "n2": 93, "N1": 789, "N2": 445,
+            "vocabulary": 172, "size": 1234, "volume": 9164.01,
+            "difficulty": 189.01, "effort": 1732047.29, "time": 96224.85
+        }
+    },
+    # OpenGL/Vulkan
+    {
+        "filename": "opengl_vulkan/complex.cpp",
+        "lang": "opengl_vulkan",
+        "expected": {
+            "n1": 162, "n2": 159, "N1": 930, "N2": 409,
+            "vocabulary": 321, "size": 1339, "volume": 11149.09,
+            "difficulty": 208.36, "effort": 2323007.37, "time": 129055.97
+        }
+    },
+    # OpenMP
+    {
+        "filename": "openmp/complex.cpp",
+        "lang": "openmp",
+        "expected": {
+            "n1": 84, "n2": 91, "N1": 762, "N2": 401,
+            "vocabulary": 175, "size": 1163, "volume": 8665.76,
+            "difficulty": 185.08, "effort": 1603831.92, "time": 89101.77
+        }
+    },
+    # Thrust
+    {
+        "filename": "thrust/complex.cpp",
+        "lang": "thrust",
+        "expected": {
+            "n1": 52, "n2": 52, "N1": 426, "N2": 181,
+            "vocabulary": 104, "size": 607, "volume": 4067.17,
+            "difficulty": 90.50, "effort": 368078.61, "time": 20448.81
+        }
+    },
+    # WebGPU
+    {
+        "filename": "webgpu/complex.cpp",
+        "lang": "webgpu",
+        "expected": {
+            "n1": 91, "n2": 117, "N1": 840, "N2": 398,
+            "vocabulary": 208, "size": 1238, "volume": 9533.14,
+            "difficulty": 154.78, "effort": 1475518.90, "time": 81973.27
+        }
+    }
 ]
 
 @pytest.mark.parametrize("case", test_cases)

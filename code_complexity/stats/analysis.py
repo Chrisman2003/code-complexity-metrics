@@ -1,18 +1,3 @@
-# -----------------------------------------------------------------------------
-# Metrics Summary and Correlation Analysis for Source Code Records
-# -----------------------------------------------------------------------------
-# Includes:
-# - Generates descriptive statistics (mean, std, min, quartiles, max) for code metrics
-# - Computes pairwise correlations between core metrics:
-#   cognitive complexity, cyclomatic complexity, nesting depth, SLOC, Halstead effort
-# - Automatically includes additional Halstead metrics (volume, difficulty) if present
-# - Designed to work with structured records as dictionaries or lists of dictionaries
-#
-# Note:
-# This module leverages pandas for fast tabulation and correlation computation.
-# Only existing metrics are included in correlation calculations, ensuring
-# robustness against missing fields in the input data.
-# -----------------------------------------------------------------------------
 import pandas as pd
 
 def summarize(records):

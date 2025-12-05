@@ -1,10 +1,3 @@
-# -----------------------------------------------------------------------------
-# Cyclomatic Complexity Tests for C++ Source Files
-# -----------------------------------------------------------------------------
-# Parametrized pytest module to verify cyclomatic complexity
-# computation for multiple C++ sample files. Reports mismatches between
-# detected and expected values.
-# -----------------------------------------------------------------------------
 import os
 import pytest
 from code_complexity.metrics.cyclomatic import regex_compute_cyclomatic, cfg_compute_cyclomatic

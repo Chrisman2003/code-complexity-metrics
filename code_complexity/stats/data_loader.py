@@ -1,25 +1,3 @@
-# -----------------------------------------------------------------------------
-# Code Complexity Metrics Collection for Source Files
-# -----------------------------------------------------------------------------
-# This module provides functions to scan C++/CUDA source files or directories
-# and compute a variety of complexity metrics per file.
-#
-# Includes:
-# - Source Lines of Code (SLOC)
-# - Nesting Depth
-# - Cyclomatic Complexity (regex-based)
-# - Cognitive Complexity (regex-based)
-# - Halstead Metrics:
-#   - Difficulty
-#   - Volume
-#   - Effort
-# - GPU-native complexity deltas for detected frameworks (CUDA, OpenMP, etc.)
-#
-# Note:
-# - Works with structured records represented as dictionaries.
-# - Files with unsupported encodings are read with UTF-8, ignoring errors.
-# - Designed for robustness: missing optional metrics do not break processing.
-# -----------------------------------------------------------------------------
 import os
 from code_complexity.metrics.sloc import *
 from code_complexity.metrics.nesting_depth import *

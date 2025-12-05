@@ -1,15 +1,3 @@
-# -----------------------------------------------------------------------------
-# Cognitive Complexity computation utilities for C++ code
-# -----------------------------------------------------------------------------
-# Includes:
-# - Detection and scoring of control-flow constructs
-# - Nesting-aware complexity accumulation
-# - Logical-operator sequence counting (per SonarQube's sequence-chain rules)
-#
-# Note:
-# This is a fast, non-AST implementation. It follows the conceptual definition
-# of Cognitive Complexity but may differ from a full parser in rare edge cases.
-# -----------------------------------------------------------------------------
 import re
 from code_complexity.metrics.utils import *
 
