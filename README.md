@@ -1,5 +1,5 @@
 # Code Complexity Analyzer
-A pip installable Python tool to analyze source code and compute Code Complexity Measures.**SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports parallelizing frameworks for code constructs and particularly with respect to Halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
+A pip installable Python tool to analyze source code and compute: **SLOC**, **Cyclomatic**, **Cognitive**, and **Halstead** Code Complexity Measures. The tool supports parallelizing frameworks for code constructs and particularly with respect to Halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
 
 ### Code Complexity Measures:
 - SLOC
