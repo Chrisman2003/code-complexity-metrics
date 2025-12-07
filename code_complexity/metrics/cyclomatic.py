@@ -172,7 +172,6 @@ def cfg_compute_cyclomatic(code: str, filename: str) -> int:
     original_path = os.path.abspath(filename)
     original_dir = os.path.dirname(original_path) if os.path.exists(original_path) else os.getcwd()
     tmp_path = None
-    
     try:
         with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False, encoding="utf-8", dir=original_dir) as tmp:
             tmp_path = tmp.name
