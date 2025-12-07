@@ -4,14 +4,20 @@ from code_complexity.metrics.nesting_depth import *
 from code_complexity.metrics.cyclomatic import *
 from code_complexity.metrics.cognitive import *
 from code_complexity.metrics.halstead import *
-'''
-✅ Ranked from most to least accurate for total file complexity:
-1) E — Effort
-2) D — Difficulty
-3) V — Volume
-'''
+from code_complexity.metrics.utils import detect_parallel_framework
+from pathlib import Path
+
+
 def collect_metrics(root_path: str):
-    """Scan a file or directory and compute complexity metrics."""
+    """
+    Scan a file or directory and compute complexity metrics.
+
+    Args:
+        root_path (str): Path to a file or directory.
+
+    Returns:
+        list[dict]: List of metric dictionaries for each processed file.
+    """
     records = []
 
     def analyze_file(filepath):
@@ -19,59 +25,40 @@ def collect_metrics(root_path: str):
             code = f.read()
         sloc_val = compute_sloc(code)
         nesting = compute_nesting_depth(code)
-        cyclomatic_val = basic_compute_cyclomatic(code)
+        cyclomatic_val = regex_compute_cyclomatic(code)
         cognitive_val = regex_compute_cognitive(code)
-        halstead_effort = effort(halstead_metrics_auto(code))
-        halstead_difficulty = difficulty(halstead_metrics_auto(code))
-        halstead_volume = volume(halstead_metrics_auto(code))
+        halstead_difficulty = difficulty(halstead_metrics(code, "auto"))
+        halstead_volume = volume(halstead_metrics(code, "auto"))
+        halstead_effort = effort(halstead_metrics(code, "auto"))
         
         # Base Halstead metrics (C++ reference)
-        halstead_base = halstead_metrics_cpp(code)
-        halstead_effort_base = effort(halstead_base)
+        halstead_base = halstead_metrics(code, "cpp")
         halstead_difficulty_base = difficulty(halstead_base)
         halstead_volume_base = volume(halstead_base)
         
         # Detect languages/frameworks
         languages = detect_parallel_framework(code)
-        
-        # Mapping of language/framework to metric function
-        lang_to_fn = {
-            'cpp': halstead_metrics_cpp,
-            'cuda': halstead_metrics_cuda,
-            'kokkos': halstead_metrics_kokkos,
-            'opencl': halstead_metrics_opencl,
-            'openmp': halstead_metrics_openmp,
-            'adaptivecpp': halstead_metrics_adaptivecpp,
-            'openacc': halstead_metrics_openacc,
-            'opengl_vulkan': halstead_metrics_opengl_vulkan,
-            'webgpu': halstead_metrics_webgpu,
-            'boost': halstead_metrics_boost,
-            'metal': halstead_metrics_metal,
-            'thrust': halstead_metrics_thrust
-        }
-
         # Compute GPU-native Halstead complexities
         gpu_complexity = {}
         for lang in languages:
-            if lang in lang_to_fn and lang != 'cpp':  # skip base C++
-                halstead_lang = lang_to_fn[lang](code)
+            if lang != "cpp":
+            #if lang in lang_to_fn and lang != 'cpp':  # skip base C++
+                halstead_lang = halstead_metrics(code, lang)
+                #halstead_lang = lang_to_fn[lang](code)
                 gpu_complexity[lang] = {
-                    "effort": effort(halstead_lang) - halstead_effort_base,
                     "difficulty": difficulty(halstead_lang) - halstead_difficulty_base,
-                    "volume": volume(halstead_lang) - halstead_volume_base
+                    "volume": volume(halstead_lang) - halstead_volume_base,
                 }
-                
+        
         return {
             "file": filepath,
             "sloc": sloc_val,
             "nesting": nesting,
             "cognitive": cognitive_val,
             "cyclomatic": cyclomatic_val,
-            # Halstead Metrics
-            "halstead_effort": halstead_effort,
             "halstead_difficulty": halstead_difficulty,
             "halstead_volume": halstead_volume,
-            # Dictionary: {language, gpu_complexity}
+            "halstead_effort": halstead_effort,
             "gpu_complexity": gpu_complexity,
         }
     # Handle single file
@@ -92,11 +79,30 @@ def collect_metrics(root_path: str):
     "nesting": 3,
     "cognitive": 15,
     "cyclomatic": 8,
-    "halstead_effort": 450,
     "halstead_difficulty": 20,
     "halstead_volume": 1500,
     "gpu_complexity": {
-        "cuda": {"effort": 200, "difficulty": 10, "volume": 600},
-        "openmp": {"effort": 50, "difficulty": 5, "volume": 100}
+        "cuda": {"difficulty": 10, "volume": 600},
+        "openmp": {"difficulty": 5, "volume": 100}
     }
+'''
+
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) The Halstead Delta Computation is only designed for files containing a singular GPU framework.
+    In files where multiple GPU frameworks are used, the delta values for Halstead metrics
+    may have discrepancies when reflecting the individual contributions of each framework 
+    (through the operand set). The C++ lens inherently subtracts from operand set all framework
+    functions (cudaMalloc() and thrust::...). A thrust lens will not subtract cudaMalloc() calls from the operand
+    set for example. 
+    -> This is an inevitable edge case. Since one can't subtract a merged set with all framework functions from
+    the operand set. Any attempt to merge framework vocabularies for subtraction would distort the lens-specific 
+    meaning of the metrics.
+    -> Mixed-framework files often serve as glue code, integration layers, or migration scaffolding rather than 
+    representative algorithmic implementations. Their Halstead deltas are not expected to reflect clean 
+    framework-specific complexity because the file's purpose itself is not entirely framework-specific.
+    -> For manual framework complexity deltas, one can modify the detection framework by changing the corresponding
+    library headers.
+2) Files that do not include any GPU framework will not have any entries in the "gpu_complexity" dictionary.
 '''

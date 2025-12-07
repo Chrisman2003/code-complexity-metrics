@@ -1,9 +1,10 @@
-from code_complexity.metrics.shared import *
+from code_complexity.metrics.utils import *
 
 def compute_sloc(code: str) -> int:
-    """Compute Source Lines of Code (SLOC) after removing comments and string literals.
+    """Compute Source Lines of Code (SLOC) after removing comments, headers and string literals.
 
-    Counts all non-empty lines that remain after stripping comments and (non-kernel) string literals.
+    Counts all non-empty lines that remain after stripping comments, headers and (non-kernel) string literals.
+    Only lines containing actual executing code contribute to the count.
 
     Args:
         code (str): Full C++ extended source code.
@@ -11,12 +12,40 @@ def compute_sloc(code: str) -> int:
     Returns:
         int: Number of source lines of code (SLOC).
     """
-    # Remove all Header Calling Instances
+    # Remove comments, non-kernel string literals, Header calls
+    plain_logger.debug(f"Initial code size: {len(code.splitlines())} lines")
+    
+    # Before/after header removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_headers(code)
-    # Remove all comments
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"Header removal reduced lines by: {before - after}")
+    
+    # Before/after comment removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_cpp_comments(code)
-    # Remove all string literals except kernel strings
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"Comment removal reduced lines by: {before - after}")
+    
+    # Before/after string literal removal
+    before = sum(1 for line in code.splitlines() if line.strip())
     code = remove_string_literals(code)
-    # Count all non-empty lines
+    after = sum(1 for line in code.splitlines() if line.strip())
+    plain_logger.debug(f"String literal reduced lines by: {before - after}")
+
+    # Count all non-empty lines (original and those from removals)
     lines = code.splitlines()
     return sum(1 for line in lines if line.strip())
+
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) String literals:
+const char* msg = "line1
+line2
+line3";
+Without removal, this counts as 3 lines.
+
+With removal, it becomes:
+const char* msg = ;
+'''

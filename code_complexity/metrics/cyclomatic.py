@@ -3,28 +3,8 @@ import subprocess
 import re
 import tempfile
 import os
-from code_complexity.metrics.shared import *
-import logging
-import sys
+from code_complexity.metrics.utils import *
 
-# -------------------------------
-# Logging setup
-# -------------------------------
-plain_logger = logging.getLogger("plain")
-plain_handler = logging.StreamHandler(sys.stdout)
-plain_handler.setFormatter(logging.Formatter("%(message)s"))
-plain_logger.addHandler(plain_handler)
-plain_logger.setLevel(logging.INFO)
-
-
-# -----------------------------------------------------------------------------
-# Cyclomatic Complexity Analysis for C++ Code
-# -----------------------------------------------------------------------------
-# This module computes the McCabe cyclomatic complexity (V(G) = E − N + 2P)
-# for C++ code using Clang's static analyzer for precise CFG extraction,
-# as well as a simpler heuristic method based on control-flow keywords.
-# -----------------------------------------------------------------------------
-    
 def get_clang_include_flags() -> list[str]:
     """Construct Clang-compatible include flags for system headers.
 
@@ -118,7 +98,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
     r""" 
     REGEX EXPLANATION:
     This regex matches lines that list successor nodes in a format like:
-    "Succs (2): 3, 4, 5"
+    "Succs (2): 3, 4"
     -------------------------------
     -  Succs       → Match literal string 'Succs'
     -  \s         → Match a space
@@ -148,7 +128,7 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             cfg = nx.DiGraph()
             function_cfgs[current_function] = cfg
             current_node = None
-            continue    
+            continue
         
         node_match = node_pattern.search(line)
         succ_match = succ_pattern.search(line)
@@ -164,10 +144,10 @@ def build_cfg_from_dump(output: str) -> dict[str, nx.DiGraph]:
             # Add edges from the current node to its successors.
             successors = [int(s[1:]) for s in succ_match.group(2).split()]
             for succ in successors:
-                cfg.add_edge(current_node, succ)
+                cfg.add_edge(current_node, succ)     
     return function_cfgs
 
-def compute_cyclomatic(code: str, filename: str) -> int:
+def cfg_compute_cyclomatic(code: str, filename: str) -> int:
     """Compute cyclomatic complexity of C++ code using Clang CFG.
     
     Uses Clang's static analyzer to dump the control-flow graph (CFG) of each
@@ -228,12 +208,8 @@ def compute_cyclomatic(code: str, filename: str) -> int:
 
         output = process.stdout + "\n" + process.stderr
         
-        # Save CFG to a file
-        #cfg_file_path = os.path.join(original_dir, "clang_cfg_dump.txt")
-        #with open(cfg_file_path, "w", encoding="utf-8") as f:
-        #    f.write(output)
-        #plain_logger.info(f"Clang CFG dump saved to: {cfg_file_path}")
-        plain_logger.info(output)  # Debugging: inspect Clang CFG dump.
+        # Log CFG to terminal
+        plain_logger.debug("Clang CFG dump:\n%s", output)
         '''
         The Core idea: is to chain function building -> node building -> successor building
         At Any point one has a state, where the program is in a function with an isolated CFG,
@@ -249,7 +225,7 @@ def compute_cyclomatic(code: str, filename: str) -> int:
             edges = func_cfg.number_of_edges()
             nodes = func_cfg.number_of_nodes()
             cyclomatic_complexity = edges - nodes + 2 * 1  # P = 1 per function.
-            plain_logger.info(f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}")
+            plain_logger.debug(f"Function {func_name}: E={edges}, N={nodes}, P=1, CC={cyclomatic_complexity}")
             total_complexity += cyclomatic_complexity
         return total_complexity
     finally:
@@ -261,25 +237,47 @@ def compute_cyclomatic(code: str, filename: str) -> int:
                 pass
 
 def detect_fallthroughs(code: str) -> int:
+    """Detects fallthroughs in C++-style switch statements in the given code.
+
+    A fallthrough occurs when a `case` in a `switch` statement does not end
+    with a `break;` (or equivalent control transfer) and execution continues
+    into the next case.
+
+    Args:
+        code (str): A string containing C++ source code.
+
+    Returns:
+        int: The number of fallthroughs detected in the code.
+    """
+    
     fallthroughs = 0
+    r""" 
+    REGEX EXPLANATION:
+    Find all switch statement blocks in the code
+    -------------------------------
+    \bswitch\b       → matches the word 'switch' as a whole word
+    \s*              → allows optional whitespace between 'switch' and '('
+    \([^)]*\)        → matches the parentheses containing the switch condition (anything except ')')
+    \s*              → optional whitespace after the parentheses
+    \{([^}]*)\}      → matches the block inside braces { ... } and captures it in group 1
+    re.DOTALL        → allows '.' to match newline characters so multiline blocks are captured
+    """   
     switch_blocks = re.findall(r'\bswitch\b\s*\([^)]*\)\s*\{([^}]*)\}', code, re.DOTALL)
     for block in switch_blocks:
         # Split each switch block into case segments
         cases = re.split(r'\bcase\b|\bdefault\b', block)
         # Skip first segment (before first case)
-        #print(cases)
         for seg in cases[1:-1]:
             # Only count if segment lacks 'break;'
             if 'break;' not in seg:
                 fallthroughs += 1
     return fallthroughs
 
-def basic_compute_cyclomatic(code: str) -> int:
+def regex_compute_cyclomatic(code: str) -> int:
     """
-    Compute a simplified cyclomatic complexity estimate using heuristics.
+    Compute a non-cfg cyclomatic complexity estimate using heuristics.
     
-    Accepts either the source text via `code` or a path via `filename`.
-    If `filename` is provided it will be read (UTF-8, ignore errors) and parsed.
+    Accepts the source text via `code` and counts control flow constructs.
 
     Args:
         code (str): Source code as a string. The code should be plain text; 
@@ -288,7 +286,7 @@ def basic_compute_cyclomatic(code: str) -> int:
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
-    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch', 'do', 'goto']
+    control_keywords = ['if', 'for', 'while', 'case', 'default', 'catch'] # 'do' and 'if else' implicit 
     logical_operators = ['&&', '||', '?', 'and', 'or']
     count = 0
     num_functions = 0
@@ -296,13 +294,25 @@ def basic_compute_cyclomatic(code: str) -> int:
     function_pattern = re.compile(r"""
         (?:template\s*<[^>]+>\s*)*                     # optional template declaration(s), e.g., template<typename T>
         (?:[\w:\<\>\~\*\&\s]+\s+)?                     # optional return type including pointers, refs, const, and spaces
-        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+)) # function name, scoped names, destructors (~), or operator overloads
-        \([^{};]*\)\s*                                 # parameter list in parentheses, flat, no braces or semicolons inside
+        (~?(?:[A-Za-z_]\w*(?:::\w+)*|operator[^\s(]+))\s* # function name, scoped names, destructors (~), or operator overloads
+        \([^{};]*\)\s*                                 # ALSO handle "double ()". Parameter list in parentheses, flat, no braces or semicolons inside
         (?:const\s*)?(?:noexcept\s*)?                  # optional const and/or noexcept specifiers after parameters
         (?:->\s*[\w:\<\>\s\*&]+)?                      # optional C++11 trailing return type, e.g., -> int
         \s*\{                                          # opening brace of function body to match only definitions
         """, re.VERBOSE | re.DOTALL
     )
+    # Find all candidate functions in the full code
+    matches = function_pattern.finditer(code)
+
+    num_functions = 0
+    for match in matches:
+        func_str = match.group()
+        # Skip if function is called via object or pointer
+        # Exclude false positives: lines that are control statements
+        if not any(re.search(rf'\b{k}\b\s*\(', func_str) for k in control_keywords + ['switch']):
+            num_functions += 1
+            plain_logger.debug("Function detected: %s -> Total functions: %d", func_str.strip(), num_functions)
+            
     for line in code.splitlines():
         stripped = line.strip() # Leading and Trailing whitespaces removed
         
@@ -319,58 +329,38 @@ def basic_compute_cyclomatic(code: str) -> int:
                 count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
                 # Count functions (definitions only, not calls)
         
-        if re.match(function_pattern, stripped):
-            # Exclude mis-matched control statements
-            if not any(stripped.startswith(k) for k in (control_keywords + ['switch'])):
-                #plain_logger.info(f"Function detected: {stripped}") # Show detected function for debugging
-                num_functions += 1
+        #if re.match(function_pattern, stripped):
+        #    # Exclude lines that contain control keywords (whole word)
+        #    # Necesarry error handling: stand along if() expressions should NOT be counted as functions!
+        #    if not any(re.match(rf'\w*\s*\b{k}\b\s*\w*', stripped) for k in control_keywords + ['switch']):
+        #        # Function detected
+        #        num_functions += 1
+        #        # print(f"Function detected: {stripped} -> Total functions: {num_functions}")
+                
     fallthroughs = detect_fallthroughs(code)
-    #plain_logger.info("fallthroughs:", fallthroughs)
     return count + num_functions + fallthroughs # +1 for the default path
 
 # Edge Case: Boolean Operators for CFG Method Version
 
 '''
-Edge Cases:
-    1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
-    2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
-       prevent false positives for keywords like 'or' or 'and'.
-    3) The `else` keyword is not counted separately because it does not create 
-       an independent path; `else if` is counted via its `if`.
-    4) `switch` statements do not add complexity themselves; only `case` and 
-       `default` labels are counted.
-    5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
-    6) Alphabetic logical operators `and`, `or` are counted only when they 
-       appear as standalone words, not as substrings of other identifiers.
-    7) Multi-line constructs may not be perfectly accounted for in this heuristic.
-    8) If `code` is `None`, it is treated as an empty string (CC = 1).
-    9) Fall-Through Switch-Case Statements
-    10) Clang doesn't produce CFG components on non-instantiated templates
-'''
+EDGE CASE DOCUMENTATION:
+HANDLED:
+1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
+2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
+prevent false positives for keywords like 'or' or 'and'.
+3) The `else` keyword is not counted separately because it does not create 
+an independent path; `else if` is counted via its `if`.       
+4) `switch` statements do not add complexity themselves; only `case` and 
+`default` labels are counted.   
+5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
+6) Alphabetic logical operators `and`, `or` are counted only when they 
+appear as standalone words, not as substrings of other identifiers.
+7) Multi-line constructs may not be perfectly accounted for in this heuristic.
+8) If `code` is `None`, it is treated as an empty string (CC = 1).    
+9) Fall-Through Switch-Case Statements
+10) Clang doesn't produce CFG components on non-instantiated templates
+11) Fall through branches in switch/case statements
 
-'''
-Edge Cases for Commenting:
-1) Fall Through branches in switch/case statements
-1) 
-std::string s = "This is not a // comment";
-char c = '/';
-std::string t = "/* not a comment */";
-2)
-/* Outer comment
-   /* Inner comment */
-   End of outer */
-3) 
-#define STR(x) "/* " #x " */"
-'''
-
-'''
-Edge Cases: 
--> label: 
--> if (x > 0) 
--> } if (x > 0)
-'''
-
-# TODO
-'''
-Cyclomati Function Recognition: still not 100%
+NOT HANDLED:
+1) Perfect Function Counting -> Only in rare cases however.
 '''

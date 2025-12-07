@@ -1,54 +1,38 @@
 import os
-from code_complexity.metrics.cyclomatic import *
+import pytest
+from code_complexity.metrics.cyclomatic import regex_compute_cyclomatic, cfg_compute_cyclomatic
+from code_complexity.metrics.utils import load_code
 
-# Directory containing test files for code complexity analysis
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
-TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
+# Directory containing test files for code complexity analysis - Using absolute path
+TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "samples"))
 
-def load_code(filename):
-    """Loads the content of a code file.
+# -------------------------------
+# Test cases: (filename, expected cyclomatic complexity)
+# -------------------------------
+test_cases = [
+    ("cpp/OLD_simple.cpp", 4, 4),
+    ("cpp/edge.cpp", 6, 6),
+    ("cpp/complex.cpp", 52, 52),
+    ("cpp/hyper_complex.cpp", 84, 83),
+]
+
+@pytest.mark.parametrize("filename,expected_basic,expected_full", test_cases)
+def test_cyclomatic_files(filename, expected_basic, expected_full):
+    """
+    Test cyclomatic complexity computation for multiple C++ source files.
+
+    This is a parametrized pytest function that validates both basic and 
+    full (CFG-based) cyclomatic complexity calculations for a set of test files.
 
     Args:
-        filename (str): Name of the file to load from TEST_FILES_DIR.
+        filename (str): Relative path to the C++ source file under test.
+        expected_basic (int): Expected cyclomatic complexity from the regex-based method.
+        expected_full (int): Expected cyclomatic complexity from the CFG-based method.
 
-    Returns:
-        str: The content of the file as a string.
+    Raises:
+        AssertionError: If either the basic or full cyclomatic complexity does not match
+                        the expected value.
     """
-    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def test_cyclomatic_simple_cpp():
-    """
-    Tests cyclomatic complexity calculation on a simple C++ File.
-    """
-    code = load_code("cpp/OLD_simple.cpp")
-    assert basic_compute_cyclomatic(code) == 4
-    assert compute_cyclomatic(code, "OLD_simple.cpp") == 4
-
-
-def test_cyclomatic_edge_cpp():
-    """
-    Tests cyclomatic complexity for specified edge case File.
-    """
-    code = load_code("cpp/edge.cpp")
-    assert basic_compute_cyclomatic(code) == 4
-    assert compute_cyclomatic(code, "edge.cpp") == 6
-
-
-def test_cyclomatic_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a more complex C++ File.
-    """
-    code = load_code("complex/complex.cpp")
-    assert basic_compute_cyclomatic(code) == 50
-    assert compute_cyclomatic(code, "complex.cpp") == 52
-
-    
-def test_cyclomatic_hyper_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a very complex C++ File.
-    """
-    code = load_code("complex/hyper_complex.cpp")
-    assert basic_compute_cyclomatic(code) == 83
-    assert compute_cyclomatic(code, "hyper_complex.cpp") == 83
+    code = load_code(filename, TEST_FILES_DIR)
+    assert regex_compute_cyclomatic(code) == expected_basic
+    assert cfg_compute_cyclomatic(code, filename) == expected_full

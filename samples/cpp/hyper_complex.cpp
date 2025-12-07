@@ -98,7 +98,9 @@ public:
     }
 
 private:
-    int dfsHelper(Node* node, std::set<int>& visited) {
+    int dfsHelper(Node* node, std::set<int>& visited) 
+    
+    {
         if (!node || visited.count(node->value)) return 0;
         visited.insert(node->value);
         int sum = node->value;
@@ -170,7 +172,10 @@ public:
             else if (data[i] % 3 == 0) total += fibonacci(data[i] % 20);
             else total += power(2, data[i] % 10);
 
-            for (int j = 1; j <= 5; ++j) {
+            for (int j = 1; j <= 5; ++j) 
+            
+            
+            {
                 if ((i + j) % 2 == 0) total -= j;
                 else total += j;
                 if (j % 3 == 0 && total > 1000) total /= 2;
@@ -202,7 +207,11 @@ int ackermann(int m, int n) {
     return ackermann(m - 1, ackermann(m, n - 1));
 }
 
-int collatzSteps(int n) {
+int collatzSteps(int n) 
+
+
+
+{
     int steps = 0;
     while (n != 1) {
         if (n % 2 == 0) n /= 2;
@@ -228,9 +237,9 @@ int main() {
     std::cout << "Count nodes divisible by 3: " << g.countNodesWithCondition([](int v){ return v % 3 == 0; }) << "\n";
 
     Matrix<int> mat1(10, 10), mat2(10, 10);
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) 
         for (int j = 0; j < 10; ++j) {
-            mat1.set(i,j, i+j);
+            mat1.set(i,j, i+j); 
             mat2.set(i,j, i*j);
         }
 

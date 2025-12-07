@@ -5,6 +5,7 @@ int main() {
     int a = 5;
     int b = 10;
     int c = 15;
+    int d = 10;
 
     // Boolean operators in actual code
     if ((a < b) && (b < c)) {   // && should be counted
@@ -16,9 +17,15 @@ int main() {
     }
 
     // Boolean operators inside strings (should NOT be counted)
-    cout << "this && should not count" << endl;
-    cout << "this || should not count" << endl;
+    cout << 'single quote test' << endl;
+    cout << 'this || should not count' << endl;
     cout << "a or b in string" << endl;
+    cout << "this && should not count" << endl;
+    
+
+    // Strings with keywords that look like operators
+    cout << "Logical AND spelled as 'and' in string should not count" << endl;
+    cout << "Logical OR spelled as 'or' in string should not count" << endl;
 
     // Boolean operators inside comments (should NOT be counted)
     // if (a < b && b < c) { ... } 

@@ -1,52 +1,38 @@
 import os
-from code_complexity.metrics.cognitive import *
+import pytest
+from code_complexity.metrics.utils import load_code
+from code_complexity.metrics.cognitive import regex_compute_cognitive
 
 # Directory containing test files for code complexity analysis
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "..", "samples")
-TEST_FILES_DIR = os.path.abspath(TEST_FILES_DIR)  # Absolute path for consistency
+TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "samples"))
 
-def load_code(filename):
-    """Loads the content of a code file.
+# -------------------------------
+# Test cases: (filename, expected cognitive complexity)
+# -------------------------------
+test_cases = [
+    ("cpp/OLD_simple.cpp", 3),
+    ("cpp/edge.cpp", 4),
+    ("cpp/complex.cpp", 38),
+    ("cpp/hyper_complex.cpp", 90),
+]
+
+@pytest.mark.parametrize("filename,expected", test_cases)
+def test_cognitive_complexity(filename, expected):
+    """
+    Test cognitive complexity computation for multiple C++ source files.
+
+    This is a parametrized pytest function that checks whether the
+    `regex_compute_cognitive` function correctly computes the cognitive
+    complexity for a set of test files.
 
     Args:
-        filename (str): Name of the file to load from TEST_FILES_DIR.
+        filename (str): Relative path to the C++ source file under test.
+        expected (int): Expected cognitive complexity value for the file.
 
-    Returns:
-        str: The content of the file as a string.
+    Raises:
+        AssertionError: If the computed cognitive complexity does not match
+                        the expected value.
     """
-    with open(os.path.join(TEST_FILES_DIR, filename), 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def test_cyclomatic_simple_cpp():
-    """
-    Tests cyclomatic complexity calculation on a simple C++ File.
-    """
-    code = load_code("cpp/OLD_simple.cpp")
-    assert regex_compute_cognitive(code) == 3
-
-
-def test_cyclomatic_edge_cpp():
-    """
-    Tests cyclomatic complexity for specified edge case File.
-    """
-    code = load_code("cpp/edge.cpp")
-    assert regex_compute_cognitive(code) == 4
-
-
-def test_cyclomatic_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a more complex C++ File.
-    """
-    code = load_code("complex/complex.cpp")
-    assert regex_compute_cognitive(code) == 38
-
-    
-def test_cyclomatic_hyper_complex_cpp():
-    """
-    Tests cyclomatic complexity calculation on a very complex C++ File.
-    """
-    code = load_code("complex/hyper_complex.cpp")
-    assert regex_compute_cognitive(code) == 90
-
-
+    code = load_code(filename, TEST_FILES_DIR)
+    detected = regex_compute_cognitive(code)
+    assert detected == expected, f"File {filename}: detected {detected}, expected {expected}"

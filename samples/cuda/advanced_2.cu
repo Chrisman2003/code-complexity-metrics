@@ -77,17 +77,17 @@ int main() {
 
     Vector3* d_field;
     FloatType* d_div;
-    CHECK_CUDA(cudaMalloc(&d_field, N*sizeof(Vector3)));
-    CHECK_CUDA(cudaMalloc(&d_div, N*sizeof(FloatType)));
-    CHECK_CUDA(cudaMemcpy(d_field, h_field.data(), N*sizeof(Vector3), cudaMemcpyHostToDevice));
+    CHECK_CUDA  (cudaMalloc(&d_field, N*sizeof(Vector3)));
+    CHECK_CUDA  (cudaMalloc(&d_div, N*sizeof(FloatType)));
+    CHECK_CUDA  (cudaMemcpy(d_field, h_field.data(), N*sizeof(Vector3), cudaMemcpyHostToDevice));
 
     dim3 block(8,8,8);
     dim3 grid((NX+7)/8, (NY+7)/8, (NZ+7)/8);
     computeDivergence<<<grid, block>>>(d_field, d_div, NX, NY, NZ);
-    CHECK_CUDA(cudaDeviceSynchronize());
+    CHECK_CUDA (cudaDeviceSynchronize());
 
     std::vector<FloatType> h_div(N);
-    CHECK_CUDA(cudaMemcpy(h_div.data(), d_div, N*sizeof(FloatType), cudaMemcpyDeviceToHost));
+    CHECK_CUDA  (cudaMemcpy(h_div.data(), d_div, N*sizeof(FloatType), cudaMemcpyDeviceToHost));
 
     FloatType totalDivergence = sumField(h_div);
     std::cout << "Total divergence: " << totalDivergence << std::endl;

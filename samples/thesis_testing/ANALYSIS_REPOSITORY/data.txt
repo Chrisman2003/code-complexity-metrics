@@ -1,0 +1,681 @@
+MATRIX_MULTIPLICATION
+(.venv) chris2003@DESKTOP-BPBA8Q0:~/Uni/Thesis_Informatics/code-complexity-metrics$ code-metrics samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/ --lang auto
+{'cpp'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_Cpp.cpp
+21:33:37 | INFO | SLOC: 37  [runtime: 0.0008s]
+21:33:37 | INFO | Nesting Depth: 7  [runtime: 0.0001s]
+21:33:37 | INFO | Cyclomatic Complexity: 11  [runtime: 0.0089s]
+21:33:37 | INFO | Cognitive Complexity: 25  [runtime: 0.0018s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 41
+21:33:37 | INFO |   n2: 35
+21:33:37 | INFO |   N1: 271
+21:33:37 | INFO |   N2: 151
+21:33:37 | INFO |   Vocabulary: 76
+21:33:37 | INFO |   Size: 422
+21:33:37 | INFO |   Volume: 2636.63
+21:33:37 | INFO |   Difficulty: 88.44
+21:33:37 | INFO |   Effort: 233190.68
+21:33:37 | INFO |   Time: 12955.04s
+21:33:37 | INFO | [Halstead runtime: 0.0208s]
+21:33:37 | INFO | ----------------------------------------
+{'cpp', 'opencl'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_OpenCL.cpp
+21:33:37 | INFO | SLOC: 84  [runtime: 0.0007s]
+21:33:37 | INFO | Nesting Depth: 2  [runtime: 0.0013s]
+21:33:37 | INFO | Cyclomatic Complexity: 16  [runtime: 0.0231s]
+21:33:37 | INFO | Cognitive Complexity: 12  [runtime: 0.0059s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 72
+21:33:37 | INFO |   n2: 72
+21:33:37 | INFO |   N1: 651
+21:33:37 | INFO |   N2: 244
+21:33:37 | INFO |   Vocabulary: 144
+21:33:37 | INFO |   Size: 895
+21:33:37 | INFO |   Volume: 6417.08
+21:33:37 | INFO |   Difficulty: 122.00
+21:33:37 | INFO |   Effort: 782884.11
+21:33:37 | INFO |   Time: 43493.56s
+21:33:37 | INFO | [Halstead runtime: 0.0375s]
+21:33:37 | INFO | ----------------------------------------
+{'cpp', 'boost'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_Boost.cpp
+21:33:37 | INFO | SLOC: 41  [runtime: 0.0001s]
+21:33:37 | INFO | Nesting Depth: 3  [runtime: 0.0002s]
+21:33:37 | INFO | Cyclomatic Complexity: 1  [runtime: 0.0085s]
+21:33:37 | INFO | Cognitive Complexity: 0  [runtime: 0.0035s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 48
+21:33:37 | INFO |   n2: 59
+21:33:37 | INFO |   N1: 336
+21:33:37 | INFO |   N2: 186
+21:33:37 | INFO |   Vocabulary: 107
+21:33:37 | INFO |   Size: 522
+21:33:37 | INFO |   Volume: 3519.05
+21:33:37 | INFO |   Difficulty: 75.66
+21:33:37 | INFO |   Effort: 266254.58
+21:33:37 | INFO |   Time: 14791.92s
+21:33:37 | INFO | [Halstead runtime: 0.0117s]
+21:33:37 | INFO | ----------------------------------------
+{'kokkos', 'cpp'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_Kokkos.cpp
+21:33:37 | INFO | SLOC: 39  [runtime: 0.0001s]
+21:33:37 | INFO | Nesting Depth: 4  [runtime: 0.0002s]
+21:33:37 | INFO | Cyclomatic Complexity: 3  [runtime: 0.0081s]
+21:33:37 | INFO | Cognitive Complexity: 1  [runtime: 0.0030s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 53
+21:33:37 | INFO |   n2: 52
+21:33:37 | INFO |   N1: 351
+21:33:37 | INFO |   N2: 192
+21:33:37 | INFO |   Vocabulary: 105
+21:33:37 | INFO |   Size: 543
+21:33:37 | INFO |   Volume: 3645.84
+21:33:37 | INFO |   Difficulty: 97.85
+21:33:37 | INFO |   Effort: 356730.96
+21:33:37 | INFO |   Time: 19818.39s
+21:33:37 | INFO | [Halstead runtime: 0.0228s]
+21:33:37 | INFO | ----------------------------------------
+{'cpp', 'cuda'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_Cuda.cu
+21:33:37 | INFO | SLOC: 118  [runtime: 0.0002s]
+21:33:37 | INFO | Nesting Depth: 5  [runtime: 0.0003s]
+21:33:37 | INFO | Cyclomatic Complexity: 21  [runtime: 0.0223s]
+21:33:37 | INFO | Cognitive Complexity: 38  [runtime: 0.0047s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 81
+21:33:37 | INFO |   n2: 85
+21:33:37 | INFO |   N1: 951
+21:33:37 | INFO |   N2: 452
+21:33:37 | INFO |   Vocabulary: 166
+21:33:37 | INFO |   Size: 1403
+21:33:37 | INFO |   Volume: 10347.18
+21:33:37 | INFO |   Difficulty: 215.36
+21:33:37 | INFO |   Effort: 2228417.45
+21:33:37 | INFO |   Time: 123800.97s
+21:33:37 | INFO | [Halstead runtime: 0.0502s]
+21:33:37 | INFO | ----------------------------------------
+{'openmp', 'cpp'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_OpenMP.cpp
+21:33:37 | INFO | SLOC: 50  [runtime: 0.0001s]
+21:33:37 | INFO | Nesting Depth: 5  [runtime: 0.0003s]
+21:33:37 | INFO | Cyclomatic Complexity: 10  [runtime: 0.0135s]
+21:33:37 | INFO | Cognitive Complexity: 14  [runtime: 0.0035s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 48
+21:33:37 | INFO |   n2: 48
+21:33:37 | INFO |   N1: 399
+21:33:37 | INFO |   N2: 227
+21:33:37 | INFO |   Vocabulary: 96
+21:33:37 | INFO |   Size: 626
+21:33:37 | INFO |   Volume: 4122.19
+21:33:37 | INFO |   Difficulty: 113.50
+21:33:37 | INFO |   Effort: 467868.17
+21:33:37 | INFO |   Time: 25992.68s
+21:33:37 | INFO | [Halstead runtime: 0.0249s]
+21:33:37 | INFO | ----------------------------------------
+{'opengl_vulkan', 'cpp'}
+21:33:37 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Matrix_Multiplication/Impl_Vulkan.cpp
+21:33:37 | INFO | SLOC: 31  [runtime: 0.0001s]
+21:33:37 | INFO | Nesting Depth: 4  [runtime: 0.0002s]
+21:33:37 | INFO | Cyclomatic Complexity: 1  [runtime: 0.0129s]
+21:33:37 | INFO | Cognitive Complexity: 0  [runtime: 0.0030s]
+21:33:37 | INFO | Halstead Metrics:
+21:33:37 | INFO |   n1: 47
+21:33:37 | INFO |   n2: 55
+21:33:37 | INFO |   N1: 305
+21:33:37 | INFO |   N2: 149
+21:33:37 | INFO |   Vocabulary: 102
+21:33:37 | INFO |   Size: 454
+21:33:37 | INFO |   Volume: 3029.28
+21:33:37 | INFO |   Difficulty: 63.66
+21:33:37 | INFO |   Effort: 192855.05
+21:33:37 | INFO |   Time: 10714.17s
+21:33:37 | INFO | [Halstead runtime: 0.0485s]
+21:33:37 | INFO | ----------------------------------------
+
+
+
+
+
+
+
+
+
+N-BODY SIMULATION
+(.venv) chris2003@DESKTOP-BPBA8Q0:~/Uni/Thesis_Informatics/code-complexity-metrics$ code-metrics samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/ --lang auto
+{'cpp'}
+21:20:55 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_Cpp.cpp
+21:20:55 | INFO | SLOC: 80  [runtime: 0.0008s]
+21:20:55 | INFO | Nesting Depth: 5  [runtime: 0.0002s]
+21:20:55 | INFO | Cyclomatic Complexity: 10  [runtime: 0.0147s]
+21:20:55 | INFO | Cognitive Complexity: 9  [runtime: 0.0036s]
+21:20:55 | INFO | Halstead Metrics:
+21:20:55 | INFO |   n1: 66
+21:20:55 | INFO |   n2: 79
+21:20:55 | INFO |   N1: 569
+21:20:55 | INFO |   N2: 287
+21:20:55 | INFO |   Vocabulary: 145
+21:20:55 | INFO |   Size: 856
+21:20:55 | INFO |   Volume: 6146.00
+21:20:55 | INFO |   Difficulty: 119.89
+21:20:55 | INFO |   Effort: 736820.08
+21:20:55 | INFO |   Time: 40934.45s
+21:20:55 | INFO | [Halstead runtime: 0.0191s]
+21:20:55 | INFO | ----------------------------------------
+{'cpp', 'opencl'}
+21:20:55 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_OpenCL.cpp
+21:20:55 | INFO | SLOC: 166  [runtime: 0.0002s]
+21:20:55 | INFO | Nesting Depth: 5  [runtime: 0.0004s]
+21:20:55 | INFO | Cyclomatic Complexity: 15  [runtime: 0.0400s]
+21:20:55 | INFO | Cognitive Complexity: 7  [runtime: 0.0067s]
+21:20:55 | INFO | Halstead Metrics:
+21:20:55 | INFO |   n1: 93
+21:20:55 | INFO |   n2: 112
+21:20:55 | INFO |   N1: 1352
+21:20:55 | INFO |   N2: 540
+21:20:55 | INFO |   Vocabulary: 205
+21:20:55 | INFO |   Size: 1892
+21:20:55 | INFO |   Volume: 14529.58
+21:20:55 | INFO |   Difficulty: 224.20
+21:20:55 | INFO |   Effort: 3257479.13
+21:20:55 | INFO |   Time: 180971.06s
+21:20:55 | INFO | [Halstead runtime: 0.0468s]
+21:20:55 | INFO | ----------------------------------------
+{'cpp', 'boost'}
+21:20:55 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_Boost.cpp
+21:20:55 | INFO | SLOC: 121  [runtime: 0.0001s]
+21:20:55 | INFO | Nesting Depth: 4  [runtime: 0.0003s]
+21:20:55 | INFO | Cyclomatic Complexity: 8  [runtime: 0.0185s]
+21:20:55 | INFO | Cognitive Complexity: 2  [runtime: 0.0048s]
+21:20:55 | INFO | Halstead Metrics:
+21:20:55 | INFO |   n1: 65
+21:20:55 | INFO |   n2: 105
+21:20:55 | INFO |   N1: 973
+21:20:55 | INFO |   N2: 506
+21:20:55 | INFO |   Vocabulary: 170
+21:20:55 | INFO |   Size: 1479
+21:20:55 | INFO |   Volume: 10958.49
+21:20:55 | INFO |   Difficulty: 156.62
+21:20:55 | INFO |   Effort: 1716308.14
+21:20:55 | INFO |   Time: 95350.45s
+21:20:55 | INFO | [Halstead runtime: 0.0316s]
+21:20:55 | INFO | ----------------------------------------
+{'cpp', 'kokkos'}
+21:20:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_Kokkos.cpp
+21:20:56 | INFO | SLOC: 163  [runtime: 0.0002s]
+21:20:56 | INFO | Nesting Depth: 5  [runtime: 0.0006s]
+21:20:56 | INFO | Cyclomatic Complexity: 18  [runtime: 0.0350s]
+21:20:56 | INFO | Cognitive Complexity: 9  [runtime: 0.0056s]
+21:20:56 | INFO | Halstead Metrics:
+21:20:56 | INFO |   n1: 84
+21:20:56 | INFO |   n2: 112
+21:20:56 | INFO |   N1: 1059
+21:20:56 | INFO |   N2: 547
+21:20:56 | INFO |   Vocabulary: 196
+21:20:56 | INFO |   Size: 1606
+21:20:56 | INFO |   Volume: 12229.22
+21:20:56 | INFO |   Difficulty: 205.12
+21:20:56 | INFO |   Effort: 2508519.57
+21:20:56 | INFO |   Time: 139362.20s
+21:20:56 | INFO | [Halstead runtime: 0.0370s]
+21:20:56 | INFO | ----------------------------------------
+{'cpp', 'cuda'}
+21:20:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_Cuda.cu
+21:20:56 | INFO | SLOC: 199  [runtime: 0.0002s]
+21:20:56 | INFO | Nesting Depth: 4  [runtime: 0.0005s]
+21:20:56 | INFO | Cyclomatic Complexity: 22  [runtime: 0.0320s]
+21:20:56 | INFO | Cognitive Complexity: 10  [runtime: 0.0081s]
+21:20:56 | INFO | Halstead Metrics:
+21:20:56 | INFO |   n1: 90
+21:20:56 | INFO |   n2: 108
+21:20:56 | INFO |   N1: 1498
+21:20:56 | INFO |   N2: 662
+21:20:56 | INFO |   Vocabulary: 198
+21:20:56 | INFO |   Size: 2160
+21:20:56 | INFO |   Volume: 16479.41
+21:20:56 | INFO |   Difficulty: 275.83
+21:20:56 | INFO |   Effort: 4545570.67
+21:20:56 | INFO |   Time: 252531.70s
+21:20:56 | INFO | [Halstead runtime: 0.0723s]
+21:20:56 | INFO | ----------------------------------------
+{'cpp', 'openmp'}
+21:20:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_OpenMP.cpp
+21:20:56 | INFO | SLOC: 159  [runtime: 0.0002s]
+21:20:56 | INFO | Nesting Depth: 5  [runtime: 0.0004s]
+21:20:56 | INFO | Cyclomatic Complexity: 23  [runtime: 0.0351s]
+21:20:56 | INFO | Cognitive Complexity: 25  [runtime: 0.0072s]
+21:20:56 | INFO | Halstead Metrics:
+21:20:56 | INFO |   n1: 75
+21:20:56 | INFO |   n2: 99
+21:20:56 | INFO |   N1: 1110
+21:20:56 | INFO |   N2: 616
+21:20:56 | INFO |   Vocabulary: 174
+21:20:56 | INFO |   Size: 1726
+21:20:56 | INFO |   Volume: 12846.52
+21:20:56 | INFO |   Difficulty: 233.33
+21:20:56 | INFO |   Effort: 2997521.44
+21:20:56 | INFO |   Time: 166528.97s
+21:20:56 | INFO | [Halstead runtime: 0.0284s]
+21:20:56 | INFO | ----------------------------------------
+{'cpp', 'opengl_vulkan'}
+21:20:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_Vulkan.cpp
+21:20:56 | INFO | SLOC: 93  [runtime: 0.0001s]
+21:20:56 | INFO | Nesting Depth: 4  [runtime: 0.0002s]
+21:20:56 | INFO | Cyclomatic Complexity: 7  [runtime: 0.0177s]
+21:20:56 | INFO | Cognitive Complexity: 3  [runtime: 0.0057s]
+21:20:56 | INFO | Halstead Metrics:
+21:20:56 | INFO |   n1: 71
+21:20:56 | INFO |   n2: 85
+21:20:56 | INFO |   N1: 861
+21:20:56 | INFO |   N2: 450
+21:20:56 | INFO |   Vocabulary: 156
+21:20:56 | INFO |   Size: 1311
+21:20:56 | INFO |   Volume: 9551.16
+21:20:56 | INFO |   Difficulty: 187.94
+21:20:56 | INFO |   Effort: 1795056.68
+21:20:56 | INFO |   Time: 99725.37s
+21:20:56 | INFO | [Halstead runtime: 0.0379s]
+21:20:56 | INFO | ----------------------------------------
+{'cpp', 'adaptivecpp'}
+21:20:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/nBody_Simulation/Impl_AdaptiveCpp.cpp
+21:20:56 | INFO | SLOC: 162  [runtime: 0.0001s]
+21:20:56 | INFO | Nesting Depth: 5  [runtime: 0.0005s]
+21:20:56 | INFO | Cyclomatic Complexity: 19  [runtime: 0.0314s]
+21:20:56 | INFO | Cognitive Complexity: 12  [runtime: 0.0065s]
+21:20:56 | INFO | Halstead Metrics:
+21:20:56 | INFO |   n1: 77
+21:20:56 | INFO |   n2: 114
+21:20:56 | INFO |   N1: 1180
+21:20:56 | INFO |   N2: 645
+21:20:56 | INFO |   Vocabulary: 191
+21:20:56 | INFO |   Size: 1825
+21:20:56 | INFO |   Volume: 13828.81
+21:20:56 | INFO |   Difficulty: 217.83
+21:20:56 | INFO |   Effort: 3012314.61
+21:20:56 | INFO |   Time: 167350.81s
+21:20:56 | INFO | [Halstead runtime: 0.0346s]
+21:20:56 | INFO | ----------------------------------------
+
+
+
+
+
+
+
+
+
+POLYHEDRAL GRAVITY MODEL
+(.venv) chris2003@DESKTOP-BPBA8Q0:~/Uni/Thesis_Informatics/code-complexity-metrics$ code-metrics samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/ --lang auto
+{'kokkos', 'cpp'}
+21:21:55 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_kokkos.cpp
+21:21:55 | INFO | SLOC: 252  [runtime: 0.0011s]
+21:21:55 | INFO | Nesting Depth: 8  [runtime: 0.0008s]
+21:21:55 | INFO | Cyclomatic Complexity: 55  [runtime: 0.1484s]
+21:21:55 | INFO | Cognitive Complexity: 68  [runtime: 0.0108s]
+21:21:55 | INFO | Halstead Metrics:
+21:21:55 | INFO |   n1: 95
+21:21:55 | INFO |   n2: 148
+21:21:55 | INFO |   N1: 1874
+21:21:55 | INFO |   N2: 1048
+21:21:55 | INFO |   Vocabulary: 243
+21:21:55 | INFO |   Size: 2922
+21:21:55 | INFO |   Volume: 23156.30
+21:21:55 | INFO |   Difficulty: 336.35
+21:21:55 | INFO |   Effort: 7788653.52
+21:21:55 | INFO |   Time: 432702.97s
+21:21:55 | INFO | [Halstead runtime: 0.0769s]
+21:21:55 | INFO | ----------------------------------------
+{'cpp', 'cuda'}
+21:21:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_cuda.cu
+21:21:56 | INFO | SLOC: 419  [runtime: 0.0015s]
+21:21:56 | INFO | Nesting Depth: 5  [runtime: 0.0038s]
+21:21:56 | INFO | Cyclomatic Complexity: 86  [runtime: 0.1151s]
+21:21:56 | INFO | Cognitive Complexity: 84  [runtime: 0.0302s]
+21:21:56 | INFO | Halstead Metrics:
+21:21:56 | INFO |   n1: 128
+21:21:56 | INFO |   n2: 204
+21:21:56 | INFO |   N1: 2753
+21:21:56 | INFO |   N2: 1649
+21:21:56 | INFO |   Vocabulary: 332
+21:21:56 | INFO |   Size: 4402
+21:21:56 | INFO |   Volume: 36866.92
+21:21:56 | INFO |   Difficulty: 517.33
+21:21:56 | INFO |   Effort: 19072488.46
+21:21:56 | INFO |   Time: 1059582.69s
+21:21:56 | INFO | [Halstead runtime: 0.1717s]
+21:21:56 | INFO | ----------------------------------------
+{'cpp', 'adaptivecpp'}
+21:21:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_adaptive_cpp.cpp
+21:21:56 | INFO | SLOC: 308  [runtime: 0.0003s]
+21:21:56 | INFO | Nesting Depth: 9  [runtime: 0.0008s]
+21:21:56 | INFO | Cyclomatic Complexity: 62  [runtime: 0.1517s]
+21:21:56 | INFO | Cognitive Complexity: 71  [runtime: 0.0097s]
+21:21:56 | INFO | Halstead Metrics:
+21:21:56 | INFO |   n1: 102
+21:21:56 | INFO |   n2: 175
+21:21:56 | INFO |   N1: 2245
+21:21:56 | INFO |   N2: 1308
+21:21:56 | INFO |   Vocabulary: 277
+21:21:56 | INFO |   Size: 3553
+21:21:56 | INFO |   Volume: 28828.13
+21:21:56 | INFO |   Difficulty: 381.19
+21:21:56 | INFO |   Effort: 10988952.13
+21:21:56 | INFO |   Time: 610497.34s
+21:21:56 | INFO | [Halstead runtime: 0.1068s]
+21:21:56 | INFO | ----------------------------------------
+{'cpp', 'opencl'}
+21:21:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_opencl.cpp
+21:21:56 | INFO | SLOC: 175  [runtime: 0.0002s]
+21:21:56 | INFO | Nesting Depth: 4  [runtime: 0.0005s]
+21:21:56 | INFO | Cyclomatic Complexity: 16  [runtime: 0.0256s]
+21:21:56 | INFO | Cognitive Complexity: 11  [runtime: 0.0112s]
+21:21:56 | INFO | Halstead Metrics:
+21:21:56 | INFO |   n1: 80
+21:21:56 | INFO |   n2: 148
+21:21:56 | INFO |   N1: 1089
+21:21:56 | INFO |   N2: 654
+21:21:56 | INFO |   Vocabulary: 228
+21:21:56 | INFO |   Size: 1743
+21:21:56 | INFO |   Volume: 13652.73
+21:21:56 | INFO |   Difficulty: 176.76
+21:21:56 | INFO |   Effort: 2413211.80
+21:21:56 | INFO |   Time: 134067.32s
+21:21:56 | INFO | [Halstead runtime: 0.0393s]
+21:21:56 | INFO | ----------------------------------------
+{'cpp', 'openmp'}
+21:21:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_openmp.cpp
+21:21:56 | INFO | SLOC: 275  [runtime: 0.0003s]
+21:21:56 | INFO | Nesting Depth: 8  [runtime: 0.0007s]
+21:21:56 | INFO | Cyclomatic Complexity: 61  [runtime: 0.3250s]
+21:21:56 | INFO | Cognitive Complexity: 75  [runtime: 0.0195s]
+21:21:56 | INFO | Halstead Metrics:
+21:21:56 | INFO |   n1: 107
+21:21:56 | INFO |   n2: 145
+21:21:56 | INFO |   N1: 1933
+21:21:56 | INFO |   N2: 1090
+21:21:56 | INFO |   Vocabulary: 252
+21:21:56 | INFO |   Size: 3023
+21:21:56 | INFO |   Volume: 24115.32
+21:21:56 | INFO |   Difficulty: 402.17
+21:21:56 | INFO |   Effort: 9698515.33
+21:21:56 | INFO |   Time: 538806.41s
+21:21:56 | INFO | [Halstead runtime: 0.0904s]
+21:21:56 | INFO | ----------------------------------------
+{'openacc', 'cpp'}
+21:21:57 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_openacc.cpp
+21:21:57 | INFO | SLOC: 271  [runtime: 0.0004s]
+21:21:57 | INFO | Nesting Depth: 8  [runtime: 0.0010s]
+21:21:57 | INFO | Cyclomatic Complexity: 57  [runtime: 0.0924s]
+21:21:57 | INFO | Cognitive Complexity: 71  [runtime: 0.0083s]
+21:21:57 | INFO | Halstead Metrics:
+21:21:57 | INFO |   n1: 99
+21:21:57 | INFO |   n2: 143
+21:21:57 | INFO |   N1: 1906
+21:21:57 | INFO |   N2: 1060
+21:21:57 | INFO |   Vocabulary: 242
+21:21:57 | INFO |   Size: 2966
+21:21:57 | INFO |   Volume: 23487.35
+21:21:57 | INFO |   Difficulty: 366.92
+21:21:57 | INFO |   Effort: 8618050.13
+21:21:57 | INFO |   Time: 478780.56s
+21:21:57 | INFO | [Halstead runtime: 0.0992s]
+21:21:57 | INFO | ----------------------------------------
+{'cpp', 'webgpu'}
+21:21:57 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_webgpu.cpp
+21:21:57 | INFO | SLOC: 266  [runtime: 0.0003s]
+21:21:57 | INFO | Nesting Depth: 4  [runtime: 0.0008s]
+21:21:57 | INFO | Cyclomatic Complexity: 31  [runtime: 0.0661s]
+21:21:57 | INFO | Cognitive Complexity: 12  [runtime: 0.0191s]
+21:21:57 | INFO | Halstead Metrics:
+21:21:57 | INFO |   n1: 119
+21:21:57 | INFO |   n2: 184
+21:21:57 | INFO |   N1: 1464
+21:21:57 | INFO |   N2: 776
+21:21:57 | INFO |   Vocabulary: 303
+21:21:57 | INFO |   Size: 2240
+21:21:57 | INFO |   Volume: 18464.71
+21:21:57 | INFO |   Difficulty: 250.93
+21:21:57 | INFO |   Effort: 4633437.92
+21:21:57 | INFO |   Time: 257413.22s
+21:21:57 | INFO | [Halstead runtime: 0.0791s]
+21:21:57 | INFO | ----------------------------------------
+{'cpp', 'opengl_vulkan'}
+21:21:57 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_opengl_vulkan.cpp
+21:21:57 | INFO | SLOC: 440  [runtime: 0.0010s]
+21:21:57 | INFO | Nesting Depth: 4  [runtime: 0.0023s]
+21:21:57 | INFO | Cyclomatic Complexity: 16  [runtime: 0.3680s]
+21:21:57 | INFO | Cognitive Complexity: 12  [runtime: 0.0352s]
+21:21:57 | INFO | Halstead Metrics:
+21:21:57 | INFO |   n1: 262
+21:21:57 | INFO |   n2: 297
+21:21:57 | INFO |   N1: 2721
+21:21:57 | INFO |   N2: 1459
+21:21:57 | INFO |   Vocabulary: 559
+21:21:57 | INFO |   Size: 4180
+21:21:57 | INFO |   Volume: 38149.62
+21:21:57 | INFO |   Difficulty: 643.53
+21:21:57 | INFO |   Effort: 24550503.77
+21:21:57 | INFO |   Time: 1363916.88s
+21:21:57 | INFO | [Halstead runtime: 0.2173s]
+21:21:57 | INFO | ----------------------------------------
+{'cpp'}
+21:21:58 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Polyhedral_Gravity_Model/impl_cpp_128.cpp
+21:21:58 | INFO | SLOC: 286  [runtime: 0.0010s]
+21:21:58 | INFO | Nesting Depth: 7  [runtime: 0.0028s]
+21:21:58 | INFO | Cyclomatic Complexity: 66  [runtime: 0.1555s]
+21:21:58 | INFO | Cognitive Complexity: 77  [runtime: 0.0136s]
+21:21:58 | INFO | Halstead Metrics:
+21:21:58 | INFO |   n1: 94
+21:21:58 | INFO |   n2: 143
+21:21:58 | INFO |   N1: 1913
+21:21:58 | INFO |   N2: 1099
+21:21:58 | INFO |   Vocabulary: 237
+21:21:58 | INFO |   Size: 3012
+21:21:58 | INFO |   Volume: 23760.89
+21:21:58 | INFO |   Difficulty: 361.21
+21:21:58 | INFO |   Effort: 8582667.78
+21:21:58 | INFO |   Time: 476814.88s
+21:21:58 | INFO | [Halstead runtime: 0.0654s]
+21:21:58 | INFO | ----------------------------------------
+
+
+
+
+
+
+
+
+
+VECTOR ADDITION
+(.venv) chris2003@DESKTOP-BPBA8Q0:~/Uni/Thesis_Informatics/code-complexity-metrics$ code-metrics samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/ --lang auto
+{'cpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Cpp.cpp
+21:22:56 | INFO | SLOC: 38  [runtime: 0.0009s]
+21:22:56 | INFO | Nesting Depth: 3  [runtime: 0.0002s]
+21:22:56 | INFO | Cyclomatic Complexity: 2  [runtime: 0.0123s]
+21:22:56 | INFO | Cognitive Complexity: 0  [runtime: 0.0029s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 47
+21:22:56 | INFO |   n2: 44
+21:22:56 | INFO |   N1: 229
+21:22:56 | INFO |   N2: 106
+21:22:56 | INFO |   Vocabulary: 91
+21:22:56 | INFO |   Size: 335
+21:22:56 | INFO |   Volume: 2180.11
+21:22:56 | INFO |   Difficulty: 56.61
+21:22:56 | INFO |   Effort: 123424.02
+21:22:56 | INFO |   Time: 6856.89s
+21:22:56 | INFO | [Halstead runtime: 0.0156s]
+21:22:56 | INFO | ----------------------------------------
+{'cpp', 'openacc'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_OpenACC.cpp
+21:22:56 | INFO | SLOC: 41  [runtime: 0.0003s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0001s]
+21:22:56 | INFO | Cyclomatic Complexity: 3  [runtime: 0.0088s]
+21:22:56 | INFO | Cognitive Complexity: 1  [runtime: 0.0038s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 61
+21:22:56 | INFO |   n2: 55
+21:22:56 | INFO |   N1: 258
+21:22:56 | INFO |   N2: 124
+21:22:56 | INFO |   Vocabulary: 116
+21:22:56 | INFO |   Size: 382
+21:22:56 | INFO |   Volume: 2619.75
+21:22:56 | INFO |   Difficulty: 68.76
+21:22:56 | INFO |   Effort: 180143.45
+21:22:56 | INFO |   Time: 10007.97s
+21:22:56 | INFO | [Halstead runtime: 0.0276s]
+21:22:56 | INFO | ----------------------------------------
+{'cpp', 'opencl'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_OpenCL.cpp
+21:22:56 | INFO | SLOC: 95  [runtime: 0.0003s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0003s]
+21:22:56 | INFO | Cyclomatic Complexity: 14  [runtime: 0.0219s]
+21:22:56 | INFO | Cognitive Complexity: 9  [runtime: 0.0043s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 78
+21:22:56 | INFO |   n2: 85
+21:22:56 | INFO |   N1: 658
+21:22:56 | INFO |   N2: 251
+21:22:56 | INFO |   Vocabulary: 163
+21:22:56 | INFO |   Size: 909
+21:22:56 | INFO |   Volume: 6679.99
+21:22:56 | INFO |   Difficulty: 115.16
+21:22:56 | INFO |   Effort: 769299.53
+21:22:56 | INFO |   Time: 42738.86s
+21:22:56 | INFO | [Halstead runtime: 0.0254s]
+21:22:56 | INFO | ----------------------------------------
+{'boost', 'cpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Boost.cpp
+21:22:56 | INFO | SLOC: 57  [runtime: 0.0001s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0001s]
+21:22:56 | INFO | Cyclomatic Complexity: 2  [runtime: 0.0204s]
+21:22:56 | INFO | Cognitive Complexity: 0  [runtime: 0.0021s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 64
+21:22:56 | INFO |   n2: 61
+21:22:56 | INFO |   N1: 380
+21:22:56 | INFO |   N2: 204
+21:22:56 | INFO |   Vocabulary: 125
+21:22:56 | INFO |   Size: 584
+21:22:56 | INFO |   Volume: 4068.02
+21:22:56 | INFO |   Difficulty: 107.02
+21:22:56 | INFO |   Effort: 435344.62
+21:22:56 | INFO |   Time: 24185.81s
+21:22:56 | INFO | [Halstead runtime: 0.0200s]
+21:22:56 | INFO | ----------------------------------------
+{'kokkos', 'cpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Kokkos.cpp
+21:22:56 | INFO | SLOC: 53  [runtime: 0.0002s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0001s]
+21:22:56 | INFO | Cyclomatic Complexity: 3  [runtime: 0.0084s]
+21:22:56 | INFO | Cognitive Complexity: 0  [runtime: 0.0024s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 56
+21:22:56 | INFO |   n2: 59
+21:22:56 | INFO |   N1: 353
+21:22:56 | INFO |   N2: 174
+21:22:56 | INFO |   Vocabulary: 115
+21:22:56 | INFO |   Size: 527
+21:22:56 | INFO |   Volume: 3607.57
+21:22:56 | INFO |   Difficulty: 82.58
+21:22:56 | INFO |   Effort: 297899.95
+21:22:56 | INFO |   Time: 16550.00s
+21:22:56 | INFO | [Halstead runtime: 0.0140s]
+21:22:56 | INFO | ----------------------------------------
+{'cpp', 'metal'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Metal.cpp
+21:22:56 | INFO | SLOC: 80  [runtime: 0.0003s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0004s]
+21:22:56 | INFO | Cyclomatic Complexity: 7  [runtime: 0.0281s]
+21:22:56 | INFO | Cognitive Complexity: 3  [runtime: 0.0048s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 78
+21:22:56 | INFO |   n2: 91
+21:22:56 | INFO |   N1: 540
+21:22:56 | INFO |   N2: 235
+21:22:56 | INFO |   Vocabulary: 169
+21:22:56 | INFO |   Size: 775
+21:22:56 | INFO |   Volume: 5735.68
+21:22:56 | INFO |   Difficulty: 100.71
+21:22:56 | INFO |   Effort: 577665.07
+21:22:56 | INFO |   Time: 32092.50s
+21:22:56 | INFO | [Halstead runtime: 0.0309s]
+21:22:56 | INFO | ----------------------------------------
+{'cuda', 'cpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Cuda.cu
+21:22:56 | INFO | SLOC: 54  [runtime: 0.0001s]
+21:22:56 | INFO | Nesting Depth: 3  [runtime: 0.0002s]
+21:22:56 | INFO | Cyclomatic Complexity: 4  [runtime: 0.0086s]
+21:22:56 | INFO | Cognitive Complexity: 1  [runtime: 0.0026s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 61
+21:22:56 | INFO |   n2: 28
+21:22:56 | INFO |   N1: 325
+21:22:56 | INFO |   N2: 124
+21:22:56 | INFO |   Vocabulary: 89
+21:22:56 | INFO |   Size: 449
+21:22:56 | INFO |   Volume: 2907.60
+21:22:56 | INFO |   Difficulty: 135.07
+21:22:56 | INFO |   Effort: 392734.27
+21:22:56 | INFO |   Time: 21818.57s
+21:22:56 | INFO | [Halstead runtime: 0.0217s]
+21:22:56 | INFO | ----------------------------------------
+{'openmp', 'cpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_OpenMP.cpp
+21:22:56 | INFO | SLOC: 37  [runtime: 0.0001s]
+21:22:56 | INFO | Nesting Depth: 4  [runtime: 0.0001s]
+21:22:56 | INFO | Cyclomatic Complexity: 4  [runtime: 0.0047s]
+21:22:56 | INFO | Cognitive Complexity: 2  [runtime: 0.0018s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 55
+21:22:56 | INFO |   n2: 54
+21:22:56 | INFO |   N1: 232
+21:22:56 | INFO |   N2: 122
+21:22:56 | INFO |   Vocabulary: 109
+21:22:56 | INFO |   Size: 354
+21:22:56 | INFO |   Volume: 2395.94
+21:22:56 | INFO |   Difficulty: 62.13
+21:22:56 | INFO |   Effort: 148858.69
+21:22:56 | INFO |   Time: 8269.93s
+21:22:56 | INFO | [Halstead runtime: 0.0126s]
+21:22:56 | INFO | ----------------------------------------
+{'cpp', 'opengl_vulkan'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_Vulkan.cpp
+21:22:56 | INFO | SLOC: 53  [runtime: 0.0001s]
+21:22:56 | INFO | Nesting Depth: 6  [runtime: 0.0001s]
+21:22:56 | INFO | Cyclomatic Complexity: 3  [runtime: 0.0164s]
+21:22:56 | INFO | Cognitive Complexity: 1  [runtime: 0.0053s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 64
+21:22:56 | INFO |   n2: 79
+21:22:56 | INFO |   N1: 350
+21:22:56 | INFO |   N2: 193
+21:22:56 | INFO |   Vocabulary: 143
+21:22:56 | INFO |   Size: 543
+21:22:56 | INFO |   Volume: 3887.81
+21:22:56 | INFO |   Difficulty: 78.18
+21:22:56 | INFO |   Effort: 303938.17
+21:22:56 | INFO |   Time: 16885.45s
+21:22:56 | INFO | [Halstead runtime: 0.0325s]
+21:22:56 | INFO | ----------------------------------------
+{'cpp', 'adaptivecpp'}
+21:22:56 | INFO | Analyzing file: samples/thesis_testing/ANALYSIS_REPOSITORY/Framework_Complexity/Vector_Addition/Impl_AdaptiveCpp.cpp
+21:22:56 | INFO | SLOC: 55  [runtime: 0.0004s]
+21:22:56 | INFO | Nesting Depth: 5  [runtime: 0.0004s]
+21:22:56 | INFO | Cyclomatic Complexity: 3  [runtime: 0.0174s]
+21:22:56 | INFO | Cognitive Complexity: 0  [runtime: 0.0043s]
+21:22:56 | INFO | Halstead Metrics:
+21:22:56 | INFO |   n1: 63
+21:22:56 | INFO |   n2: 66
+21:22:56 | INFO |   N1: 385
+21:22:56 | INFO |   N2: 171
+21:22:56 | INFO |   Vocabulary: 129
+21:22:56 | INFO |   Size: 556
+21:22:56 | INFO |   Volume: 3898.24
+21:22:56 | INFO |   Difficulty: 81.61
+21:22:56 | INFO |   Effort: 318149.73
+21:22:56 | INFO |   Time: 17674.99s
+21:22:56 | INFO | [Halstead runtime: 0.0162s]
+21:22:56 | INFO | ----------------------------------------

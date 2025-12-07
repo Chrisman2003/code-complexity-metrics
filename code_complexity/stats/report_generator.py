@@ -1,221 +1,244 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from code_complexity.stats.analysis import summarize
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import seaborn as sns
 import io
-from scipy.stats import ttest_ind, pearsonr, spearmanr
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-import statsmodels.api as sm
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-from reportlab.lib.styles import getSampleStyleSheet
-from code_complexity.stats.data_loader import collect_metrics
-from code_complexity.gpu_delta import compute_gpu_delta
+from matplotlib.lines import Line2D
+from code_complexity.metrics.utils import plain_logger
+# from code_complexity.metrics.halstead import * NOTE: DANGEROUS TO IMPORT - overrides functions in main
 
-# -------------------------------
-# Helper Functions
-# -------------------------------
-def compute_gpu_delta_for_file(file_path, language):
-    with open(file_path, 'r', encoding="utf-8", errors="ignore") as f:
-        code = f.read()
-    return compute_gpu_delta(code, language)
+def plot_to_image(elements, width, height):
+    """
+    Convert the current matplotlib figure to an image and append it to a PDF.
+
+    Args:
+        elements (list): ReportLab flowable list to append the image to.
+        width (float): Width of the image in the PDF.
+        height (float): Height of the image in the PDF.
+
+    Returns:
+        None
+    """
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    plt.close()
+    buf.seek(0)
+    elements.append(Image(buf, width=width, height=height))
 
 def aggregate_framework_complexity(records):
-   """
-   Aggregate GPU complexity metrics across all files,
-   grouped by framework (excluding cpp).
-   Returns a list of dicts with one row per framework.
-   """
-   totals = {}
-   for rec in records:
-      gpu_data = rec.get("gpu_complexity", {})
-      for fw, vals in gpu_data.items():
-         if fw == "cpp":
-             continue
-         if fw not in totals:
-             totals[fw] = {"framework": fw, "halstead_effort": 0.0, "halstead_volume": 0.0, "halstead_difficulty": 0.0}
-         totals[fw]["halstead_effort"] += vals.get("effort", 0.0)
-         totals[fw]["halstead_volume"] += vals.get("volume", 0.0)
-         totals[fw]["halstead_difficulty"] += vals.get("difficulty", 0.0)
-   return list(totals.values())
+    """
+    Aggregate GPU framework complexity across all files.
 
-# -------------------------------
-# Basic Statistical Analysis: 3 Page Report
-# -------------------------------
+    Groups GPU-related Halstead metrics by framework (excluding C++) and
+    sums SLOC, Halstead volume, and Halstead difficulty for each framework.
+
+    Args:
+        records (list[dict]): List of per-file metric dictionaries.
+
+    Returns:
+        list[dict]: One dictionary per framework containing:
+            - "Framework": framework name
+            - "SLOC": total SLOC for files using the framework
+            - "Halstead_Volume": summed volume delta
+            - "Halstead_Difficulty": summed difficulty delta
+    """
+    totals = {}
+    for rec in records:
+        gpu_data = rec.get("gpu_complexity", {})
+        for fw, vals in gpu_data.items():
+            if fw == "cpp":
+                continue
+            if fw not in totals:
+                totals[fw] = {
+                    "Framework": fw,
+                    "SLOC": 0.0,
+                    "Halstead_Volume": 0.0,
+                    "Halstead_Difficulty": 0.0,
+                }
+            totals[fw]["SLOC"] += rec.get("sloc")
+            # Any file where the framework library is included is added
+            # A file can have more than 1 framework library
+            totals[fw]["Halstead_Volume"] += vals.get("volume", 0.0)
+            totals[fw]["Halstead_Difficulty"] += vals.get("difficulty", 0.0)
+    return list(totals.values())
 
 def generate_basic_report(records, output_path="complexity_report.pdf"):
-   """
-   Generate a PDF report with:
-     1. Descriptive statistics
-     2. Correlation analysis
-     3. Histograms and Boxplots
-   """
-   df = pd.DataFrame(records) # Convert list of dicts to DataFrame
-   for col in ("halstead_volume", "halstead_effort"):
-      if col in df.columns:
-         df = df.drop(columns=col)
-   doc = SimpleDocTemplate(output_path) # PDF document
-   styles = getSampleStyleSheet()
-   elements = []
+    """
+    Generate a basic PDF report containing descriptive statistics, correlations, and plots.
 
-   # --- Title ---
-   elements.append(Paragraph("<u>Basic Code Complexity Analysis Report</u>", styles['Title']))
+    The report includes:
+        1. Descriptive statistics table
+        2. Correlation matrix and heatmap
+        3. Histograms and boxplots for key metrics
 
-   # --- Descriptive Statistics ---
-   summary, correlations = summarize(df)
-   elements.append(Paragraph("Descriptive Statistics", styles['Heading2']))
-   summary_tbl = Table([summary.columns.to_list()] + summary.round(3).values.tolist())
-   summary_tbl.setStyle(TableStyle([("BACKGROUND", (0,0), (-1,0), colors.lightblue),
-                                    ("GRID", (0,0), (-1,-1), 0.5, colors.black)]))
-   elements.append(summary_tbl)
-   
-   # --- Correlation Matrix ---
-   elements.append(Paragraph("Correlation Matrix", styles['Heading2']))
-   # Temporary formatting for adding Description column
-   correlations_table = correlations.copy()
-   row_labels_corr = correlations_table.index.tolist()  # dynamically get labels
-   correlations_table['Description'] = row_labels_corr
-   cols = ['Description'] + [col for col in correlations_table.columns if col != 'Description']
-   correlations_table = correlations_table[cols]
-   # Create Table
-   corr_tbl = Table([correlations_table.columns.to_list()] + correlations_table.round(3).values.tolist())
-   corr_tbl.setStyle(TableStyle([
-       ("BACKGROUND", (0,0), (-1,0), colors.lightblue),
-       ("GRID", (0,0), (-1,-1), 0.5, colors.black)
-   ]))
-   elements.append(corr_tbl)
-   
-   # --- Heat Map ---
-   elements.append(Paragraph("Correlation Heatmap", styles['Heading2']))
-   plt.figure(figsize=(6, 5))
-   sns.heatmap(correlations, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
-   # Save the plot to a BytesIO buffer and embed it
-   buf = io.BytesIO() 
-   plt.tight_layout() # Adjust layout
-   plt.savefig(buf, format='png') # Save to buffer
-   plt.close() # Close the plot
-   buf.seek(0) # Rewind buffer to the beginning
-   # Add images
-   elements.append(Image(buf, width=345, height=260)) # display size of rendered image in pdf
+    Args:
+        records (list[dict]): List of per-file complexity metric records.
+        output_path (str): File path for the generated PDF report.
 
-   # --- Boxplots + Histograms Side by Side ---
-   elements.append(Paragraph("Boxplots + Histograms", styles['Heading2']))
-   for metric in ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_difficulty']:
-      # Create a figure with 2 subplots side by side
-      _, axes = plt.subplots(ncols=2, figsize=(10, 4))  # 2 columns
-      # Histogram
-      axes[0].hist(df[metric], bins=20, color='lightblue', edgecolor='black')
-      axes[0].set_title(f"Histogram of {metric}")
-      axes[0].set_xlabel(metric)
-      axes[0].set_ylabel("Count")
-      # Boxplot
-      sns.boxplot(y=df[metric], color='#4682B4', ax=axes[1])
-      axes[1].set_title(f"Boxplot of {metric}")
-      axes[1].set_ylabel(metric)
-      plt.tight_layout()
-      # Save the combined figure to buffer
-      buf = io.BytesIO()
-      plt.savefig(buf, format='png')
-      plt.close()
-      buf.seek(0)
-      # Add image to PDF
-      elements.append(Image(buf, width=560, height=210))  # adjust width/height to fit layout
-       
-   # --- Build PDF ---
-   doc.build(elements)
-   print(f"[INFO] Report saved to {output_path}")
+    Returns:
+        None
+    """
+    df = pd.DataFrame(records)
+    # Remove if present
+    for col in ("halstead_volume", "halstead_difficulty"):
+        if col in df.columns:
+            df = df.drop(columns=col)
+    doc = SimpleDocTemplate(output_path)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # --- Title ---
+    elements.append(Paragraph("<u>Basic Code Complexity Analysis Report</u>", styles['Title']))
+
+    # --- Descriptive Statistics ---
+    summary, correlations = summarize(df)
+    elements.append(Paragraph("Descriptive Statistics", styles['Heading2']))
+    summary_tbl = Table([summary.columns.to_list()] + summary.round(3).values.tolist())
+    summary_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black)
+    ]))
+    elements.append(summary_tbl)
+
+    # --- Correlation Matrix ---
+    elements.append(Paragraph("Correlation Matrix", styles['Heading2']))
+    correlations_table = correlations.copy()
+    row_labels_corr = correlations_table.index.tolist()
+    correlations_table['Description'] = row_labels_corr
+    cols = ['Description'] + [c for c in correlations_table.columns if c != 'Description']
+    correlations_table = correlations_table[cols]
+    corr_tbl = Table([correlations_table.columns.to_list()] +
+                     correlations_table.round(3).values.tolist())
+    corr_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black)
+    ]))
+    elements.append(corr_tbl)
+
+    # --- Heat Map ---
+    elements.append(Paragraph("Correlation Heatmap", styles['Heading2']))
+    plt.figure(figsize=(6, 5), dpi=400)
+    sns.heatmap(correlations, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
+    plt.xticks(rotation=90)  # 90 degrees → vertical
+    plt.yticks(rotation=0)   # 0 degrees → horizontal
+    plot_to_image(elements, width=350, height=285) # Buf IO Handle
+
+    # --- Boxplots + Histograms ---
+    elements.append(Paragraph("Boxplots + Histograms", styles['Heading2']))
+    for metric in ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_effort']:
+        _, axes = plt.subplots(ncols=2, figsize=(10, 4), dpi=400)
+        axes[0].hist(df[metric], bins=20, color='lightblue', edgecolor='black')
+        axes[0].set_title(f"Histogram of {metric}")
+        axes[0].set_xlabel(metric)
+        axes[0].set_ylabel("Count")
+        
+        sns.boxplot(y=df[metric], color='#4682B4', ax=axes[1])
+        axes[1].set_title(f"Boxplot of {metric}")
+        axes[1].set_ylabel(metric)
+        plt.tight_layout()
+        plot_to_image(elements, width=560, height=210) # Buf IO Handle
     
-# -------------------------------
-# Advanced Statistical Analysis: 3 Page Report
-# -------------------------------
-'''
-- Segregated Analysis on GPU-Delta
-- Halstead Functions: 
---> Volume
---> Difficulty
---> Effort
-'''
+    # --- Build PDF ---
+    doc.build(elements)
+    plain_logger.info("Report saved to %s", output_path)
+
 def generate_advanced_report(records, output_path="complexity_report.pdf"):
-   """
-   Generate a PDF report with:
-     1. Descriptive statistics
-     2. Pairwise Plot
-     3. T tests
-   """
-   df = pd.DataFrame(records) # Convert list of dicts to DataFrame
-   doc = SimpleDocTemplate(output_path) # PDF document
-   styles = getSampleStyleSheet()
-   elements = []
+    """
+    Generate an advanced PDF report with descriptive stats, pairwise plots, and GPU framework analysis.
 
-   # --- Title ---
-   elements.append(Paragraph("<u>Advanced Code Complexity Analysis Report</u>", styles['Title']))
+    The report includes:
+        1. Descriptive statistics table
+        2. Pairwise scatter plots (pairplot) of key metrics
+        3. Aggregated GPU framework Halstead complexity table and bubble plot
 
-   # --- Descriptive Statistics ---
-   summary, correlations = summarize(records)
-   elements.append(Paragraph("Descriptive Statistics", styles['Heading2']))
-   summary_tbl = Table([summary.columns.to_list()] + summary.round(3).values.tolist())
-   summary_tbl.setStyle(TableStyle([("BACKGROUND", (0,0), (-1,0), colors.orange), # Orange Color: #FD5000
-                                    ("GRID", (0,0), (-1,-1), 0.5, colors.black)]))
-   elements.append(summary_tbl)
-   
-   # --- Pairplot ---
-   elements.append(Paragraph("Pairwise Scatter Plot (Pairplot)", styles['Heading2']))
-   metrics = ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_difficulty']    
-   # Generate pairplot
-   sns.pairplot(df[metrics], diag_kind='hist', corner=True, plot_kws={'color': 'orange'}, diag_kws={'color': 'orange'})
-   # Save to a buffer for embedding in PDF
-   buf = io.BytesIO()
-   plt.savefig(buf, format='png')
-   plt.close()
-   buf.seek(0) 
-   # Add images
-   elements.append(Image(buf, width=425, height=425))  # adjust dimensions to fit your layout
+    Args:
+        records (list[dict]): List of per-file complexity metric records.
+        output_path (str): Path to save the generated PDF report.
+
+    Returns:
+        None
+    """
+    df = pd.DataFrame(records)
+    doc = SimpleDocTemplate(output_path)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # --- Title ---
+    elements.append(Paragraph("<u>Advanced Code Complexity Analysis Report</u>", styles['Title']))
+
+    # --- Descriptive Statistics ---
+    summary, correlations = summarize(records)
+    elements.append(Paragraph("Descriptive Statistics", styles['Heading2']))
+    summary_tbl = Table([summary.columns.to_list()] + summary.round(3).values.tolist())
+    summary_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.orange),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black)
+    ]))
+    elements.append(summary_tbl)
+
+    # --- Pairplot ---
+    elements.append(Paragraph("Pairwise Scatter Plot (Pairplot)", styles['Heading2']))
+    metrics = ['sloc', 'nesting', 'cyclomatic', 'cognitive', 'halstead_effort']
+    sns.pairplot(df[metrics], diag_kind='hist', corner=True,
+                 plot_kws={'color': 'orange'}, diag_kws={'color': 'orange'})
+    plot_to_image(elements, width=425, height=425) # Buf IO Handle
+
+    # --- Framework Aggregated Plot ---
+    elements.append(Paragraph(  
+        "GPU-Framework Native Halstead Complexity",
+        styles['Heading2']
+    ))
+    plain_logger.debug(records)
+    df_fw = pd.DataFrame(aggregate_framework_complexity(records))
+    # Table
+    df_fw_display = df_fw.drop(columns=['n1', 'n2'], errors='ignore')
+    gpu_tbl = Table([df_fw_display.columns.to_list()] + df_fw_display.round(2).values.tolist())
+    gpu_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.orange),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black)
+    ]))
+    elements.append(gpu_tbl)
+    # Plot
+    plt.figure(figsize=(7, 6), dpi=400)
+    palette = sns.color_palette("husl", len(df_fw)) 
+    fw_color_map = {fw: palette[i] for i, fw in enumerate(df_fw["Framework"])} # Distinct colors
+    # Plot Bubbles
+    for fw in df_fw["Framework"]: # fw is a framework name
+        fw_row = df_fw[df_fw["Framework"] == fw] # Select Row based on a predicate
+        plain_logger.info(fw_row)
+        plt.scatter(
+            fw_row["Halstead_Difficulty"],
+            fw_row["Halstead_Volume"],
+            s=fw_row["SLOC"] / df_fw["SLOC"].max() * 3000, # Normalize Bubble Size
+            c=[fw_color_map[fw]],
+            edgecolors="black",
+            alpha=0.8,
+        )
+    # Custom legend handles with uniform marker size
+    frameworks = list(df_fw["Framework"])
+    handles = [
+        Line2D([0], [0],
+               marker='o',
+               color='w',
+               markerfacecolor=fw_color_map[fw],
+               markersize=10,
+               markeredgecolor='black',
+               alpha=0.8)
+        for fw in frameworks
+    ]
+    plt.legend(handles=handles, labels=frameworks, title="Framework",
+               bbox_to_anchor=(1, 0), loc='lower right')
+    plt.title("SLOC = Circle Diameter", fontsize=12)
+    plt.xlabel("Halstead Difficulty")
+    plt.ylabel("Halstead Volume")
+    plt.tight_layout()
+    plot_to_image(elements, width=580, height=450) # Buf IO Handle
     
-   # --- Aggregated Framework Plot ---
-   elements.append(Paragraph("Framework-Wise Aggregated Complexity (Difficulty vs Volume, size = Effort)", styles['Heading2']))
+    # --- Build PDF ---
+    doc.build(elements)
+    plain_logger.info("Report saved to %s", output_path)
 
-   # Aggregate per framework
-   df_fw = pd.DataFrame(aggregate_framework_complexity(records))
-
-   if not df_fw.empty:
-       plt.figure(figsize=(7, 6))
-       palette = sns.color_palette("husl", len(df_fw))
-       fw_color_map = {fw: palette[i] for i, fw in enumerate(df_fw["framework"])}
-
-       # Normalize bubble sizes (effort → circle area)
-       eff_scaled = (df_fw["halstead_effort"] / df_fw["halstead_effort"].max()) * 2000
-
-       plt.scatter(
-           df_fw["halstead_difficulty"],
-           df_fw["halstead_volume"],
-           s=eff_scaled,  # bubble size = effort
-           c=[fw_color_map[fw] for fw in df_fw["framework"]],
-           edgecolors="black",
-           alpha=0.8
-       )
-
-       for i, row in df_fw.iterrows():
-           plt.text(row["halstead_difficulty"], row["halstead_volume"], row["framework"], fontsize=9, ha="center", va="center")
-
-       plt.title("Aggregated GPU Framework Complexity", fontsize=12)
-       plt.xlabel("Halstead Difficulty")
-       plt.ylabel("Halstead Volume")
-       plt.tight_layout()
-
-       buf = io.BytesIO()
-       plt.savefig(buf, format='png')
-       plt.close()
-       buf.seek(0)
-       elements.append(Image(buf, width=580, height=530))
-   else:
-       elements.append(Paragraph("No GPU frameworks detected for aggregation.", styles['Normal']))
-
-   # --- Build PDF ---
-   doc.build(elements)
-   print(f"[INFO] Report saved to {output_path}")
-    
-    
-    

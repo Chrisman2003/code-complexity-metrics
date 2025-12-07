@@ -9,13 +9,18 @@ A Python tool to analyze source code and compute Code Complexity Measures.**SLOC
 - Cognitive
 - Halstead
 
-### Parallelizing Frameworks:
-- C++
-- CUDA 
+### 11 Parallelizing Frameworks on C++:
+- CUDA
 - OpenCL
 - Kokkos
-- (SyCl)
-- (OpenMP)
+- OpenMP 
+- AdaptiveCPP
+- OpenACC
+- OpenGlVulkan 
+- WebGPU
+- Boost
+- Metal
+- Thrust
 
 The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
@@ -43,9 +48,9 @@ sudo ./llvm.sh 18
 ## How It Works
 - The tool analyzes a source code file or directory in four main steps:
 
-### 1. Preprocessing and Tokenization
+### 1. Preprocessing and Regex
 - Reads the source code file (e.g., `main.cpp`).  
-- Breaks the code into tokens (words, symbols, numbers).  
+- Performs Regex Analysis with Word Boundaries
 - Ignores comments, whitespace, and string literals to prevent interference with metric calculations.  
 
 ### 2. Cyclomatic Complexity

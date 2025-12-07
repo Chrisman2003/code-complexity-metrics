@@ -1,27 +1,79 @@
-'''
-Parallelizing Frameworks: 
-1) CUDA
-2) OpenCL
-3) Kokkos
-4) OpenMP 
-5) AdaptiveCPP
-6) OpenACC
-7) OpenGlVulkan 
-8) WebGPU
-9) Boost
-10) Metal
-11) Thrust
-[Future]
+# ------------------------------
+# 0) Automated Suffixation completion
+# ------------------------------
+# Substring Suffix Extension Patterns with Respect to the Kleene Operator (*)
+# Trailing Commas for Maintainability and minimizing potential errors
+pattern_rules = {
+    # All constructs with the prefixes below are matched. This includes enum error types like "cudaSuccess".
+    # The idea behind this is to represent a given parallel framework with an operator-oriented lens.
+    'cuda': [
+        r'\b__\w+__\b',                  # CUDA qualifiers like __global__, __device__
+        r'\bcuda[A-Z]\w*\b',             # CUDA runtime APIs like cudaMalloc, cudaMemcpy
+        r'\batomic[A-Z]\w*\b',           # CUDA atomic intrinsics
+    ],
+    'opencl': [
+        r'\bcl[A-Z]\w*\b',               # clCreateBuffer, clEnqueueNDRangeKernel
+        r'\bget_(?:global|local|group)_id\b',  # non-capturing group
+        r'\bcl(?:::\w+)+\b',
+    ],
+    'kokkos': [ 
+        r'\bKokkos::\w+\b',              # All Kokkos namespace calls
+    ],
+    'openmp': [
+        r'\bomp_[a-zA-Z_]+\b',           # matches OpenMP functions like omp_get_num_threads
+        r'#pragma\s+omp\s+[a-zA-Z_\s]+', # matches pragmas like #pragma omp parallel for
+    ],
+    'adaptivecpp': [
+        r'\bsycl::\w+\b',                # all SYCL class/function names
+        r'\bqueue\b',                    # short forms when using namespace sycl
+        r'\bparallel_for\b',
+        r'\bsingle_task\b',
+        r'\bnd_range\b',
+        r'\bnd_item\b',
+    ],
+    'openacc': [
+        r'\bacc_\w+\b',                  # OpenACC runtime functions like acc_malloc
+        r'#pragma\s+acc\s+[a-zA-Z_\s]+', # OpenACC pragma lines
+    ],
+    'opengl_vulkan': [
+        r'\bvk\w+\b',                    # Vulkan functions like vkCreateInstance
+        r'\bgl\w+\b',                    # OpenGL functions like glBindBuffer
+        r'\bVK_[A-Z0-9_]+\b',            # Vulkan constants like VK_SUCCESS
+        r'\bGL_[A-Z0-9_]+\b',            # OpenGL constants like GL_COMPUTE_SHADER
+        r'\bvk::\w+\b',                  # Vulkan C++ API like vk::Instance
+        r'\bvk(?:::\w+)+\b',             # Vulkan C++ API like vk::Instance::Instance
+        # TODO: Generalized matching for _vk_context ?
+    ],
+    'webgpu': [
+        r'\bwgpu::\w+\b',                # all WebGPU C++ API classes
+        r'\bwgpu[A-Z]\w*\b',             # WebGPU runtime functions like wgpuCreateInstance
+        r'\bWGPU_[A-Z0-9_]+\b',          # constants
+    ],
+    'boost': [
+        r'\bboost::compute::\w+\b',      # all Boost.Compute classes & functions
+        r'\bBOOST_COMPUTE_FUNCTION\b',   # macro
+    ],
+    'metal': [
+        r'\bMTL\w+\b',                   # Metal classes / types
+        r'\bMTL::\w+\b',                 # Metal classes / types
+        r'\b(device|thread|threadgroup|constant|kernel|sampler|texture)\b',
+        r'\bdispatchThreads\b|\bdispatchThreadgroups\b|\bcommit\b|\benqueue\b',
+        r'\bnew\w+With\w*:\b',           # Objective-C style method calls
+        r'\bMTL_[A-Z0-9_]+\b'            # Metal constants / enums
+    ],
+    'thrust': [
+        r'\bthrust::\w+\b',              # all Thrust API calls and classes
+        r'\bTHRUST_[A-Z0-9_]+\b',        # macros
+        r'\bthrust(?:::\w+)+\b',         # nested namespaces like thrust::system::cuda
+    ], 
+}
 
-12) Slang 
-'''
 # ------------------------------
 # 1 Standard C++ keywords
 # ------------------------------
 cpp_control = {
     'if', 'else', 'switch', 'case', 'for', 'while', 'do', 'break', 'continue', 'return', 'goto',
     'try', 'catch', 'throw',
-    # NEW
     'default', 'if constexpr', 'co_return', 'requires_clause', 'requires_expression', 'synchronized',
     'namespace', 'new', 'delete', 'not', 'not_eq', 'or', 'or_eq', 'private', 'protected',
     'public', 'friend', 'virtual', 'explicit', 'inline', 'mutable', 'this', 'alignas', 'alignof', 'decltype',
@@ -31,12 +83,11 @@ cpp_control = {
     'char8_t', 'char16_t', 'char32_t', 'wchar_t', 'bool', 'signed', 'unsigned',
     'short', 'long', 'int', 'float', 'double', 'void', 'auto', 'nullptr_t', 'ptrdiff_t', 'size_t',
     'module_partition', 'concept_map', 'transaction_safe'
-}
+} # Pointer Dereferencing ?
 
 cpp_types = {
     'char',
     'class', 'struct', 'union', 'enum', 'typedef', 'using',
-    # NEW
     'std::string', 'std::wstring', 'std::u16string', 'std::u32string', 'std::vector', 'std::list', 'std::map',
     'std::set', 'std::unordered_map', 'std::unordered_set', 'std::deque', 'std::array', 'std::tuple', 'std::pair',
     'std::function', 'std::shared_ptr', 'std::unique_ptr', 'std::weak_ptr', 'std::optional', 'std::variant', 'std::any',
@@ -49,7 +100,6 @@ cpp_modifiers = {
     'template', 'static', 'const',
     'volatile', 'operator', 'extern',
     'register', 'type',
-    # NEW
     'consteval', 'constinit', 'static_cast', 'const_cast',
     'false', 'true', 'nullptr', 'likely', 'unlikely', 'nodiscard', 'maybe_unused'
 }
@@ -60,7 +110,6 @@ cpp_operators = {
     '>>=', '&=', '|=', '^=', '>>', '<<', '&&', '||', '++', '--',
     '->', '->*', '.', '::', '(', ')', '{', '}',
     '[', ']', ',', ':', ';', '#', '@', '...', '?',
-    # NEW
     'and', 'bitand', 'bitor', 'xor', 'compl', 'and_eq', 'xor_eq',
     '<=>', 'co_await_operator', 'operator<=>'
 }
@@ -70,8 +119,7 @@ cpp_side_effect_functions = {
     'sscanf', 'gets', 'fgets', 'malloc', 'calloc', 'realloc', 'free', 
     'std::cout', 'cout', 'std::cerr', 'cerr', 'std::clog', 'clog',
     # Not Using '*' Heuristic since words can occur with or without std:: prefixation
-    'exit', 'abort', 'main',
-    # NEW
+    'exit', 'abort',
     'perror', 'system', 'setenv', 'unsetenv', 'atexit', 'signal', 'fopen', 'freopen', 'fclose', 'fflush',
     'fwrite', 'fread', 'fseek', 'ftell', 'rewind', 'remove', 'rename', 'tmpfile', 'tmpnam',
     'new[]', 'delete[]', 'std::terminate', 'std::abort', 'std::quick_exit'
@@ -80,22 +128,21 @@ cpp_side_effect_functions = {
 # ------------------------------
 # 2 CUDA keywords & intrinsics
 # ------------------------------
+# DOCS: https://docs.nvidia.com/cuda/cuda-c-programming-guide/
+# ------------------------------
 cuda_storage_qualifiers = {
     '__global__', '__device__', '__host__', '__shared__', '__constant__', '__managed__', '__restrict__',
-    # NEW
     '__launch_bounds__', '__cudart_builtin__'
 }
 
 cuda_synchronization = {
     '__threadfence_block', '__threadfence', '__syncthreads',
-    # NEW
     '__threadfence_system', '__syncwarp', '__syncthreadfence', '__syncwarp_multi', '__sync_grid'
 }
 
 cuda_atomic = {
     'atomicAdd', 'atomicSub', 'atomicExch', 'atomicMin', 'atomicMax', 'atomicInc', 'atomicDec', 'atomicCAS',
     'atomicAnd', 'atomicOr', 'atomicXor',
-    # NEW
     'atomicCompareAndSwap', 'atomicFetchAdd', 'atomicFetchSub', 'atomicFetchExch', 'atomicFetchMin',
     'atomicFetchMax', 'atomicFetchInc', 'atomicFetchDec', 'atomicFetchAnd', 'atomicFetchOr',
     'atomicFetchXor', 'atomicMax_block', 'atomicMin_block', 'atomicAdd_block', 'atomicExch_block',
@@ -109,7 +156,6 @@ cuda_atomic = {
 
 cuda_builtins = {
     'threadIdx', 'blockIdx', 'blockDim', 'gridDim',
-    # NEW
     'warpSize', '__ldg', '__activemask', '__ballot_sync', '__shfl_sync', '__shfl_up_sync', '__shfl_down_sync',
     '__all_sync', '__any_sync', '__nvvm_reflect', '__builtin_shuffle'
 }
@@ -122,7 +168,6 @@ cuda_types = {
 
 cuda_side_effect_functions = {
     'cudaMalloc', 'cudaFree', 'cudaMemcpy', 'cudaMemset', 'cudaMallocManaged', 'cudaMallocPitch',
-    # NEW
     'cudaMemcpyAsync', 'cudaMemsetAsync', 'cudaDeviceSynchronize', 'cudaDeviceReset',
     'cudaStreamCreate', 'cudaStreamDestroy', 'cudaStreamSynchronize',
     'cudaEventCreate', 'cudaEventDestroy', 'cudaEventRecord', 'cudaEventSynchronize',
@@ -132,6 +177,8 @@ cuda_side_effect_functions = {
 # ------------------------------
 # 3 OpenCL keywords & types
 # ------------------------------
+# DOCS: https://ulhpc-tutorials.readthedocs.io/en/latest/gpu/opencl/
+# ------------------------------
 opencl_storage_qualifiers = {
     '__kernel', '__global', '__local', '__constant', '__private', '__attribute__((reqd_work_group_size))',
     '__attribute__((work_group_size_hint))'
@@ -140,33 +187,31 @@ opencl_storage_qualifiers = {
 opencl_functions = {
     'kernel', 'get_global_id', 'get_local_id', 'get_group_id', 'get_global_size', 'get_local_size', 'get_num_groups',
     'barrier', 'mem_fence', 'read_mem_fence', 'write_mem_fence',
-    # NEW
     'get_work_dim', 'async_work_group_copy', 'wait_group_events', 'enqueue_kernel',
     'get_global_offset', 'get_sub_group_id'
 }
 
 opencl_memory_flags = {
     'CLK_LOCAL_MEM_FENCE', 'CLK_GLOBAL_MEM_FENCE',
-    # NEW
     'CLK_IMAGE_MEM_FENCE', 'CLK_DOUBLE_MEM_FENCE'
 }
 
 opencl_types = {
     'cl_int', 'cl_uint', 'cl_float', 'cl_double', 'cl_char', 'cl_uchar', 'cl_short', 'cl_ushort',
     'cl_long', 'cl_ulong', 'cl_bool', 'cl_mem', 'float2', 'float4', 'int2', 'int4', 'size_t',
-    # NEW
     'cl_half', 'cl_event', 'cl_sampler', 'cl_image_format', 'cl_half2', 'cl_half4'
 }
 
 opencl_side_effect_functions = {
     'clCreateBuffer', 'clReleaseMemObject', 'clEnqueueWriteBuffer', 'clEnqueueReadBuffer',
-    # NEW
     'clCreateImage', 'clEnqueueNDRangeKernel', 'clFinish', 'clFlush', 'clSetKernelArg',
     'clEnqueueCopyBuffer', 'clEnqueueCopyImage'
 }
 
 # ------------------------------
 # 4 Kokkos keywords & types
+# ------------------------------
+# DOCS: https://kokkos.org/kokkos-core-wiki/API/core/builtinreducers/MinLoc.html
 # ------------------------------
 kokkos_macros = {
     'KOKKOS_FUNCTION', 'KOKKOS_INLINE_FUNCTION', 'KOKKOS_LAMBDA',
@@ -176,26 +221,25 @@ kokkos_macros = {
 kokkos_classes = {
     'Kokkos::View', 'Kokkos::DefaultExecutionSpace', 'Kokkos::DefaultHostExecutionSpace',
     'Kokkos::MemorySpace', 'Kokkos::LayoutLeft', 'Kokkos::LayoutRight',
-    # NEW
     'Kokkos::DualView', 'Kokkos::Experimental', 'Kokkos::ViewHostMirror', 'Kokkos::Fencespace'
 }
 
 kokkos_parallel = {
     'Kokkos::parallel_for', 'Kokkos::parallel_reduce', 'Kokkos::parallel_scan',
     'Kokkos::TeamPolicy', 'Kokkos::RangePolicy', 'Kokkos::MDRangePolicy',
-    # NEW
     'Kokkos::deep_copy', 'Kokkos::resize', 'Kokkos::create_mirror_view',
     'Kokkos::parallel_scan3d', 'Kokkos::parallel_for_reduce'
 }
 
 kokkos_side_effect_functions = {
     'Kokkos::initialize', 'Kokkos::finalize',
-    # NEW
     'Kokkos::fence', 'Kokkos::hwloc_init'
 }
 
 # ------------------------------
 # 5 OpenMP keywords & types
+# ------------------------------
+# DOCS: https://curc.readthedocs.io/en/latest/programming/OpenMP-C.html
 # ------------------------------
 openmp_pragmas = {
     'omp parallel', 'omp for', 'omp sections', 'omp single', 'omp master',
@@ -219,6 +263,12 @@ openmp_constants = {
 # ------------------------------
 # 6 AdaptiveCPP (SYCL) keywords & types
 # ------------------------------
+# DOCS: https://adaptivecpp.github.io/AdaptiveCpp/extensions/
+# ------------------------------
+adaptivecpp_macros = {
+    'SYCL_EXTERNAL', 'SYCL_UNROLL', 'SYCL_DEVICE_ONLY'
+}
+
 adaptivecpp_classes = {
     'sycl::queue', 'sycl::buffer', 'sycl::accessor', 'sycl::handler', 'sycl::event',
     'sycl::range', 'sycl::id', 'sycl::nd_range', 'sycl::nd_item', 'sycl::device', 'sycl::context',
@@ -235,23 +285,21 @@ adaptivecpp_side_effect_functions = {
     'sycl::memcpy', 'sycl::memset', 'sycl::event::wait'
 }
 
-adaptivecpp_macros = {
-    'SYCL_EXTERNAL', 'SYCL_UNROLL', 'SYCL_DEVICE_ONLY'
-}
-
 # ------------------------------
 # 7 OpenACC keywords & types
 # ------------------------------
-openacc_pragmas = {
-    'acc parallel', 'acc kernels', 'acc loop', 'acc data',
-    'acc host_data', 'acc enter data', 'acc exit data', 'acc update',
-    'acc wait', 'acc routine'
-}
-
+# DOCS: https://enccs.github.io/OpenACC-CUDA-beginners/1.02_openacc-introduction/
+# ------------------------------
 openacc_clauses = {
     'copy', 'copyin', 'copyout', 'create', 'present', 'deviceptr',
     'num_gangs', 'num_workers', 'vector_length', 'collapse',
     'private', 'reduction', 'async', 'wait'
+}
+
+openacc_pragmas = {
+    'acc parallel', 'acc kernels', 'acc loop', 'acc data',
+    'acc host_data', 'acc enter data', 'acc exit data', 'acc update',
+    'acc wait', 'acc routine'
 }
 
 openacc_functions = {
@@ -266,6 +314,8 @@ openacc_constants = {
 
 # ------------------------------
 # 8 OpenGL / Vulkan keywords & types
+# ------------------------------
+# DOC: https://vkguide.dev/
 # ------------------------------
 opengl_vulkan_keywords = {
     # Vulkan C++ API classes (vulkan.hpp, vulkan_raii.hpp)
@@ -294,7 +344,6 @@ opengl_vulkan_functions = {
     'vkQueueSubmit', 'vkQueueWaitIdle', 'vkDeviceWaitIdle', 'vkDestroyDevice', 'vkDestroyBuffer',
     'vkDestroyShaderModule', 'vkDestroyPipeline', 'vkFreeMemory', 'vkDestroyImage',
     'vkBeginCommandBuffer', 'vkEndCommandBuffer', 'vkResetCommandBuffer', '_vk_context',
-
     # OpenGL C API
     'glGenBuffers', 'glBindBuffer', 'glBufferData', 'glDeleteBuffers',
     'glCreateShader', 'glShaderSource', 'glCompileShader', 'glAttachShader',
@@ -316,9 +365,14 @@ opengl_vulkan_constants = {
 opengl_vulkan_macros = {
     'VK_NULL_HANDLE', 'VK_MAKE_VERSION', 'GL_CHECK_ERROR', 'GL_VERSION', 'VK_API_VERSION_1_2'
 }
+'''Edge Case: vk::PipelineCache matching along with vk::PipelineCacheInfro
+TradeOff between Auto-Suffix Recognition and trying to recognise garbage constructs
+'''
 
 # ------------------------------
 # 9 WebGPU keywords & types
+# ------------------------------
+# DOCS: https://docs.rs/wgpu/latest/wgpu/
 # ------------------------------
 webgpu_classes = {
     'wgpu::Device', 'wgpu::Queue', 'wgpu::CommandEncoder', 
@@ -348,6 +402,11 @@ webgpu_macros = {
 # ------------------------------
 # 10 Boost.Compute keywords & types
 # ------------------------------
+# DOCS: https://www.boost.org/doc/libs/latest/libs/compute/doc/html/index.html
+# ------------------------------
+boost_macros = {
+    'BOOST_COMPUTE_FUNCTION'
+}
 
 boost_classes = {
     'boost::compute::device', 'boost::compute::context', 'boost::compute::command_queue',
@@ -362,25 +421,19 @@ boost_functions = {
     'boost::compute::command_queue::finish'
 }
 
-boost_macros = {
-    'BOOST_COMPUTE_FUNCTION'
-}
 # No constants specifically for Boost.Compute
 
 # ------------------------------
 # 11 Metal keywords & types
+# ------------------------------
+# DOCS: https://developer.apple.com/documentation/metal/metal-sample-code-library
 # ------------------------------
 metal_storage = {
     # Metal storage qualifiers / keywords
     'device', 'thread', 'threadgroup', 'constant', 'kernel', 'sampler', 'texture',
     'thread_index_in_threadgroup', 'threadgroup_position_in_grid',
 }
-metal_classes = {
-    # Metal classes / types
-    'MTLDevice', 'MTLCommandQueue', 'MTLBuffer', 'MTLComputePipelineState',
-    'MTLTexture', 'MTLCommandBuffer', 'MTLRenderPassDescriptor', 'MTLSamplerDescriptor',
-    'MTLComputeCommandEncoder',
-}
+
 metal_functions = {
     # Side-effect functions
     'newBufferWithLength:options:', 'newTextureWithDescriptor:', 'commit', 'enqueue',
@@ -388,6 +441,14 @@ metal_functions = {
     'makeComputePipelineState', 'setBuffer:offset:atIndex:', 'dispatchThreads',
     'dispatchThreadgroups',
 }
+
+metal_classes = {
+    # Metal classes / types
+    'MTLDevice', 'MTLCommandQueue', 'MTLBuffer', 'MTLComputePipelineState',
+    'MTLTexture', 'MTLCommandBuffer', 'MTLRenderPassDescriptor', 'MTLSamplerDescriptor',
+    'MTLComputeCommandEncoder',
+}
+
 metal_constants = {
     # Constants / enums
     'MTLResourceCPUCacheModeDefaultCache', 'MTLResourceStorageModeShared',
@@ -397,7 +458,8 @@ metal_constants = {
 # ------------------------------
 # 12 Thrust keywords & types
 # ------------------------------
-
+# DOCS: https://nvidia.github.io/cccl/thrust/
+# ------------------------------
 thrust_classes = {
     'thrust::device_vector', 'thrust::host_vector', 'thrust::pair',
     'thrust::tuple', 'thrust::complex',
@@ -430,75 +492,78 @@ thrust_side_effect_functions = {
 }
 
 # ------------------------------
-# 5 Merged Subsets per type for Component Analysis of Halstead metrics
-# ------------------------------
-# TODO
-merged_control = cpp_control
-merged_types = cpp_types | cuda_types | opencl_types | kokkos_classes
-merged_modifiers = cpp_modifiers | cuda_storage_qualifiers | opencl_storage_qualifiers | kokkos_macros
-merged_operators = cpp_operators | cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
-merged_functions = cpp_side_effect_functions | cuda_side_effect_functions | opencl_side_effect_functions | kokkos_side_effect_functions
-merged_parallel = cuda_atomic | cuda_synchronization | opencl_functions | kokkos_parallel
-# TODO
-
-# ------------------------------
-# 6 Merged Sets by Language Extension
+# 13 Merged Sets of Non-Operands by Language Extension
 # ------------------------------
 cpp_non_operands = cpp_control | cpp_types | cpp_modifiers | cpp_operators | cpp_side_effect_functions
 cuda_non_operands = cuda_storage_qualifiers | cuda_synchronization | cuda_atomic | cuda_builtins | cuda_types | cuda_side_effect_functions
 opencl_non_operands = opencl_storage_qualifiers | opencl_functions | opencl_memory_flags | opencl_types | opencl_side_effect_functions
-kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions
+kokkos_non_operands = kokkos_macros | kokkos_classes | kokkos_parallel | kokkos_side_effect_functions # Namespace functions must be kept
 openmp_non_operands = openmp_pragmas | openmp_clauses | openmp_functions | openmp_constants
-adaptivecpp_non_operands = adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions | adaptivecpp_macros
-openacc_non_operands = openacc_pragmas | openacc_clauses | openacc_functions | openacc_constants
+adaptivecpp_non_operands = adaptivecpp_macros | adaptivecpp_classes | adaptivecpp_parallel | adaptivecpp_side_effect_functions
+openacc_non_operands = openacc_clauses | openacc_pragmas | openacc_functions | openacc_constants
 opengl_vulkan_non_operands = opengl_vulkan_keywords | opengl_vulkan_functions | opengl_vulkan_constants | opengl_vulkan_macros
 webgpu_non_operands = webgpu_classes | webgpu_functions | webgpu_constants | webgpu_macros
-boost_non_operands = boost_classes | boost_functions | boost_macros
-metal_non_operands = metal_storage | metal_classes | metal_functions | metal_constants
+boost_non_operands = boost_macros | boost_classes | boost_functions
+metal_non_operands = metal_storage | metal_functions | metal_classes | metal_constants
 thrust_non_operands = thrust_classes | thrust_functions | thrust_macros | thrust_side_effect_functions
 
-merged_non_operands = cpp_non_operands | cuda_non_operands | opencl_non_operands | kokkos_non_operands | openmp_non_operands | adaptivecpp_non_operands | openacc_non_operands | opengl_vulkan_non_operands | webgpu_non_operands | boost_non_operands | metal_non_operands | thrust_non_operands
+merged_non_operands = (
+    cpp_non_operands
+    | cuda_non_operands
+    | opencl_non_operands
+    | kokkos_non_operands
+    | openmp_non_operands
+    | adaptivecpp_non_operands
+    | openacc_non_operands
+    | opengl_vulkan_non_operands
+    | webgpu_non_operands
+    | boost_non_operands
+    | metal_non_operands
+    | thrust_non_operands
+)
 
-'''
-CRUCIAL Edge Case:
-Some parallelizing frameworks contain communal keywords.
-Therefore for the merging of non-operands sets with respect to CPP and the given parallelizing framework,
+"""
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) Not all function recognition is delegated to the suffixation patterns above. This is because:
+- Some functions may be overloaded or templated, and hence may not follow a strict naming convention
+- Some functions do not present a canonical suffix form 
+- A base vocabulary minimizes false negatives
+This may lead to rare double counting by counting on the invocation vk::QueueFlagBits
+-> vk::Queue 
+-> vk::QueueFlagBits
+However this is an acceptable trade-off to ensure high recall of function recognition.
+2) For pragma languages the '#pragma' keyword is treated as an operator itself since it behaves like a 
+control directive.
+Therefore '#pragma omp parallel for' is tokenized as:
+-> '#pragma omp parallel for'  (#pragma operator)
+-> 'omp parallel for' (actual function operator)
+
+HANDLED: 
+1) Some parallelizing frameworks contain communal keywords.
+Therefore for the merging of non-operand sets with respect to CPP and the given parallelizing framework,
 one needs to ensure that duplicates are allowed across parallelizing frameworks, just not within the
 frameworks themselves -> so as to simplify the implementation.
 Sets anyway don't allow duplicates, so this is inherently guaranteed. 
--> E.g. 
-Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and opencl_non_operands,"
-
+-> E.g. Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and 
+opencl_non_operands,"
 Structure:
 -> Base CPP 
---> Parallizing Framework 1 (CUDA)    | Intersecting Overlap
---> Parallizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
---> Parallizing Framework 3 (Kokkos)  | or between 2 given frameworks
-'''
+--> Parallelizing Framework 1 (CUDA)    | Intersecting Overlap
+--> Parallelizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
+--> Parallelizing Framework 3 (Kokkos)  | or between 2 given frameworks
 
-"Edge Case: remove libraries before analysis"
+NOT HANDLED:
+1) Variables named with framework prefixations (However, this is bad code practice)
+2) For the languages webgpu and metal, code string kernels are handled as singular operands.
+-> Only for OpenCL are the actual Kernel strings analyzed for operators and operands.
+-> Only OpenCL kernel strings are analyzed for operators and operands because OpenCL embeds full C-like kernel programs
+directly inside host language string literals. These strings contain valid program logic that corresponds to Halstead's 
+definition of operators and operands.
+-> In contrast, Metal (MSL) and WebGPU (WGSL) shader sources are separate languages with different syntactic rules that
+cannot be reliably tokenized using C++ operator and operand patterns.
+--> In Short OpenCL has a more C-like kernel language embedded in strings compared to the Metal and WebGPU 
+semi-distinct shader languages.
+"""
 
 
-'''
-Libraries:
-1) CUDA: #include <cuda_runtime.hpp>
-2) KOKKOS: #include <Kokkos_Core.hpp>
-3) VULKAN/OPENGL: #include <vulkan/vulkan.hpp>
-   #include <vulkan/vulkan_raii.hpp>
-   #include <glm/glm.hpp> 
-4) ADAPTIVECPP: #include <CL/sycl.hpp>
-   #include <sycl/sycl.hpp>
-5) THRUST: #include <thrust/device_vector.h>
-   #include <thrust/reduce.h>
-6) OPENACC: #include <openacc.h>
-7) OPENCL: #include <CL/cl.hpp>
-   #include "opencl_eval.hpp"
-   #include "opencl_init.hpp"
-   #include "opencl_sum.hpp"
-8) OPENMP: #include "omp.h"
-9) SLANG: #include "shader/eval.hpp"
-   #include "shader/eval.cuh"
-10) WEBGPU: #include <wgpu/wgpu.h>
-11) BOOST: #include "boost/compute.hpp"
-12) METAL: #include <Metal/Metal.hpp>
-'''

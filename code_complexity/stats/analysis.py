@@ -1,18 +1,34 @@
 import pandas as pd
 
 def summarize(records):
+    """
+    Compute descriptive statistics and correlation metrics for code complexity records.
+
+    This function converts a list of metric records into a pandas DataFrame, 
+    generates descriptive statistics, and computes pairwise correlations for a 
+    predefined set of complexity-related columns (including optional Halstead metrics 
+    if present).
+
+    Args:
+        records (list[dict]): List of per-file metric dictionaries.
+
+    Returns:
+        tuple:
+            summary (pd.DataFrame): Descriptive statistics with labeled rows.
+            correlations (pd.DataFrame): Correlation matrix of available metrics.
+    """
     # Descriptive stats
     df = pd.DataFrame(records)
     summary = df.describe()
     
     # Base columns for correlation
-    base_cols = ["cognitive", "cyclomatic", "nesting", "sloc", "halstead_difficulty"]
+    base_cols = ["cognitive", "cyclomatic", "nesting", "sloc", "halstead_effort"]
     
     # Add optional halstead columns if they exist
     if "halstead_volume" in df.columns:
         base_cols.append("halstead_volume")
-    if "halstead_effort" in df.columns:
-        base_cols.append("halstead_effort")
+    if "halstead_difficulty" in df.columns:
+        base_cols.append("halstead_difficulty")
         
     # Compute correlations only for columns that exist in df
     correlations = df[[col for col in base_cols if col in df.columns]].corr()
@@ -22,6 +38,7 @@ def summarize(records):
     summary = summary[cols]
 
     return summary, correlations
+
 '''
 Example Records Format:
 records = [
