@@ -328,19 +328,9 @@ def regex_compute_cyclomatic(code: str) -> int:
             else:
                 count += stripped.count(op) # Non-Alphabetic Substrings may be normally counted without boundaries
                 # Count functions (definitions only, not calls)
-        
-        #if re.match(function_pattern, stripped):
-        #    # Exclude lines that contain control keywords (whole word)
-        #    # Necesarry error handling: stand along if() expressions should NOT be counted as functions!
-        #    if not any(re.match(rf'\w*\s*\b{k}\b\s*\w*', stripped) for k in control_keywords + ['switch']):
-        #        # Function detected
-        #        num_functions += 1
-        #        # print(f"Function detected: {stripped} -> Total functions: {num_functions}")
-                
+     
     fallthroughs = detect_fallthroughs(code)
     return count + num_functions + fallthroughs # +1 for the default path
-
-# Edge Case: Boolean Operators for CFG Method Version
 
 '''
 EDGE CASE DOCUMENTATION:

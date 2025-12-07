@@ -171,8 +171,3 @@ def test_halstead_metrics(case):
     assert round(difficulty(metrics), 2) == expected['difficulty'], f"{case['filename']} difficulty mismatch"
     assert round(effort(metrics), 2) == expected['effort'], f"{case['filename']} effort mismatch"
     assert round(time(metrics), 2) == expected['time'], f"{case['filename']} time mismatch"
- 
-'''
-Edge Case:
-Boundary Word Wrapping for keywords searched by the Halstead Function ?
-'''

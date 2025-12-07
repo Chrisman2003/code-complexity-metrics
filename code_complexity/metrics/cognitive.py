@@ -98,7 +98,7 @@ def regex_compute_cognitive(code: str) -> int:
         # Increase nesting ONLY if a nesting keyword and a brace are on this line.
         if (stripped != '{' and stripped != ""):
             found_nesting_keyword = False
-        for keyword in control_keywords + ['->']:
+        for keyword in control_keywords:
             if re.search(rf'\b{keyword}\b', stripped): # Word boundaries to avoid false positives
                 found_nesting_keyword = True
                 break
