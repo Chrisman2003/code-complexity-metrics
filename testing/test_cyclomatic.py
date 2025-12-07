@@ -16,8 +16,8 @@ test_cases = [
     ("cpp/hyper_complex.cpp", 84, 83),
 ]
 
-@pytest.mark.parametrize("filename,expected_basic,expected_full", test_cases)
-def test_cyclomatic_files(filename, expected_basic, expected_full):
+@pytest.mark.parametrize("filename,expected_noncfg,expected_cfg", test_cases)
+def test_cyclomatic_files(filename, expected_noncfg, expected_cfg):
     """
     Test cyclomatic complexity computation for multiple C++ source files.
 
@@ -26,13 +26,13 @@ def test_cyclomatic_files(filename, expected_basic, expected_full):
 
     Args:
         filename (str): Relative path to the C++ source file under test.
-        expected_basic (int): Expected cyclomatic complexity from the regex-based method.
-        expected_full (int): Expected cyclomatic complexity from the CFG-based method.
+        expected_noncfg (int): Expected cyclomatic complexity from the regex-based method.
+        expected_cfg (int): Expected cyclomatic complexity from the CFG-based method.
 
     Raises:
         AssertionError: If either the basic or full cyclomatic complexity does not match
                         the expected value.
     """
     code = load_code(filename, TEST_FILES_DIR)
-    assert regex_compute_cyclomatic(code) == expected_basic
-    assert cfg_compute_cyclomatic(code, filename) == expected_full
+    assert regex_compute_cyclomatic(code) == expected_noncfg
+    assert cfg_compute_cyclomatic(code, filename) == expected_cfg
