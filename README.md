@@ -1,6 +1,5 @@
 # Code Complexity Analyzer
-
-A Python tool to analyze source code and compute Code Complexity Measures.**SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports parallelizing frameworks for code constructs and particularly with respect to halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
+A Python tool to analyze source code and compute Code Complexity Measures.**SLOC**, **Cyclomatic Complexity**, **Cognitive Complexity**, and **Halstead Metrics**. The tool supports parallelizing frameworks for code constructs and particularly with respect to Halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
 
 ### Code Complexity Measures:
 - SLOC
@@ -22,7 +21,7 @@ A Python tool to analyze source code and compute Code Complexity Measures.**SLOC
 - Metal
 - Thrust
 
-The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
+The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the relative location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
 ### System Installation
 - Aside from the auto configured pip install packages a system insall of clang-18 is needed for version compatibility

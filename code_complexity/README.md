@@ -9,9 +9,6 @@
 - **Nesting Depth**: Computes maximum block nesting in source files.
 
 ## Package `stats`
-- **Data Loading**: Aggregates metric data from multiple sources and prepares it for analysis.
-- **Analysis**: Provides statistical summaries, identifies hotspots, and computes correlations between metrics.
-- **Preprocessing**: Cleans, normalizes, and categorizes metric data for further analysis.
-- **Visualization**: Generates histograms, box plots, heatmaps, and bubble plots of complexity metrics.
-- **Report Generation**: Creates human-readable reports highlighting high-complexity files/functions and overall project maintainability.
-- **Advanced Analysis**: Offers sophisticated statistical models, clustering, regression, and comparative analysis for deeper insights.
+- **Analysis**: Computes descriptive statistics and correlations to identify hotspots and relationships between complexity metrics.
+- **Report Generator**: Produces PDF reports with tables, plots, and visualizations highlighting complexity of files.
+- **Data Loader**: Collects per-file metrics and aggregates GPU-framework complexities for deeper insights.
