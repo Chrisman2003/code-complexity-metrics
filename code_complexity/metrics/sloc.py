@@ -37,10 +37,10 @@ def compute_sloc(code: str) -> int:
     lines = code.splitlines()
     return sum(1 for line in lines if line.strip())
 
-
-"""EDGE CASE:
-String literals:
-
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) String literals:
 const char* msg = "line1
 line2
 line3";
@@ -48,4 +48,4 @@ Without removal, this counts as 3 lines.
 
 With removal, it becomes:
 const char* msg = ;
-"""
+'''

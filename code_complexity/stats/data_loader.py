@@ -86,3 +86,23 @@ def collect_metrics(root_path: str):
         "openmp": {"difficulty": 5, "volume": 100}
     }
 '''
+
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) The Halstead Delta Computation is only designed for files containing a singular GPU framework.
+    In files where multiple GPU frameworks are used, the delta values for Halstead metrics
+    may have discrepancies when reflecting the individual contributions of each framework 
+    (through the operand set). The C++ lens inherently subtracts from operand set all framework
+    functions (cudaMalloc() and thrust::...). A thrust lens will not subtract cudaMalloc() calls from the operand
+    set for example. 
+    -> This is an inevitable edge case. Since one can't subtract a merged set with all framework functions from
+    the operand set. Any attempt to merge framework vocabularies for subtraction would distort the lens-specific 
+    meaning of the metrics.
+    -> Mixed-framework files often serve as glue code, integration layers, or migration scaffolding rather than 
+    representative algorithmic implementations. Their Halstead deltas are not expected to reflect clean 
+    framework-specific complexity because the file's purpose itself is not entirely framework-specific.
+    -> For manual framework complexity deltas, one can modify the detection framework by changing the corresponding
+    library headers.
+2) Files that do not include any GPU framework will not have any entries in the "gpu_complexity" dictionary.
+'''

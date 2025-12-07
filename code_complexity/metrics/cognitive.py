@@ -115,7 +115,6 @@ def regex_compute_cognitive(code: str) -> int:
 
 ''' 
 EDGE CASE DOCUMENTATION:
-
 HANDLED:
 1) Misalignment of Nesting and Keywords
 if (condition) // 'if' is found here, scored with current 'nesting'
@@ -123,9 +122,9 @@ if (condition) // 'if' is found here, scored with current 'nesting'
     //...
 }
 2) Over-Penalizing Logical Operators: The metric applies the full nesting penalty to logical operators
-3) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives.
-4) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity.
-5) Nesting only increases from control key words (Unlike Nesting Depth purely with '{' and '}' tokens)
+3) Word Boundaries: Ensure keywords are matched as whole words to avoid false positives
+4) Comments and Strings: Ensure that keywords within comments or string literals do not affect complexity
+5) Nesting only increases from control keywords (Unlike Nesting Depth purely with '{' and '}' tokens)
 6) Cognitive Complexity unlike Cyclomatic Complexity starts at 0 not 1!
 7) Null-Coalescing Operators -> Doesn't exist in C++
 8) Switch statements: 'cases' don't add complexity, only the switch statement itself [SonarQube specification]
@@ -142,16 +141,4 @@ NOT HANDLED:
 -> Nesting still applies for any control flow inside the function.
 4) There is no structural increment for lambdas, nested methods, and similar features, but such methods 
 do increment the nesting level when nested inside other method-like structures:
-'''
-
-
-
-
-'''
-Example that might break nesting [I might have solved it now]:
-if (x > 0)
-{ // Nesting increases here, not on the if line
-    // 
-}
-The current implementation will score the if on the wrong nesting level if the { is on the next line.
 '''

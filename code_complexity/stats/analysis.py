@@ -38,6 +38,7 @@ def summarize(records):
     summary = summary[cols]
 
     return summary, correlations
+
 '''
 Example Records Format:
 records = [

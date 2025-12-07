@@ -11,13 +11,13 @@ NOTE: not all files (especially those of manual testing) are semantically correc
 - **isolated.cpp** – Small, self-contained C++ snippet for isolated testing.
 - **new.cpp** – Newer C++ example with modern constructs.
 - **new2.cpp** – Another modern C++ example similar to `new.cpp`.
-- **complex_cuda.cu** – CUDA implementation of complex computations.
 - **complex.cpp** – C++ code with multiple features to test code complexity metrics.
 - **hyper_complex.cpp** – Very complex C++ sample with nested structures and advanced logic.
 
 ## cuda
 - **advanced.cu** – CUDA code with more advanced operations than basic examples.
 - **advanced_2.cu** – Another advanced CUDA example with variations from the first.
+- **complex.cu** – CUDA implementation of complex computations.
 - **edge1.cu** – CUDA example focusing on edge cases.
 - **edge2.cu** – Another CUDA edge case sample.
 - **edge3.cu** – Third CUDA edge case variant.
@@ -28,16 +28,21 @@ NOTE: not all files (especially those of manual testing) are semantically correc
 ## kokkos
 - **advanced.cpp** – Advanced C++ example using Kokkos for parallelism.
 - **advanced2.cpp** – Another advanced Kokkos sample with different patterns.
-- **complex_kokkos.cpp** – Kokkos-based parallel version of complex C++ code.
+- **complex.cpp** – Kokkos-based parallel version of complex C++ code.
 
 ## opencl
-- **complex_opencl.cpp** – OpenCL version of the complex C++ sample.
-- **complex_opencl2.cpp** – Alternative OpenCL implementation with slight variations.
-- **opencl_edge_cases.cpp** – OpenCL code designed to test edge cases in parsing or execution.
+- **complex.cpp** – OpenCL version of the complex C++ sample.
+- **complex2.cpp** – Alternative OpenCL implementation with slight variations.
+- **edge_cases.cpp** – OpenCL code designed to test edge cases in parsing or execution.
+
+## adaptivecpp, boost, metal, openacc, opengl_vulkan, openmp, thrust, webgpu
+- **simple.cpp** - simple program for analysis with the framework
+- **complex.cpp** - complex program for analysis with the framework
 
 ## thesis_testing
 - manual - this subdirectory represents all of the files for the Thesis text, which were used for manual demonstrations in order to verify correctness of code complexity metric implementations.
 - ANALYSIS_REPOSITORY - this subdirectory contains the sets of files, which were used for evaluating algorithmic and framework complexity correspondingly. The algorithms in question are a: polyhedral gravity model, n-body simulation, matrix multiplication and vector addition.
 Sources [Implementations]:
+- sudoku.cpp - file used for inter-metric code complexity analysis.
 -> https://github.com/schuhmaj/performance-portability-benchmark (last accessed: 15 November 2025)
 -> https://github.com/schuhmaj/polyhedral-gravity-model-parallel (last accessed: 15 November 2025)

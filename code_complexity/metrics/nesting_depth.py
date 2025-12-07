@@ -12,7 +12,6 @@ def compute_nesting_depth(code: str) -> int:
     Returns:
         int: Maximum nesting depth.
     """
-    # Remove comments, non-kernel string literals, Header calls
     code = remove_headers(code)
     code = remove_cpp_comments(code)
     code = remove_string_literals(code)
@@ -34,3 +33,11 @@ def compute_nesting_depth(code: str) -> int:
         elif char == '}':
             current_depth = max(0, current_depth - 1)
     return max_depth
+
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) Curly Braces in Comments and String Literals:
+Without removal, comments or string literals containing '{' or '}' would
+artificially inflate the nesting depth count.
+'''

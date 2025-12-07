@@ -119,7 +119,7 @@ def compute_sets(core_non_operands: set, additional_non_operands: set, lang="") 
     operator_pattern = r'|'.join(escaped_keywords + escaped_symbols)
     
     func_call_pattern = r'(?<!::)\b[A-Za-z_]\w*\s*(?=\()' # Don't match namespace called functions Kokkos::
-    operator_pattern = f"{operator_pattern}|{func_call_pattern}"
+    operator_pattern = f"{operator_pattern}|{func_call_pattern}" 
     
     # Operand pattern: identifiers or numeric literals
     operand_pattern = r'\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+\b' # Doesn't detect string literals
@@ -256,12 +256,12 @@ def time(metrics: dict) -> float:
     """
     return effort(metrics) / 18
 
-
-"""
+'''
 This module uses pattern-based tokenization rather than whitespace-based parsing to correctly handle 
 C++ syntax and its GPU extensions (e.g. "a+b" and "a + b").
 
-Edge Cases (General):
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
 1) String Literals are counted as singular operand instances
 2) Library calls have to be stripped
 3) :: is the scope resolution operator
@@ -271,10 +271,4 @@ Edge Cases (General):
 are not strictly disjoint.
 **) Constructs: which are neither operators nor operands
 4) Use library header for auto language detection -> and only after remove all library headers
-"""
-
-"""
-Edge Cases (OpenMP):
-1) allocateOpenMp<...>()	    - Should be counted as an Operator (function call)
-2) GravityEvaluableBase(...)	- Should be counted as an Operator (constructor call)
-"""
+'''

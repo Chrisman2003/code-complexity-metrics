@@ -55,16 +55,16 @@ def detect_parallel_framework(code: str) -> set[str]:
                    "openacc", "opengl_vulkan", "webgpu", "boost", "metal", "thrust"}.
     """
     lib_patterns = { # Assuming correct library declarations
-        "cuda": [r'#include\s*<cuda'],
-        "opencl": [r'#include\s*<CL/cl[^>]*>'],
-        "kokkos": [r'#include\s*<Kokkos'],
+        "cuda": [r'#include\s*[<"]cuda'],
+        "opencl": [r'#include\s*[<"]CL/cl[^>]*>'],
+        "kokkos": [r'#include\s*[<"]Kokkos'],
         "openmp": [r'#include\s*[<"]omp'],
-        "adaptivecpp": [r'#include\s*<CL/sycl'],
-        "openacc": [r'#include\s*<openacc'],
-        "opengl_vulkan": [r'#include\s*<vulkan'],
-        "webgpu": [r'#include\s*<wgpu'],
-        "boost": [r'#include\s*"boost'],
-        "metal": [r'#include\s*<Metal'],
+        "adaptivecpp": [r'#include\s*[<"]CL/sycl'],
+        "openacc": [r'#include\s*[<"]openacc'],
+        "opengl_vulkan": [r'#include\s*[<"]vulkan'],
+        "webgpu": [r'#include\s*[<"]wgpu'],
+        "boost": [r'#include\s*[<"]boost'],
+        "metal": [r'#include\s*[<"]Metal'],
         "thrust": [r'#include\s*[<"]thrust'],
     }
     detected_languages = {"cpp"}
@@ -159,3 +159,20 @@ def remove_headers(code: str) -> str:
     # -> Incorrect Program Behaviour
     # -> First remove headers and then string literals
     return code
+
+
+'''
+EDGE CASE DOCUMENTATION:
+IMPORTANT:
+1) std::string s = "This is not a // comment";
+char c = '/';
+std::string t = "/* not a comment */";
+2) /* Outer comment
+   /* Inner comment */
+   End of outer */
+3) #define STR(x) "/* " #x " */"
+4) First analyze headers for framework and only after remove them
+5) #include "" and #include <>
+    # -> Incorrect Program Behaviour
+    # -> First remove headers and then string literals
+'''

@@ -251,13 +251,6 @@ def detect_fallthroughs(code: str) -> int:
     """
     
     fallthroughs = 0
-    # 
-    # \bswitch\b       → matches the word 'switch' as a whole word
-    # \s*              → allows optional whitespace between 'switch' and '('
-    # \([^)]*\)        → matches the parentheses containing the switch condition (anything except ')')
-    # \s*              → optional whitespace after the parentheses
-    # \{([^}]*)\}      → matches the block inside braces { ... } and captures it in group 1
-    # re.DOTALL        → allows '.' to match newline characters so multiline blocks are captured
     r""" 
     REGEX EXPLANATION:
     Find all switch statement blocks in the code
@@ -351,7 +344,6 @@ def regex_compute_cyclomatic(code: str) -> int:
 
 '''
 EDGE CASE DOCUMENTATION:
-
 HANDLED:
 1) Comments (`//`, `/* ... */`) are ignored and do not contribute to complexity.
 2) String literals (e.g., `"x is greater or equal to y"`) are ignored to 
@@ -363,35 +355,12 @@ an independent path; `else if` is counted via its `if`.
 5) Logical operators `&&`, `||`, `?` are counted for each occurrence.
 6) Alphabetic logical operators `and`, `or` are counted only when they 
 appear as standalone words, not as substrings of other identifiers.
-##  7) Multi-line constructs may not be perfectly accounted for in this heuristic.
-    8) If `code` is `None`, it is treated as an empty string (CC = 1).    
-    9) Fall-Through Switch-Case Statements
-    10) Clang doesn't produce CFG components on non-instantiated templates
+7) Multi-line constructs may not be perfectly accounted for in this heuristic.
+8) If `code` is `None`, it is treated as an empty string (CC = 1).    
+9) Fall-Through Switch-Case Statements
+10) Clang doesn't produce CFG components on non-instantiated templates
+11) Fall through branches in switch/case statements
 
 NOT HANDLED:
-1) Perfect Function Counting
-'''
-
-
-
-'''
-Edge Cases for Commenting:
-1) Fall Through branches in switch/case statements
-1) 
-std::string s = "This is not a // comment";
-char c = '/';
-std::string t = "/* not a comment */";
-2)
-/* Outer comment
-   /* Inner comment */
-   End of outer */
-3) 
-#define STR(x) "/* " #x " */"
-'''
-
-'''
-Edge Cases: 
--> label: 
--> if (x > 0) 
--> } if (x > 0)
+1) Perfect Function Counting -> Only in rare cases however.
 '''

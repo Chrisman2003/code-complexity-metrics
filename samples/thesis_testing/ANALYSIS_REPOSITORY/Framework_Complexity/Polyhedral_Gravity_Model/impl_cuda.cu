@@ -2,7 +2,6 @@
 #include <cuda_runtime.h>
 #include <vector_types.h>
 
-
 #if FLOAT_BITS == 32
 using VectorType = float3;
 using VectorType4 = float4;

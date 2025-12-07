@@ -545,23 +545,23 @@ Therefore for the merging of non-operand sets with respect to CPP and the given 
 one needs to ensure that duplicates are allowed across parallelizing frameworks, just not within the
 frameworks themselves -> so as to simplify the implementation.
 Sets anyway don't allow duplicates, so this is inherently guaranteed. 
--> E.g. 
-Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and opencl_non_operands,"
+-> E.g. Both CUDA and OpenCL contain the keyword float2, hence float2 must be in both cuda_non_operands and 
+opencl_non_operands,"
 Structure:
 -> Base CPP 
---> Parallizing Framework 1 (CUDA)    | Intersecting Overlap
---> Parallizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
---> Parallizing Framework 3 (Kokkos)  | or between 2 given frameworks
+--> Parallelizing Framework 1 (CUDA)    | Intersecting Overlap
+--> Parallelizing Framework 2 (OpenCL)  | may exist between all 3 frameworks
+--> Parallelizing Framework 3 (Kokkos)  | or between 2 given frameworks
 
 NOT HANDLED:
 1) Variables named with framework prefixations (However, this is bad code practice)
-2) For the languages webgpu and metal, in code string kernels are handled as singular operands.
+2) For the languages webgpu and metal, code string kernels are handled as singular operands.
 -> Only for OpenCL are the actual Kernel strings analyzed for operators and operands.
 -> Only OpenCL kernel strings are analyzed for operators and operands because OpenCL embeds full C-like kernel programs
 directly inside host language string literals. These strings contain valid program logic that corresponds to Halstead's 
 definition of operators and operands.
 -> In contrast, Metal (MSL) and WebGPU (WGSL) shader sources are separate languages with different syntactic rules that
-cannot be reliably tokenized using C/C++ operator and operand patterns.
+cannot be reliably tokenized using C++ operator and operand patterns.
 --> In Short OpenCL has a more C-like kernel language embedded in strings compared to the Metal and WebGPU 
 semi-distinct shader languages.
 """

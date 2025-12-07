@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
+
 static uint32_t vulkan_init[] =
 #include "shader/init.hpp"
         ;
