@@ -47,20 +47,25 @@ sudo ./llvm.sh 18
 ## How It Works
 - The tool analyzes a source code file or directory in four main steps:
 
-### 1. Preprocessing and Regex
+### Preprocessing and Regex
 - Reads the source code file (e.g., `main.cpp`).  
 - Performs Regex Analysis with Word Boundaries
-- Ignores comments, whitespace, and string literals to prevent interference with metric calculations.  
 
-### 2. Cyclomatic Complexity
+### 1. SLOC Complexity
+- Lines of Code, considering: comments, string literals, headers
+
+### 2. Nesting Depth Complexity
+- Maximum Nesting Depth, considering: comments, string literals, headers
+
+### 3. Cyclomatic Complexity
 - Specification standard pursuant to Thomas J McCabe
 - T. J. McCabe, "A Complexity Measure," in IEEE Transactions on Software Engineering, vol. SE-2,
 
-### 3. Cognitive Complexity
+### 4. Cognitive Complexity
 - Specification standard pursuant to Sonarqube
 - {Cognitive Complexity} a new way of measuring understandability By G. Ann Campbell
 
-### 4. Halstead Metrics
+### 5. Halstead Metrics
 - Counts **operators** and **operands**, both total and unique.  
 - Computes:  
   - Vocabulary: η = η₁ + η₂
@@ -72,11 +77,6 @@ sudo ./llvm.sh 18
   In the above formulae, k is the stroud number, which has an arbitrary default value of 18.
   https://www.ibm.com/docs/en/devops-test-embedded/9.0.0?topic=metrics-halstead
 ---
-
-## Future Plans
-- Improved cyclomatic and cognitive complexity analysis for GPU constructs
-- More detailed Halstead metrics distinguishing different operand types
-- Comprehensive pytest suite for accuracy verification
 
 ## Installation
 - Make sure Python 3.8+ is installed.
