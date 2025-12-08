@@ -351,5 +351,5 @@ appear as standalone words, not as substrings of other identifiers.
 11) Fall through branches in switch/case statements
 
 NOT HANDLED:
-1) Perfect Function Counting -> Only in rare cases however.
+1) Perfect Function Counting -> Only in rare cases small deviation however.
 '''
