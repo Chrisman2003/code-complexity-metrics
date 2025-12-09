@@ -1,5 +1,5 @@
 # Code Complexity Analyzer
-A pip installable Python tool to analyze source code and compute Code Complexity Measures. The tool supports parallelizing frameworks for code constructs and particularly with respect to Halstead metrics may specifically measure these constructs specifically in addition to the cpp base code.
+A pip installable Python tool to analyze source code and compute Code Complexity Measures. The tool supports parallelizing frameworks for code constructs and can extend Halstead analysis by incorporating the vocabulary of these parallel constructs alongside standard C++ code.
 
 ### Code Complexity Measures:
 - SLOC
@@ -24,7 +24,8 @@ A pip installable Python tool to analyze source code and compute Code Complexity
 The Program is Target Agnostic, hence one needs to merely type the high-level prepackaged "code-metrics" command with the relative location of some Directory or File on your machine. Typically your personal directories will be outside this folder by some hierarchy levels. Therefore corresponding prefixation with "../" to the required depth should be applied.
 
 ### System Installation
-- Aside from the auto configured pip install packages a system insall of clang-18 is needed for version compatibility
+- Make sure Python 3.8+ is installed.
+- Aside from the auto configured pip install packages a system install of clang-18 is needed for version compatibility
 1) [Unrecommended] 
 sudo apt install clang-18 lldb-18 lld-18 
 1) [Recommended]: Installs LLVM/Clang directly from official LLVM APT repositories.
@@ -77,16 +78,3 @@ sudo ./llvm.sh 18
   In the above formulae, k is the stroud number, which has an arbitrary default value of 18.
   https://www.ibm.com/docs/en/devops-test-embedded/9.0.0?topic=metrics-halstead
 ---
-
-## Installation
-- Make sure Python 3.8+ is installed.
-- Future Cyclomatic and Cognitive Complexity will require the following 
-- SUDO apt dependencies: 
-- sudo apt install kokkos libkokkos-dev
-- sudo apt install libomp-dev
-- sudo apt install nvidia-cuda-toolkit
-- sudo apt install clang-15 llvm-15
-- SDK kit for cuda
-
-
-

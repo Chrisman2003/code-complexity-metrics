@@ -565,5 +565,3 @@ cannot be reliably tokenized using C++ operator and operand patterns.
 --> In Short OpenCL has a more C-like kernel language embedded in strings compared to the Metal and WebGPU 
 semi-distinct shader languages.
 """
-
-

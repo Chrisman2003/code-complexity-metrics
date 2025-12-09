@@ -4,7 +4,7 @@
 ## Package `metrics`
 - **Cognitive Complexity**: Regex-based detection of control flow, logical operators, jump statements, and nesting.
 - **Cyclomatic Complexity**: Detects functions and computes branch-based complexity.
-- **Halstead Metrics**: Computes operators, operands, and related halstead complexity measures.
+- **Halstead Metrics**: Computes operators, operands, and related Halstead complexity measures.
 - **SLOC (Source Lines of Code)**: Counts logical and physical lines of code.
 - **Nesting Depth**: Computes maximum block nesting in source files.
 
