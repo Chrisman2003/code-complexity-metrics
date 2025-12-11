@@ -43,6 +43,6 @@ NOTE: not all files (especially those of manual testing) are semantically correc
 - manual - this subdirectory represents all of the files for the Thesis text, which were used for manual demonstrations in order to verify correctness of code complexity metric implementations.
 - ANALYSIS_REPOSITORY - this subdirectory contains the sets of files, which were used for evaluating algorithmic and framework complexity respectively. The algorithms in question are a: polyhedral gravity model, n-body simulation, matrix multiplication and vector addition.
 - sudoku.cpp - file used for inter-metric code complexity analysis.
-Sources [Implementations]:
+## Sources [Implementations]:
 - https://github.com/schuhmaj/performance-portability-benchmark (last accessed: 15 November 2025)
 - https://github.com/schuhmaj/polyhedral-gravity-model-parallel (last accessed: 15 November 2025)
